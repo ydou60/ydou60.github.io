@@ -4453,7 +4453,15 @@ checkStreak(); settleLeague(); ensureQuests(); render();
 if (!S.onboarded) onboarding();
 initCloud();
 // Fonctionnement hors ligne + mises à jour automatiques (site publié uniquement)
-if ('serviceWorker' in navigator && location.protocol === 'https:' && !EMBED) navigator.serviceWorker.register('sw.js').catch(() => { });
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !EMBED) {
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    reg.update().catch(() => { });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => { }); }); // vérifie à chaque retour dans l'appli
+  }).catch(() => { });
+  // une nouvelle version vient de s'installer : on recharge une fois (sauf en pleine leçon) pour l'afficher
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !L && !ST && !window.__reloaded) { window.__reloaded = true; location.reload(); } });
+}
 </script>
 </body>
 </html>
