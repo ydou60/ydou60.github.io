@@ -465,8 +465,8 @@ body.stage-on.in-lesson{--stage-h:38dvh}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body.stage-on{--sheet:rgba(88,81,74,.92)}}
 body.stage-on #stage{display:block;position:fixed;top:0;left:0;right:0;max-width:600px;margin:0 auto;height:var(--stage-h);overflow:hidden;z-index:1;transition:height .35s ease;background:#CFC4B6}
 #stage .st-img,#stage .st-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
-#stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%;transition:opacity .2s}
-#stage .st-vid{opacity:0;transition:opacity .15s}
+#stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%;transition:opacity .55s ease-in-out}
+#stage .st-vid{opacity:0;transition:opacity .55s ease-in-out}
 #stage.talking .st-idle{opacity:0}
 #stage.talking .st-vid{opacity:1}
 #stage .st-fade{position:absolute;inset:auto 0 0 0;height:48%;background:linear-gradient(rgba(40,32,26,0),rgba(40,32,26,.6));pointer-events:none}
@@ -3369,14 +3369,22 @@ function teacher(size, mood = 'talk') {
 function idleVideo() { const v = $('#stage .st-idle'); if (v && v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); } }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) idleVideo(); });
 document.addEventListener('touchstart', idleVideo, { passive: true, once: true });
+/* Amara parle : fondu doux vers la vidéo de parole. Entre deux phrases (petite pause), elle reste « en train de parler »
+   pour éviter tout clignotement ; elle ne revient à la vidéo d'attente qu'après un vrai silence. */
+let TALK_OFF_T = null, TALKING = false;
 function profTalk(on) {
+  clearTimeout(TALK_OFF_T);
+  if (!on) { TALK_OFF_T = setTimeout(() => setTalking(false), 900); return; }
+  setTalking(true);
+}
+function setTalking(on) {
+  if (on === TALKING) return; TALKING = on;
   document.querySelectorAll('.prof, #stage').forEach(p => {
     const v = p.querySelector('video:not(.st-idle)'); if (!v) return;
     if (on) {
       p.classList.add('talking');
-      try { if (v.readyState > 0) v.currentTime = Math.random() * Math.max(0, (v.duration || 8) - 2); } catch (e) { }
-      const pr = v.play(); if (pr && pr.catch) pr.catch(() => { });
-    } else { p.classList.remove('talking'); v.pause(); idleVideo(); }
+      const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); // reprend là où elle s'était arrêtée : pas de saut d'image
+    } else { p.classList.remove('talking'); idleVideo(); setTimeout(() => { if (!TALKING) v.pause(); }, 600); }
   });
 }
 /* =====================================================================
