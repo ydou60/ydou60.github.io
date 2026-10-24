@@ -437,10 +437,9 @@ h1,h2,h3,.ex-title,.logo,.fb h3,.end h1{font-family:var(--serif);font-weight:500
 .hero{max-width:600px;margin:6px auto 26px;display:flex;flex-direction:column;gap:18px}
 .hero-photo{position:relative;display:block;width:100%;height:min(440px,62vh);padding:6px;border-radius:28px;overflow:hidden;background:var(--glass);border:1px solid var(--glass-b);box-shadow:0 18px 40px rgba(90,70,50,.16)}
 .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;border-radius:22px;display:block}
-.hero-badge,.hero-play{position:absolute;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.62);
+.hero-badge{position:absolute;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.62);
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8);font-size:12px;letter-spacing:.06em;color:#3B342E}
 .hero-badge{left:16px;top:16px;text-transform:uppercase}.hero-badge i{width:7px;height:7px;border-radius:50%;background:#6E9C74}
-.hero-play{right:16px;bottom:16px;font-weight:500}
 .hero-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:0 4px}
 .hero-name{margin:0;font-family:var(--serif);font-weight:300;font-size:48px;line-height:.96}
 .hero-row p{margin:8px 0 0;font-size:14px}
@@ -465,10 +464,9 @@ body.stage-on.in-lesson{--stage-h:38dvh}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body.stage-on{--sheet:rgba(88,81,74,.92)}}
 body.stage-on #stage{display:block;position:fixed;top:0;left:0;right:0;max-width:600px;margin:0 auto;height:var(--stage-h);overflow:hidden;z-index:1;transition:height .35s ease;background:#CFC4B6}
 #stage .st-img,#stage .st-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
-#stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%;transition:opacity .55s ease-in-out}
-#stage .st-vid{opacity:0;transition:opacity .55s ease-in-out}
-#stage.talking .st-idle{opacity:0}
-#stage.talking .st-vid.on{opacity:1}
+#stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
+#stage .st-idle,#stage .st-vid{opacity:0;transition:opacity .3s ease-in-out}
+#stage video.show{opacity:1}
 #stage .st-fade{position:absolute;inset:auto 0 0 0;height:48%;background:linear-gradient(rgba(40,32,26,0),rgba(40,32,26,.6));pointer-events:none}
 #stage .st-top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 0}
 #stage .topbar{position:static;display:flex;gap:6px;background:none;margin:0;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -537,7 +535,7 @@ body.stage-on .unit-head{top:0}
 body.stage-on #app{min-height:0;height:auto}
 
 /* la prof libre : aucune pastille sur son image */
-#stage .st-tap{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer}
+#stage .st-tap{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none}
 #stage .st-img{animation:breathe 9s ease-in-out infinite;transform-origin:50% 20%}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025) translateY(-3px)}}
 @media (prefers-reduced-motion:reduce){#stage .st-img{animation:none}#stage .st-idle{display:none}}
@@ -620,6 +618,10 @@ body.stage-on.kb-open .l-body .mic{display:none}
 .gl p,.gl ol{margin:6px 0 0;line-height:1.45}.gl ol{padding-left:20px}
 .gl.warn{border-color:rgba(190,110,80,.5)}
 body.stage-on.kb-open .hint-btn,body.stage-on.kb-open .hint-box{display:none}
+
+/* pas de rebond de la page entière sur iPhone pendant les exercices */
+body.stage-on{overscroll-behavior:none}
+body.stage-on.in-lesson{position:fixed;inset:0;width:100%}
 </style>
 </head>
 <body>
@@ -2409,6 +2411,9 @@ const EXPL = {
   'Quel détroit relie la mer Méditerranée à l\'océan Atlantique ?': "Le détroit de Gibraltar sépare l'Espagne du Maroc, entre la Méditerranée et l'Atlantique."
 };
 </script>
+<script>/* Raccords vidéo : pour chaque image (10 par seconde), l'instant de l'autre vidéo où la posture d'Amara est la plus proche, et l'écart */
+const PROF_MATCH = {"fps":10,"idle":{"talk":[[4.3,12.72],[4.3,12.85],[4.3,12.96],[4.3,13.14],[4.3,13.07],[3.5,13.58],[3.5,14.33],[3.4,15.26],[3.1,16.84],[6.5,17.23],[6.5,17.93],[6.5,18.58],[6.5,19.36],[6.5,20.4],[6.5,20.75],[6.5,21.21],[6.5,21.41],[3.2,21.67],[6.5,22.24],[6.5,22.57],[3.2,22.82],[3.2,22.83],[3.2,22.74],[6.5,22.08],[6.5,21.5],[6.5,20.95],[6.5,20.6],[6.5,20.14],[6.5,19.45],[6.5,19.02],[6.5,19.05],[6.5,19.28],[6.5,19.66],[6.5,20.59],[6.5,21.22],[6.5,21.84],[6.5,22.18],[6.5,22.67],[6.2,23.45],[6.2,24.04],[6.2,25.17],[6.2,25.99],[6.2,26.87],[6.2,28.06],[6.2,28.7],[6.5,29.26],[6.6,29.25],[6.6,29.1],[6.6,28.69],[6.6,28.38],[6.6,27.72],[6.6,27.19],[6.6,26.65],[6.6,25.79],[6.6,25.23],[6.6,25.02],[6.6,25.3],[6.6,25.51],[6.6,25.72],[6.6,25.49],[6.6,25.82],[6.6,26.03],[6.6,26.22],[6.7,26.38],[6.7,26.37],[6.7,26.31],[6.7,26.29],[6.7,26.22],[6.7,26.02],[6.7,25.86],[6.7,25.59],[6.7,25.38],[6.7,25.16],[6.7,24.76],[6.7,24.53],[6.7,24.12],[6.7,23.83],[6.6,23.55],[6.6,23.01],[6.6,22.76],[6.6,22.68],[6.6,22.62],[6.6,22.61],[6.6,21.74],[6.6,19.08],[6.6,16.49],[6.6,14.15],[6.5,12.75],[6.5,11.76],[6.5,11.85],[4.3,12.43],[4.3,12.5]]},"talk":{"idle":[[8.8,23.28],[8.7,22.95],[8.7,22.22],[0.5,19.64],[0.7,19.82],[0.8,20.67],[0.8,21.42],[0.8,21.87],[8.7,22.49],[8.7,22.31],[0.7,22.0],[0.7,21.06],[0.5,19.35],[0.5,16.04],[0.4,15.05],[0.4,14.84],[0.4,16.95],[8.9,20.17],[8.8,18.39],[8.8,19.13],[8.8,19.61],[8.8,18.12],[8.8,19.15],[8.8,19.22],[8.9,16.23],[8.9,15.21],[8.9,14.96],[8.9,14.64],[9.1,14.58],[9.1,15.66],[0.2,16.77],[0.7,16.76],[0.8,17.06],[0.7,16.13],[0.6,14.46],[0.4,13.21],[9.0,13.03],[8.9,13.37],[8.9,13.38],[8.9,13.25],[8.9,13.12],[8.9,12.95],[8.9,12.69],[8.9,12.43],[8.9,15.01],[0.4,19.19],[8.9,19.36],[8.9,19.29],[8.9,20.19],[8.9,19.84],[8.9,18.06],[8.9,18.15],[8.9,18.53],[8.9,21.38],[8.9,21.69],[8.9,19.73],[8.9,19.51],[8.9,20.95],[8.9,21.73],[8.9,20.88],[8.8,18.3],[8.8,16.24],[8.8,14.93],[8.9,13.51],[8.9,12.61],[8.8,11.76],[8.8,12.32],[8.8,13.41],[8.8,16.11],[8.8,18.7],[8.8,21.18],[8.8,23.45],[8.8,23.52]]}};
+</script>
 <script>'use strict';
 /* =====================================================================
    SpeakUp — moteur de l'application
@@ -3379,11 +3384,11 @@ function profTalk(on) {
 }
 function setTalking(on) {
   if (on === TALKING) return; TALKING = on;
-  const st = $('#stage');
-  if (st && st.querySelector('.st-vid')) { // la scène : deux vidéos de parole qui alternent en fondu, pour varier les gestes
-    clearInterval(TALK_SWAP_T);
-    if (on) { st.classList.add('talking'); swapTalk(); TALK_SWAP_T = setInterval(swapTalk, 6500); }
-    else { st.classList.remove('talking'); idleVideo(); setTimeout(() => { if (!TALKING) $$('#stage .st-vid').forEach(v => v.pause()); }, 700); }
+  const seq = ++TALK_SEQ, st = $('#stage'), idle = st && st.querySelector('.st-idle'), talk = st && st.querySelector('.st-vid');
+  if (idle && talk) { // raccord au moment où la posture d'Amara est la plus proche dans l'autre vidéo
+    st.classList.toggle('talking', on);
+    if (on) cutTo(talk, idle, matchTime('idle', 'talk', idle.currentTime), seq);
+    else { cutTo(idle, talk, matchTime('talk', 'idle', talk.currentTime), seq); setTimeout(() => { if (!TALKING) talk.pause(); }, 700); }
   }
   document.querySelectorAll('.prof').forEach(p => {
     const v = p.querySelector('video'); if (!v) return;
@@ -3391,15 +3396,30 @@ function setTalking(on) {
     else { p.classList.remove('talking'); v.pause(); }
   });
 }
-let TALK_SWAP_T = null;
-function swapTalk() {
-  const vs = $$('#stage .st-vid'); if (!vs.length) return;
-  const cur = vs.find(v => v.classList.contains('on')) || vs[0], nxt = vs.length > 1 ? vs.find(v => v !== cur) : cur;
-  const pr = nxt.play(); if (pr && pr.catch) pr.catch(() => { });
-  if (nxt === cur) return;
-  nxt.classList.add('on'); cur.classList.remove('on');
-  setTimeout(() => { if (!cur.classList.contains('on')) cur.pause(); }, 700); // la vidéo cachée reprendra là où elle s'est arrêtée
+let TALK_SEQ = 0;
+function matchTime(from, to, t) {
+  const M = typeof PROF_MATCH !== 'undefined' ? PROF_MATCH : null, row = M && M[from] && M[from][to];
+  if (!row || !isFinite(t)) return null;
+  return row[Math.min(row.length - 1, Math.max(0, Math.round(t * M.fps)))][0];
 }
+function cutTo(show, hide, t, seq) {
+  let done = false;
+  const go = () => {
+    if (done || seq !== TALK_SEQ) return; done = true;
+    const pr = show.play(); if (pr && pr.catch) pr.catch(() => { });
+    show.classList.add('show'); hide.classList.remove('show');
+  };
+  if (t == null) return go();
+  const seek = () => { show.addEventListener('seeked', go, { once: true }); try { show.currentTime = t; } catch (e) { go(); } };
+  setTimeout(go, 450); // jamais plus d'une demi-seconde d'attente
+  if (show.readyState) seek(); else { show.addEventListener('loadedmetadata', seek, { once: true }); try { show.load(); } catch (e) { } }
+}
+/* Safari (iPhone) ne précharge pas les vidéos : au premier toucher, on les prépare en silence */
+function warmVideos() {
+  $$('#stage video').forEach(v => { if (v.readyState) return; const pr = v.play(); if (pr && pr.then) pr.then(() => { if (!v.classList.contains('show')) v.pause(); }).catch(() => { }); });
+}
+document.addEventListener('touchstart', warmVideos, { passive: true, once: true });
+document.addEventListener('click', warmVideos, { once: true });
 
 /* =====================================================================
    NOUVELLE INTERFACE : la prof en grand (la scène), tout se passe en dessous
@@ -3411,16 +3431,15 @@ function renderStage() {
   if (!stageOn()) { st.innerHTML = ''; return; }
   if (!st.dataset.ready) {
     st.dataset.ready = '1';
-    st.innerHTML = `<button class="st-tap" data-act="profVideo" aria-label="Écouter le message d'Amara, ta prof">
+    st.innerHTML = `<div class="st-tap">
       <img class="st-img" src="prof/full.jpg" alt="Amara, ta prof, qui te regarde">
-      <video class="st-idle" muted playsinline loop autoplay preload="auto" poster="prof/idle.jpg" aria-hidden="true"><source src="prof/idle.mp4" type="video/mp4"><source src="prof/idle.webm" type="video/webm"></video>
-      <video class="st-vid on" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video>
-      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk2.mp4" type="video/mp4"><source src="prof/talk2.webm" type="video/webm"></video></button>`;
+      <video class="st-idle show" muted playsinline loop autoplay preload="auto" poster="prof/idle.jpg" aria-hidden="true"><source src="prof/idle.mp4" type="video/mp4"><source src="prof/idle.webm" type="video/webm"></video>
+      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video></div>`;
   }
 }
 /* en-tête du panneau : nom de la prof + drapeau, série, gemmes, cœurs (déplacés hors de son image) */
 function sheetHead() {
-  return `<div class="sheet-head"><button class="sh-prof" data-act="profVideo"><b>Amara Diallo</b><small>Ta prof de ${esc(COURSE.adj)} · ▶ son message</small></button>${topbar()}</div>`;
+  return `<div class="sheet-head"><div class="sh-prof"><b>Amara Diallo</b><small>Ta prof de ${esc(COURSE.adj)}</small></div>${topbar()}</div>`;
 }
 /* Clavier de l'iPhone : on suit la zone réellement visible pour que la prof reste toujours à l'écran */
 function fitViewport() {
@@ -3431,11 +3450,26 @@ function fitViewport() {
 }
 if (window.visualViewport) { visualViewport.addEventListener('resize', fitViewport); visualViewport.addEventListener('scroll', fitViewport); }
 window.addEventListener('resize', fitViewport);
+/* Le clavier s'ouvre : la page ne doit jamais remonter (sinon Amara disparaît). On suit la zone visible image par image,
+   on ramène la page en haut, et seule la zone de l'exercice défile pour montrer le champ de saisie. */
+let KB_RAF = null;
+function followKeyboard(until) {
+  cancelAnimationFrame(KB_RAF);
+  const step = () => { if (window.scrollY) window.scrollTo(0, 0); fitViewport(); if (Date.now() < until) KB_RAF = requestAnimationFrame(step); };
+  step();
+}
+function showField(el) {
+  const box = el.closest('.l-body, #main'); if (!box) return;
+  const r = el.getBoundingClientRect(), b = box.getBoundingClientRect();
+  if (r.top < b.top + 8 || r.bottom > b.bottom - 8) box.scrollTop += r.top - b.top - Math.max(8, (b.height - r.height) / 3);
+}
 document.addEventListener('focusin', e => {
   if (!stageOn() || !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
-  setTimeout(() => { fitViewport(); try { e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) { } }, 350);
+  followKeyboard(Date.now() + 1200);
+  [80, 350, 700].forEach(ms => setTimeout(() => { if (document.activeElement === e.target) showField(e.target); }, ms));
 });
-document.addEventListener('focusout', () => { if (stageOn()) setTimeout(() => { window.scrollTo(0, 0); fitViewport(); }, 120); });
+document.addEventListener('focusout', () => { if (stageOn()) followKeyboard(Date.now() + 800); });
+if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (stageOn()) followKeyboard(Date.now() + 500); });
 /* Encouragements : Amara réagit à voix haute à chaque réponse, dans la langue apprise */
 let LAST_CHEER = '';
 function cheer(ok, then) {
@@ -3506,18 +3540,11 @@ function profHero() {
   const cta = !ck ? '' : ck.endsWith('-c') ? `<button class="btn pri wide hero-cta" data-act="openChest" data-k="${ck}">Ouvrir le coffre</button>`
     : `<button class="btn pri wide hero-cta" data-act="startNode" data-k="${ck}">▶&nbsp; Commencer la leçon</button>`;
   return `<section class="hero">
-    <button class="hero-photo" data-act="profVideo" aria-label="Écouter le message d'Amara"><img src="prof/full.jpg" alt="Amara, ta prof, debout en tailleur beige"><span class="hero-badge"><i></i>En ligne</span><span class="hero-play">▶ Son message</span></button>
+    <div class="hero-photo"><img src="prof/full.jpg" alt="Amara, ta prof, debout en tailleur beige"><span class="hero-badge"><i></i>En ligne</span></div>
     <div class="hero-row"><div><h1 class="hero-name">Amara<br>Diallo</h1><p class="muted">Ta prof de ${esc(COURSE.adj)} · ${esc(U ? U.title : '')}</p></div>
-      <div class="hero-actions"><button class="pearl emoji" data-act="profVideo" aria-label="Écouter Amara">🔊</button><small>Écouter</small>
-      <button class="pearl emoji" data-act="practice" data-m="speak" aria-label="Parler">🎙️</button><small>Parler</small></div></div>
+      <div class="hero-actions"><button class="pearl emoji" data-act="practice" data-m="speak" aria-label="Parler">🎙️</button><small>Parler</small></div></div>
     <div class="hero-streak"><span class="pearl sm emoji">🔥</span><div><b>${S.streak} jour${S.streak > 1 ? 's' : ''} de suite</b><small>Objectif du jour : ${todayXP()} / ${S.goal} XP</small></div></div>
     <div class="hero-line"></div>${cta}</section>`;
-}
-function profIntro() {
-  if (!profOn() || S.hideProfIntro) return '';
-  return `<div class="prof-intro"><video src="prof/intro.mp4" poster="prof/intro.jpg" controls playsinline preload="none"></video>
-    <div style="flex:1;min-width:0"><b>👋 Ta prof</b><p class="muted" style="font-size:14px">Elle t'accompagne dans chaque leçon : quand une phrase est lue, c'est elle qui te parle. Touche la vidéo pour l'écouter.</p>
-    <button class="btn sm ghost" data-act="hideProfIntro">Masquer</button></div></div>`;
 }
 function spkButtons(text, big) {
   if (!canListen()) return '';
@@ -3588,7 +3615,7 @@ const RENDER = {
     const w = ex.w;
     lessonShell(exHeader(`Écris « ${esc(w.fr)} » en ${esc(COURSE.adj)}`, ex) + `<div class="drawing emoji">${w.e}</div>
       <input class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto" placeholder="Écris en ${esc(COURSE.adj)}">`, footAnswer());
-    const inp = $('#typed'); inp.focus(); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
+    const inp = $('#typed'); inp.focus({ preventScroll: true }); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
     L.check = () => {
       const ART = { en: 'the|a|an|to', es: 'el|la|los|las|un|una', it: 'il|lo|la|i|gli|le|un|una|uno', de: 'der|die|das|ein|eine|zu', pt: 'o|a|os|as|um|uma' }[COURSE.code];
       let r = accepts(inp.value, w.acc, 'en', true, w.rd);
@@ -3612,7 +3639,7 @@ const RENDER = {
     lessonShell(exHeader('Écris ce que tu entends', ex) + spkButtons(first(s.en), true) +
       `<textarea class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto" placeholder="Écris en ${esc(COURSE.adj)}"></textarea>`, footAnswer('Je ne peux pas écouter'));
     autoplay(s.en); L.listen = true;
-    const inp = $('#typed'); inp.focus(); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
+    const inp = $('#typed'); inp.focus({ preventScroll: true }); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
     L.check = () => ({ ...accepts(inp.value, s.en, 'en', true, s.rd), ans: disp(first(s.en)), sub: (s.rd ? s.rd + ' · ' : '') + first(s.fr) });
   },
   choose_tr(ex) {
@@ -4339,8 +4366,6 @@ const ACT = {
   install: () => openModal(installHTML()),
   installNow: async () => { if (!INSTALL_PROMPT) return; INSTALL_PROMPT.prompt(); try { await INSTALL_PROMPT.userChoice; } catch (e) { } INSTALL_PROMPT = null; closeModal(); render(); },
   step: el => stepModal(el.dataset.k),
-  profVideo: () => openModal(`<div class="onb"><video src="prof/intro.mp4" poster="prof/intro.jpg" controls autoplay playsinline style="width:100%;max-height:70vh;border-radius:18px;background:#000"></video><h2 style="margin-top:12px">Amara, ta prof</h2><p class="muted">Elle t'accompagne dans chaque leçon.</p></div>`),
-  hideProfIntro: () => { S.hideProfIntro = true; save(); render(); },
   hideInstall: () => { S.hideInstall = true; save(); render(); },
   pickCourse: el => switchCourse(el.dataset.c),
   onbDone: () => { S.name = ($('#onb-name').value || '').trim(); S.onboarded = true; save(); closeModal(); render(); },
