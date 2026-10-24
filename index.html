@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SpeakUp — Apprends les langues</title>
 <meta name="theme-color" content="#6C4CF5">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SpeakUp">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦜</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -313,6 +317,8 @@ ruby rt{font-size:.5em;font-weight:700;color:var(--muted)}
 .stat.flag{font-size:15px;gap:6px;color:var(--ink)}
 .stat.flag .emoji{font-size:20px}
 @media (max-width:700px){.stat.flag .cname{display:none}}
+
+.install-banner{max-width:600px;margin:6px auto 4px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--pri);background:var(--pri-l);border-radius:16px}
 </style>
 </head>
 <body>
@@ -1646,6 +1652,7 @@ function railHTML() {
     <p class="muted" style="font-weight:700">Tu es <b style="color:var(--pri)">${myRank}<sup>e</sup></b> avec ${weekXP()} XP cette semaine.</p>
     <button class="btn sm wide" style="margin-top:10px" data-act="nav" data-v="league">Voir le classement</button></div>
   <div class="card"><h3>📜 Quêtes du jour</h3>${S.quests.list.map(questRow).join('')}</div>
+  ${canInstall() ? `<div class="card"><h3>📲 Installer SpeakUp</h3><p class="muted" style="font-weight:600">En plein écran, avec son icône, même sans internet.</p><button class="btn pri sm wide" style="margin-top:10px" data-act="install">Installer</button></div>` : ''}
   <div class="card"><h3>🧠 La méthode SpeakUp</h3><p class="muted" style="font-weight:600">Écoute, répète à voix haute, rappelle-toi activement et reviens chaque jour : la répétition espacée fait le reste.</p>
   <button class="btn sm wide" style="margin-top:10px" data-act="method">En savoir plus</button></div>`;
 }
@@ -1656,9 +1663,36 @@ const currentKey = () => ORDER.find(k => !S.done[k]) || null;
 function isUnlocked(k) { const c = currentKey(); return c === null || ORDER.indexOf(k) <= ORDER.indexOf(c); }
 const unitDone = u => !!S.done[`${u}-t`];
 function curUnit() { const c = currentKey(); return c ? +c.split('-')[0] : UNITS.length - 1; }
+/* ---------- Installation sur l'écran d'accueil ---------- */
+const STANDALONE = (() => { try { return window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; } })();
+const IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let INSTALL_PROMPT = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALL_PROMPT = e; if (!L && !ST) render(); });
+const canInstall = () => !STANDALONE && !EMBED && location.protocol === 'https:';
+function installBanner() {
+  if (!canInstall() || S.hideInstall) return '';
+  return `<div class="install-banner"><span class="emoji" style="font-size:30px">📲</span><div style="flex:1"><b>Installe SpeakUp</b><div class="muted" style="font-size:14px">En plein écran, avec son icône, même sans internet.</div></div>
+    <button class="btn pri sm" data-act="install">Installer</button><button class="modal-x" style="position:static" data-act="hideInstall" aria-label="Masquer">✕</button></div>`;
+}
+function installHTML() {
+  if (STANDALONE) return `<div class="onb">${pip('happy', 110)}<h2>SpeakUp est déjà installé ✅</h2><p class="muted">Tu l'utilises depuis ton écran d'accueil.</p></div>`;
+  const step = (n, t, d) => `<div class="method"><span class="me" style="background:var(--pri);color:#fff;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:900;flex:none">${n}</span><div><b>${t}</b><div class="muted">${d}</div></div></div>`;
+  const share = `<svg width="20" height="22" viewBox="0 0 20 24" style="vertical-align:-4px" aria-label="Partager"><path d="M10 2v13M5 7l5-5 5 5" stroke="#2EA8FF" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10H3v12h14V10h-3" stroke="#2EA8FF" stroke-width="2.2" fill="none" stroke-linejoin="round"/></svg>`;
+  if (IOS) return `<div class="onb">${pip('happy', 100)}<h2>Installer SpeakUp sur ton iPhone</h2><p class="muted">3 touches, et SpeakUp s'ouvre comme une vraie appli.</p></div>
+    ${step(1, `Touche le bouton Partager ${share}`, 'En bas de l\'écran dans Safari (ou en haut à droite sur iPad). Si tu ne vois pas la barre, fais défiler un peu la page vers le haut.')}
+    ${step(2, 'Choisis « Sur l\'écran d\'accueil »', 'Fais défiler la liste vers le bas si tu ne le vois pas tout de suite. Touche « Modifier les actions » si l\'option est absente.')}
+    ${step(3, 'Touche « Ajouter »', 'L\'icône de Pip 🦜 apparaît sur ton écran d\'accueil. Ouvre SpeakUp depuis cette icône désormais.')}
+    <p class="muted" style="margin-top:12px">⚠️ L'installation ne fonctionne que dans <b>Safari</b> (pas dans l'appli Google ou Instagram). Ta progression est gardée.</p>`;
+  if (INSTALL_PROMPT) return `<div class="onb">${pip('happy', 100)}<h2>Installer SpeakUp</h2><p class="muted">Ton navigateur peut installer SpeakUp directement.</p><button class="btn pri wide" data-act="installNow">Installer maintenant</button></div>`;
+  return `<div class="onb">${pip('happy', 100)}<h2>Installer SpeakUp</h2></div>
+    ${step(1, 'Ouvre le menu du navigateur', 'Les trois points ⋮ en haut à droite (Chrome) ou le menu ⋯ (Edge).')}
+    ${step(2, 'Choisis « Installer l\'application » ou « Ajouter à l\'écran d\'accueil »', 'Le nom exact dépend du navigateur.')}
+    ${step(3, 'Confirme', 'SpeakUp apparaît avec ses autres applis.')}`;
+}
+
 function viewLearn() {
   const ck = currentKey();
-  let html = '<div class="path">';
+  let html = installBanner() + '<div class="path">';
   UNITS.forEach(U => {
     const u = U.u, locked = !isUnlocked(`${u}-0`);
     const dc = NODE_TYPES.filter(n => S.done[`${u}-${n.k}`]).length;
@@ -1910,6 +1944,7 @@ function viewProfile() {
   <div class="card" style="margin-top:16px"><h2>⚙️ Réglages</h2>
     <div class="set-row"><span>Ton prénom</span><input type="text" id="set-name" value="${esc(S.name)}" maxlength="20" placeholder="Prénom"></div>
     <div class="set-row"><span>Objectif quotidien</span><select data-set="goal">${[[10, 'Tranquille'], [20, 'Normal'], [30, 'Sérieux'], [50, 'Intense']].map(([v, l]) => `<option value="${v}" ${S.goal === v ? 'selected' : ''}>${l} — ${v} XP/jour</option>`).join('')}</select></div>
+    ${canInstall() ? '<div class="set-row"><span>📲 Installer SpeakUp sur l\'écran d\'accueil</span><button class="btn sm pri" data-act="install">Installer</button></div>' : ''}
     <div class="set-row"><span>Langue apprise</span><button class="btn sm" data-act="courses">${COURSE.flag} ${esc(COURSE.name)} ▾</button></div>
     <div class="set-row" ${COURSE.code !== 'en' ? 'hidden' : ''}><span>Accent</span><select data-set="accent"><option value="en-US" ${st.accent === 'en-US' ? 'selected' : ''}>🇺🇸 Américain</option><option value="en-GB" ${st.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 Britannique</option></select></div>
     <div class="set-row"><span>Vitesse de la voix</span><select data-set="rate">${[[.8, 'Lente'], [1, 'Normale'], [1.15, 'Rapide']].map(([v, l]) => `<option value="${v}" ${st.rate === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -2581,6 +2616,9 @@ const ACT = {
   onbAcc: el => { $$('[data-act=onbAcc]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.settings.accent = el.dataset.v; say('Hello!'); },
   onbCourse: el => { $$('[data-act=onbCourse]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.course = el.dataset.c; loadCourse(S.course); say(COURSE.code === 'en' ? 'Hello!' : UNITS[0].words[0].en); },
   courses: () => openModal(coursesHTML()),
+  install: () => openModal(installHTML()),
+  installNow: async () => { if (!INSTALL_PROMPT) return; INSTALL_PROMPT.prompt(); try { await INSTALL_PROMPT.userChoice; } catch (e) { } INSTALL_PROMPT = null; closeModal(); render(); },
+  hideInstall: () => { S.hideInstall = true; save(); render(); },
   pickCourse: el => switchCourse(el.dataset.c),
   onbDone: () => { S.name = ($('#onb-name').value || '').trim(); S.onboarded = true; save(); closeModal(); render(); },
   // leçon
@@ -2663,6 +2701,8 @@ loadCourse(S.course || 'en');
 checkStreak(); settleLeague(); ensureQuests(); render();
 if (!S.onboarded) onboarding();
 initCloud();
+// Fonctionnement hors ligne + mises à jour automatiques (site publié uniquement)
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !EMBED) navigator.serviceWorker.register('sw.js').catch(() => { });
 </script>
 </body>
 </html>
