@@ -2731,7 +2731,9 @@ function pumpSpeech() {
   clearTimeout(SPK_T); SPK_T = setTimeout(done, 2500 + t.length * 110 * (it.slow ? 1.7 : 1));
   caption(t);
   let fell = false;
-  const fallback = () => { if (fell || finished) return; fell = true; speakTTS(t, it.slow, it.pitch, it.code, done); };
+  // enregistrement qui n'arrive pas (réseau lent, lecture refusée) : on réessaie une fois, puis on passe sans changer de voix
+  // (jamais la voix « robot » du téléphone à la place de celle d'Amara)
+  const fallback = () => { if (fell || finished) return; fell = true; if (url && PLAYER) setTimeout(() => { if (!finished && SPK === it) playClip(url + (url.includes('?') ? '' : '?r=1'), it.slow, () => done(), done); }, 300); else speakTTS(t, it.slow, it.pitch, it.code, done); };
   const lipUrl = url && PLAYER && !it.slow ? lipFor(url) : null;
   if (lipUrl) { clearTimeout(TALK_OFF_T); prepareLip(lipUrl, v => { if (SPK !== it || finished) return; if (v) playLip(v, done, () => playClip(url, it.slow, fallback, done)); else playClip(url, it.slow, fallback, done); }); }
   else if (url && PLAYER) playClip(url, it.slow, fallback, done); else speakTTS(t, it.slow, it.pitch, it.code, done);
