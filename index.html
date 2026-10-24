@@ -3413,10 +3413,10 @@ function speechStart(lip) {
   cutTo(talk, null, cur && cur.classList.contains('st-lip') ? talkTimeOf(cur) : matchTime('idle', 'talk', cur ? cur.currentTime : 0), seq);
 }
 const shownVideo = () => $('#stage video.show');
-/* les vidéos synchronisées partent de l'image 0 de la vidéo de parole, lue à l'endroit puis à l'envers (14,6 s) */
+/* les vidéos synchronisées partent de l'image 0 de la vidéo de parole, lue à l'endroit puis à l'envers (14,5 s) */
 function talkTimeOf(v) {
   if (!v) return 0; if (!v.classList.contains('st-lip')) return v.currentTime;
-  const D = 7.3, t = v.currentTime % (2 * D); return t <= D ? t : 2 * D - t;
+  const D = 218 / 30, t = v.currentTime % (2 * D); return t <= D ? t : 2 * D - t; // aller-retour de 436 images
 }
 /* ---------- Lèvres synchronisées (phrases principales, voix de Bella) ---------- */
 const LIPS = new Set(typeof LIPS_INDEX !== 'undefined' ? LIPS_INDEX.split(',') : []);
