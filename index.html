@@ -533,6 +533,28 @@ body.stage-on .unit-head{top:0}
 .step.cur{outline:3px solid rgba(201,169,122,.55);outline-offset:3px;animation:bob 1.6s ease-in-out infinite}
 @media (min-width:601px){body.stage-on{background:transparent}}
 body.stage-on #app{min-height:0;height:auto}
+
+/* la prof libre : aucune pastille sur son image */
+#stage .st-tap{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer}
+#stage .st-img{animation:breathe 9s ease-in-out infinite;transform-origin:50% 20%}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025) translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){#stage .st-img{animation:none}}
+body.stage-on #main::before{margin-bottom:10px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px}
+.sh-prof{display:flex;flex-direction:column;align-items:flex-start;text-align:left;color:var(--ink);min-width:0}
+.sh-prof b{font-family:var(--serif);font-weight:500;font-size:22px;line-height:1.05}
+.sh-prof small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sheet-head .topbar{position:static;display:flex;gap:2px;padding:0;margin:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;flex:none}
+.sheet-head .stat{font-size:14px;padding:5px 7px;border-radius:999px}
+.sheet-head .stat.flag .cname{display:none}
+.say-bubble{position:relative;margin:2px 18px 6px;padding:10px 14px;border-radius:18px;background:var(--glass);border:1px solid var(--glass-b);color:var(--ink);
+  font-family:var(--serif);font-size:20px;line-height:1.2;display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.say-bubble.on{display:flex;animation:popin .2s}
+.say-bubble:before{content:"";position:absolute;left:34px;top:-8px;border:8px solid transparent;border-bottom-color:var(--glass-b);border-top:0}
+.wave{display:inline-flex;align-items:flex-end;gap:2px;height:16px;flex:none}
+.wave i{display:block;width:3px;border-radius:2px;background:var(--pri);animation:wave 1s ease-in-out infinite}
+.wave i:nth-child(1){height:6px}.wave i:nth-child(2){height:14px;animation-delay:.15s}.wave i:nth-child(3){height:9px;animation-delay:.3s}.wave i:nth-child(4){height:12px;animation-delay:.45s}
+@keyframes wave{50%{transform:scaleY(.4)}}
 </style>
 </head>
 <body>
@@ -1803,7 +1825,7 @@ const PIP_COLORS = {
   pink: { main: '#EC4899', dark: '#BE185D', belly: '#FBCFE8', name: 'Flamant', price: 500 }
 };
 function pip(mood = 'normal', size = 110, cls = '') {
-  if (stageOn() && size >= 50) return `<img class="mini-prof ${cls}" src="prof/rest.jpg" alt="" style="width:${size}px;height:${size}px">`;
+  if (stageOn()) return '';
   const c = PIP_COLORS[S.pip] || PIP_COLORS.blue;
   let eyes;
   if (mood === 'happy') eyes = `<path d="M37 55 Q46 44 55 55" stroke="#1E1B3A" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M65 55 Q74 44 83 55" stroke="#1E1B3A" stroke-width="5" fill="none" stroke-linecap="round"/>`;
@@ -1892,7 +1914,7 @@ function render() {
   $('.side').innerHTML = `<div class="logo">${pip('happy', 40)}<span>SpeakUp</span></div>` +
     NAV.map(([k, i, l]) => `<button class="nav-btn ${VIEW === k ? 'on' : ''}" data-act="nav" data-v="${k}"><span class="ni emoji">${i}</span><span class="nl">${l}</span></button>`).join('');
   const views = { learn: viewLearn, stories: viewStories, sounds: viewSounds, practice: viewPractice, league: viewLeague, quests: viewQuests, shop: viewShop, profile: viewProfile };
-  $('#main').innerHTML = (stageOn() ? '' : topbar()) + (stageOn() && VIEW === 'learn' ? viewLearnStage() : views[VIEW]());
+  $('#main').innerHTML = (stageOn() ? sheetHead() : topbar()) + (stageOn() && VIEW === 'learn' ? viewLearnStage() : views[VIEW]());
   $('#rail').innerHTML = stageOn() ? '' : railHTML();
   if (VIEW === 'learn' && !stageOn()) { const c = $('.node.cur'); if (c && !render._scrolled && currentKey() !== '0-0') { render._scrolled = true; c.scrollIntoView({ block: 'center' }); } }
   if (VIEW === 'learn' && stageOn() && !render._scrolled) { const c = $('.chapter.cur'); render._scrolled = true; if (c && currentKey() !== '0-0') c.scrollIntoView({ block: 'start' }); }
@@ -2347,7 +2369,7 @@ function noHearts() {
 function lessonShell(inner, foot) {
   const pct = L.ex.length ? L.i / L.ex.length * 100 : 0;
   const hearts = L.jumpLives != null ? `🛡️ ${L.jumpLives}` : HEARTLESS.has(L.kind) || unlimited() ? '❤️ ∞' : `❤️ ${S.hearts}`;
-  $('#overlay').innerHTML = `<div class="l-top"><button class="x" data-act="quitLesson" aria-label="Quitter">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="l-hearts emoji">${hearts}</span></div>
+  $('#overlay').innerHTML = `<div class="l-top"><button class="x" data-act="quitLesson" aria-label="Quitter">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="l-hearts emoji">${hearts}</span></div>${sayBubble()}
     <div class="l-body">${inner}</div><div class="l-foot" id="lfoot">${foot}</div>`;
 }
 function footAnswer(skipLabel = 'Passer') {
@@ -2366,7 +2388,6 @@ function teacher(size, mood = 'talk') {
   return `<div class="prof" style="--s:${size}px"><img src="prof/rest.jpg" alt="Ta prof"><video muted playsinline loop preload="auto"><source src="prof/face.mp4" type="video/mp4"><source src="prof/face.webm" type="video/webm"></video></div>`;
 }
 function profTalk(on) {
-  if (!on) setTimeout(() => { const st = $('#stage'); if (st && !st.classList.contains('talking')) st.classList.remove('captioned'); }, 1600);
   document.querySelectorAll('.prof, #stage').forEach(p => {
     const v = p.querySelector('video'); if (!v) return;
     if (on) {
@@ -2386,21 +2407,24 @@ function renderStage() {
   if (!stageOn()) { st.innerHTML = ''; return; }
   if (!st.dataset.ready) {
     st.dataset.ready = '1';
-    st.innerHTML = `<img class="st-img" src="prof/full.jpg" alt="Amara, ta prof">
-      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video>
-      <div class="st-fade"></div><div class="st-top"></div>
-      <button class="st-name" data-act="profVideo" aria-label="Écouter le message d'Amara"><span>Amara<br>Diallo</span><small class="st-sub"></small></button>
-      <div class="st-caption" aria-live="polite"></div>`;
+    st.innerHTML = `<button class="st-tap" data-act="profVideo" aria-label="Écouter le message d'Amara, ta prof">
+      <img class="st-img" src="prof/full.jpg" alt="Amara, ta prof, qui te regarde">
+      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video></button>`;
   }
-  $('.st-top', st).innerHTML = topbar();
-  $('.st-sub', st).textContent = `Ta prof de ${COURSE.adj} · ▶ son message`;
+}
+/* en-tête du panneau : nom de la prof + drapeau, série, gemmes, cœurs (déplacés hors de son image) */
+function sheetHead() {
+  return `<div class="sheet-head"><button class="sh-prof" data-act="profVideo"><b>Amara Diallo</b><small>Ta prof de ${esc(COURSE.adj)} · ▶ son message</small></button>${topbar()}</div>`;
 }
 let CAP_T = null;
 function caption(text) {
-  const st = $('#stage'); if (!stageOn() || !st || !(L || ST) || !text) return;
-  const c = $('.st-caption', st); c.textContent = text; st.classList.add('captioned');
-  clearTimeout(CAP_T); CAP_T = setTimeout(() => st.classList.remove('captioned'), Math.min(9000, 2500 + text.length * 90));
+  const b = $('#sayb'); if (!stageOn() || !b || !text) return;
+  const listening = L && L.ex[L.i] && (LISTENY.has(L.ex[L.i].t) || L.phase === 'answer' && L.ex[L.i].t === 'speak' && false);
+  b.innerHTML = listening && L.phase === 'answer' ? '<span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Amara parle… écoute bien' : `<span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span> ${esc(text)}`;
+  b.classList.add('on');
+  clearTimeout(CAP_T); CAP_T = setTimeout(() => b.classList.remove('on'), Math.min(9000, 2500 + text.length * 90));
 }
+const sayBubble = () => stageOn() ? '<div class="say-bubble" id="sayb" aria-live="polite"></div>' : '';
 const STEP_ICON = { lesson: '◆', chest: '🎁', review: '↻', trophy: '🏆' };
 function viewLearnStage() {
   const ck = currentKey(), cu = curUnit(), U = UNITS[cu];
@@ -2784,7 +2808,7 @@ function exitLesson() {
   if (REC) { try { REC.abort(); } catch (e) { } REC = null; }
   try { speechSynthesis.cancel(); } catch (e) { }
   L = null; $('#overlay').classList.remove('on'); $('#overlay').innerHTML = ''; document.body.style.overflow = ''; document.body.classList.remove('in-lesson');
-  const cap = $('#stage .st-caption'); if (cap) cap.textContent = ''; const st = $('#stage'); if (st) st.classList.remove('captioned');
+
   render();
 }
 
@@ -2801,7 +2825,7 @@ function startStory(id) {
 }
 function storyShell(foot) {
   const pct = ST.i / ST.s.lines.length * 100;
-  $('#overlay').innerHTML = `<div class="l-top"><button class="x" data-act="exitLesson" aria-label="Quitter">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="emoji" style="font-size:24px">${ST.s.e}</span></div>
+  $('#overlay').innerHTML = `<div class="l-top"><button class="x" data-act="exitLesson" aria-label="Quitter">✕</button><div class="bar"><i style="width:${pct}%"></i></div><span class="emoji" style="font-size:24px">${ST.s.e}</span></div>${sayBubble()}
     <div class="l-body" id="stBody"><h2 style="text-align:center"><span class="emoji">${ST.s.e}</span> ${esc(ST.s.title)}</h2><p class="muted" style="text-align:center">Touche une bulle pour voir la traduction · 🔊 pour réécouter</p>${ST.html}</div>
     <div class="l-foot" id="lfoot">${foot}</div>`;
   const b = $('#stBody'); const ls = $$('.st-line', b); if (ls.length && ST.phase !== 'q') ls[ls.length - 1].classList.add('new'); b.scrollTop = b.scrollHeight;
