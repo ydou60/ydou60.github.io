@@ -1438,8 +1438,13 @@ function voiceScore(v, want) {
   const id = (v.name + ' ' + v.voiceURI).toLowerCase(); let sc = 0;
   if (/premium/.test(id)) sc += 50; else if (/enhanced|amélioré/.test(id)) sc += 35;
   if (/neural|natural|online/.test(id)) sc += 30; if (/google/.test(id)) sc += 15;
-  if (/\b(ava|zoe|evan|nathan|joelle|noelle|samantha|daniel|serena|jamie|aria|jenny|guy|sonia|libby|ryan|monica|paulina|jorge|alice|federica|luca|anna|petra|markus|luciana|felipe|joana|tingting|meijia|lili|yu-shu|maged|laila|tarik)\b/.test(id)) sc += 6;
-  if (/compact|eloquence|grandma|grandpa|bad news|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|kathy|bahh|rocko|shelley|sandy|flo|reed/.test(id)) sc -= 40;
+  // voix jeunes et douces en priorité, du type choisi (jeune femme / jeune homme)
+  const F = /\b(ava|zoe|nicky|allison|samantha|serena|kate|stephanie|jenny|aria|emma|michelle|sonia|libby|maisie|paulina|m[oó]nica|marisol|elvira|alice|federica|elsa|isabella|anna|petra|helena|katja|amala|luciana|fernanda|francisca|joana|raquel|laila|mariam|salma|zariyah|tingting|meijia|lili|xiaoxiao|xiaoyi|yu-shu|zuri|rehema)\b|\bfemale\b|google us english|google uk english female|google español|google italiano|google deutsch|google português/;
+  const M = /\b(evan|nathan|aaron|alex|tom|arthur|oliver|guy|ryan|andrew|brian|christopher|eric|davis|jorge|diego|juan|[aá]lvaro|alvaro|luca|giorgio|benigno|markus|yannick|conrad|killian|felipe|ant[oô]nio|duarte|maged|tarik|hamed|yunxi|yunyang|li-mu|daudi|rafiki)\b|\bmale\b|google uk english male/;
+  const male = S.settings.voiceGender === 'm';
+  if ((male ? M : F).test(id)) sc += 25; else if ((male ? F : M).test(id)) sc -= 12;
+  if (/eloquence|grandma|grandpa|bad news|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|kathy|bahh|rocko|shelley|sandy|flo|reed|eddy/.test(id)) sc -= 60;
+  if (/compact/.test(id)) sc -= 8;
   if (v.lang.replace('_', '-').toLowerCase() === want) sc += 10;
   return sc;
 }
@@ -1460,12 +1465,13 @@ function voiceKind() {
   return v.lang.toLowerCase().startsWith((COURSE.tts || '--').slice(0, 2).toLowerCase()) ? 'native' : 'approx';
 }
 const canListen = () => voiceKind() !== 'none';
-function say(text, slow = false, pitch = 1) {
+function say(text, slow = false, pitch) {
+  if (pitch == null) pitch = S.settings.voiceGender === 'm' ? 1 : 1.08; // un peu plus aiguë et posée = plus douce
   if (!('speechSynthesis' in window)) return;
   try {
     const u = new SpeechSynthesisUtterance(disp(first(text)));
     const v = pickVoice(); u.lang = v ? v.lang : ttsLang(); if (v) u.voice = v;
-    u.rate = (slow ? 0.6 : 0.95) * S.settings.rate; u.pitch = pitch;
+    u.rate = (slow ? 0.6 : 0.9) * S.settings.rate; u.pitch = pitch;
     if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(() => speechSynthesis.speak(u), 80); } // Safari iOS perd la phrase sinon
     else speechSynthesis.speak(u);
   } catch (e) { }
@@ -1912,6 +1918,7 @@ function viewProfile() {
     <div class="set-row"><span>Lecture audio automatique</span>${sw('autoplay', st.autoplay)}</div>
     <div class="set-row"><div><span>Exercices oraux (micro)</span><div class="muted" style="font-size:13px">${SR && !EMBED ? 'Reconnaissance vocale : tu es corrigé automatiquement' : 'Mode « écoute et répète » : tu t\'auto-évalues'}</div></div>${sw('mic', st.mic)}</div>
     <div class="set-row"><div><span>Cœurs illimités</span><div class="muted" style="font-size:13px">Apprends sans pénalité d'erreur</div></div>${sw('unlimited', st.unlimited)}</div>
+    <div class="set-row"><span>Type de voix</span><select data-set="voiceGender"><option value="f" ${st.voiceGender !== 'm' ? 'selected' : ''}>👩 Jeune femme</option><option value="m" ${st.voiceGender === 'm' ? 'selected' : ''}>👨 Jeune homme</option></select></div>
     <div class="set-row"><div><span>Voix (${esc(COURSE.adj)})</span><div class="muted" style="font-size:13px">Les meilleures voix sont en tête de liste.</div></div><select data-set="voice" style="max-width:55%">${voiceOptions().length ? `<option value="">Automatique (la plus naturelle)</option>` + voiceOptions().map(v => `<option value="${esc(v.voiceURI)}" ${(S.settings.voices || {})[COURSE.code] === v.voiceURI ? 'selected' : ''}>${esc(v.name)} — ${esc(v.lang)}</option>`).join('') : '<option>Aucune voix trouvée</option>'}</select></div>
     <div class="set-row" style="display:block"><b>🎧 Avoir une voix très naturelle sur iPhone</b><ol class="muted" style="margin:6px 0 0;padding-left:20px;line-height:1.6">
       <li>Ouvre <b>Réglages → Accessibilité → Contenu énoncé → Voix</b>.</li>
@@ -2403,7 +2410,7 @@ function storyStep() {
     const [who, en, fr] = item.l;
     ST.html += lineHTML(who, en, fr); ST.phase = 'next';
     storyShell(`<div class="l-foot-in"><span></span><button class="btn pri" id="contBtn" data-act="storyNext">Continuer</button></div>`);
-    say(en, false, (CHARACTERS[who] || {}).pitch || 1);
+    say(en, false, (CHARACTERS[who] || {}).pitch);
     ST.phase = 'next';
   } else if (item.q === 'choice') {
     ST.phase = 'q'; ST.sel = null;
@@ -2531,7 +2538,7 @@ const ACT = {
       <button class="btn pri wide" data-act="startJump" data-u="${u}">Commencer le test</button></div>`);
   },
   startJump: el => { const u = +el.dataset.u; startLesson({ kind: 'jump', u, ex: buildJump(u) }); },
-  say: (el, e) => { e.stopPropagation(); const who = el.dataset.who; say(el.dataset.t, !!el.dataset.slow, who && CHARACTERS[who] ? CHARACTERS[who].pitch : 1); },
+  say: (el, e) => { e.stopPropagation(); const who = el.dataset.who; say(el.dataset.t, !!el.dataset.slow, who && CHARACTERS[who] ? CHARACTERS[who].pitch : undefined); },
   hint: (el, e) => { e.stopPropagation(); showHint(el); },
   story: el => startStory(el.dataset.id),
   sound: el => soundDetail(el.dataset.id),
@@ -2632,6 +2639,7 @@ document.addEventListener('change', e => {
   }
   if (el.id === 'set-name') { S.name = el.value.trim(); save(); render(); return; }
   const k = el.dataset.set; if (!k) return;
+  if (k === 'voiceGender') { S.settings.voiceGender = el.value; S.settings.voices = {}; save(); render(); ACT['test-voice'](); return; }
   if (k === 'voice') { S.settings.voices = { ...(S.settings.voices || {}), [COURSE.code]: el.value }; save(); ACT['test-voice'](); return; }
   if (k === 'goal') S.goal = +el.value; else if (k === 'rate') S.settings.rate = +el.value; else S.settings[k] = el.value;
   save(); render();
