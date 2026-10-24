@@ -2693,7 +2693,7 @@ function clipFor(text, group, code) {
 }
 const PLAYER = typeof Audio !== 'undefined' ? new Audio() : null;
 if (PLAYER) {
-  PLAYER.addEventListener('playing', () => { if (PLAYER.src.startsWith('data:')) return; const lip = LIP_PENDING; LIP_PENDING = null; if (lip && stageOn()) speechStart(lip); else profTalk(true); });
+  PLAYER.addEventListener('playing', () => { if (!PLAYER.src.startsWith('data:')) profTalk(true); });
   ['pause', 'ended', 'error'].forEach(ev => PLAYER.addEventListener(ev, () => profTalk(false)));
 }
 function playClip(url, slow, fallback, done) {
@@ -2718,6 +2718,7 @@ const sayIdle = t => say(t, false, undefined, undefined, null, undefined, { idle
 function stopSpeech() {
   SPQ = []; SPK = null; clearTimeout(SPK_T);
   try { if (PLAYER) PLAYER.pause(); } catch (e) { } try { speechSynthesis.cancel(); } catch (e) { }
+  $$('#stage .st-lip').forEach(v => { v.onended = null; delete v.dataset.speaking; v.pause(); v.muted = true; });
   profTalk(false);
 }
 function pumpSpeech() {
@@ -2732,7 +2733,7 @@ function pumpSpeech() {
   let fell = false;
   const fallback = () => { if (fell || finished) return; fell = true; speakTTS(t, it.slow, it.pitch, it.code, done); };
   const lipUrl = url && PLAYER && !it.slow ? lipFor(url) : null;
-  if (lipUrl) { clearTimeout(TALK_OFF_T); prepareLip(lipUrl, v => { if (SPK !== it || finished) return; LIP_PENDING = v; playClip(url, it.slow, fallback, done); }); }
+  if (lipUrl) { clearTimeout(TALK_OFF_T); prepareLip(lipUrl, v => { if (SPK !== it || finished) return; if (v) playLip(v, done, () => playClip(url, it.slow, fallback, done)); else playClip(url, it.slow, fallback, done); }); }
   else if (url && PLAYER) playClip(url, it.slow, fallback, done); else speakTTS(t, it.slow, it.pitch, it.code, done);
 }
 function speakTTS(text, slow = false, pitch, code, done) {
@@ -2767,6 +2768,7 @@ function tone(freqs, dur = .12, type = 'sine', gap = .09, vol = .14) {
 function unlockAudio() { // iOS : le son doit être « débloqué » par un premier toucher
   try {
     if (PLAYER) { PLAYER.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YQAAAAA='; const pr = PLAYER.play(); if (pr && pr.catch) pr.catch(() => { }); }
+    $$('#stage .st-lip').forEach(v => { delete v.dataset.src; delete v.dataset.ok; v.src = 'prof/silence.mp4'; v.muted = false; const pr = v.play(); if (pr && pr.then) pr.then(() => v.pause()).catch(() => { }); });
     if ('speechSynthesis' in window) { loadVoices(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
     AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
   } catch (e) { }
@@ -3408,7 +3410,7 @@ function speechStart(lip) {
   clearTimeout(TALK_OFF_T);
   const st = $('#stage'), talk = st && st.querySelector('.st-vid'); if (!talk) { setTalking(true); return; }
   const cur = shownVideo(), seq = ++TALK_SEQ; TALKING = true; st.classList.add('talking');
-  if (lip) { try { lip.currentTime = PLAYER ? PLAYER.currentTime : 0; } catch (e) { } cutTo(lip, null, null, seq); lipSync(lip); prefetchNextLip(); return; }
+  if (lip) { cutTo(lip, null, null, seq); prefetchNextLip(); return; }
   if (cur === talk) return; // elle parlait déjà : on continue sans coupure
   cutTo(talk, null, cur && cur.classList.contains('st-lip') ? talkTimeOf(cur) : matchTime('idle', 'talk', cur ? cur.currentTime : 0), seq);
 }
@@ -3420,7 +3422,7 @@ function talkTimeOf(v) {
 }
 /* ---------- Lèvres synchronisées (phrases principales, voix de Bella) ---------- */
 const LIPS = new Set(typeof LIPS_INDEX !== 'undefined' ? LIPS_INDEX.split(',') : []);
-let LIP_PENDING = null, LIP_TURN = 0;
+let LIP_TURN = 0;
 function lipFor(url) {
   if (!LIPS.size || !stageOn()) return null;
   const m = /audio\/fr-sub\/af_bella\/([0-9a-f]{8})\.mp3$/.exec(url);
@@ -3436,8 +3438,8 @@ function prepareLip(src, ready) {
 }
 /* Safari (iPhone) ne charge une vidéo que si on la lit : on la lance en silence, puis on la remet au début */
 function loadLip(v, src, cb) {
-  if (v.dataset.src !== src) { v.dataset.src = src; delete v.dataset.ok; v.preload = 'auto'; v.src = src; try { v.load(); } catch (e) { } }
-  const ok = () => { if (v.dataset.src !== src) return; v.dataset.ok = '1'; if (!v.classList.contains('show')) { v.pause(); try { v.currentTime = 0; } catch (e) { } } if (cb) { const c = cb; cb = null; c(true); } };
+  if (v.dataset.src !== src) { v.dataset.src = src; delete v.dataset.ok; v.muted = true; v.preload = 'auto'; v.src = src; try { v.load(); } catch (e) { } }
+  const ok = () => { if (v.dataset.src !== src) return; v.dataset.ok = '1'; if (!v.dataset.speaking && !v.classList.contains('show')) { v.pause(); try { v.currentTime = 0; } catch (e) { } } if (cb) { const c = cb; cb = null; c(true); } };
   v.addEventListener('playing', ok, { once: true }); v.addEventListener('error', () => { if (cb) { const c = cb; cb = null; c(false); } }, { once: true });
   const pr = v.play(); if (pr && pr.catch) pr.catch(() => { v.addEventListener('loadeddata', ok, { once: true }); });
 }
@@ -3448,20 +3450,17 @@ function prefetchNextLip() {
   const v = src && $$('#stage .st-lip').find(e => !e.classList.contains('show'));
   if (v && v.dataset.src !== src) loadLip(v, src, null);
 }
-/* la voix donne le tempo : la vidéo est recalée en continu sur le son */
-let LIP_RAF = null;
-function lipSync(v) {
-  cancelAnimationFrame(LIP_RAF); let lastSeek = 0;
-  const tick = () => {
-    if (!v.classList.contains('show') || !PLAYER || PLAYER.paused || PLAYER.ended) return;
-    if (v.ended || PLAYER.currentTime >= (v.duration || 99) - 0.06) return; // fin de phrase : on garde la dernière image, jamais de redémarrage
-    if (v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); }
-    const d = v.currentTime - PLAYER.currentTime, now = performance.now();
-    if (Math.abs(d) > 0.05 && now - lastSeek > 600) { lastSeek = now; try { v.currentTime = PLAYER.currentTime; } catch (e) { } }
-    LIP_RAF = requestAnimationFrame(tick);
-  };
-  const pr = v.play(); if (pr && pr.catch) pr.catch(() => { });
-  LIP_RAF = requestAnimationFrame(tick);
+/* une phrase synchronisée : la vidéo contient la voix, image et son sortent du même lecteur (aucun décalage possible) */
+function playLip(v, done, fail) {
+  let ended = false; const finish = () => { if (ended) return; ended = true; v.onended = null; delete v.dataset.speaking; profTalk(false); done(); };
+  v.dataset.speaking = '1';
+  try { v.currentTime = 0; } catch (e) { }
+  v.muted = false; v.volume = 1; v.playbackRate = 1; v.onended = finish;
+  clearTimeout(SPK_T); SPK_T = setTimeout(finish, ((v.duration || 8) + 3) * 1000); // filet de sécurité si la lecture se bloque
+  const pr = v.play();
+  const ok = () => speechStart(v);
+  if (pr && pr.then) pr.then(ok).catch(() => { v.muted = true; v.onended = null; delete v.dataset.speaking; clearTimeout(SPK_T); fail(); }); // son refusé : voix habituelle
+  else ok();
 }
 let TALK_SEQ = 0;
 function matchTime(from, to, t) {
