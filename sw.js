@@ -1,5 +1,5 @@
 // SpeakUp : réseau d'abord (toujours la dernière version), copie locale si pas d'internet
-const CACHE = 'speakup-v4';
+const CACHE = 'speakup-v5';
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './apple-touch-icon.png', './manifest.webmanifest']))); });
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {

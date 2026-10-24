@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SpeakUp — Apprends les langues</title>
+<title>SpeakUp — Langues et matières avec Amara</title>
 <meta name="theme-color" content="#E7E1D9">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -580,6 +580,44 @@ body.stage-on.kb-open .l-foot-in{flex-wrap:nowrap}
 .say-bubble small.tr{font-family:'Jost',sans-serif;font-size:13px;color:var(--muted);margin-left:auto;white-space:nowrap}
 .say-bubble.cheer.good{border-color:rgba(110,156,116,.7);background:var(--ok-bg)}
 .say-bubble.cheer.bad{border-color:rgba(190,100,90,.6);background:var(--bad-bg)}
+
+/* matières : niveaux, cours, figures */
+.lvl-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 14px}
+.lvl{border:1px solid var(--glass-b);background:var(--glass);border-radius:16px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink);min-width:0}
+.lvl b{font-weight:600;font-size:13px;letter-spacing:.02em}
+.lvl small{font-size:10.5px;color:var(--muted);line-height:1.15;text-align:center}
+.lvl.on{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 6px 16px rgba(120,90,50,.25)}
+.lvl.on small{color:rgba(255,255,255,.85)}
+.cours-card{background:var(--glass);border:1px solid var(--glass-b);border-radius:22px;padding:16px 18px;margin:4px 0 12px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.cours-emoji{font-size:44px;line-height:1}
+.cours-txt{font-size:18px;line-height:1.5;margin:0}
+.subj-fig{display:flex;justify-content:center;margin:2px 0 14px}
+.subj-fig svg{max-width:100%;height:auto;background:var(--glass);border:1px solid var(--glass-b);border-radius:18px;padding:6px}
+.subj-fig.sm svg{width:150px}
+.count-fig{font-size:34px;line-height:1.3;text-align:center;letter-spacing:4px;max-width:340px;margin:0 auto}
+body.stage-on.kb-open .subj-fig svg{max-height:110px;width:auto}
+body.stage-on.kb-open .count-fig{font-size:22px}
+body.stage-on.kb-open .l-body .mic{display:none}
+/* cours d'Amara en diapositives */
+.cours-dots{display:flex;justify-content:center;gap:6px;margin:0 0 10px}
+.cours-dots i{width:22px;height:5px;border-radius:3px;background:var(--line)}
+.cours-dots i.on{background:var(--pri);width:34px}.cours-dots i.done{background:var(--pri);opacity:.45}
+.cours-head{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--pri);display:flex;align-items:center;gap:8px}
+.cours-card.slide-3{border-color:rgba(190,110,80,.5)}
+.cours-ex-t{font-weight:600;font-size:18px;margin:0}
+.cours-steps{text-align:left;margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;line-height:1.45;width:100%}
+.cours-steps li{opacity:.12;transform:translateY(4px);transition:opacity .45s,transform .45s}
+.cours-steps li.on{opacity:1;transform:none}
+.hint-btn{display:block;margin:0 auto 12px}
+.hint-box{margin:0 0 12px;padding:12px 14px;border-radius:16px;background:var(--glass);border:1px dashed var(--pri);font-size:16px;line-height:1.45}
+.fb-why{margin-top:6px;font-size:15px;line-height:1.4}
+.method-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;margin:6px 0 4px;border-radius:20px;background:var(--glass);border:1px solid var(--glass-b);color:var(--ink)}
+.method-card .emoji{font-size:28px}.method-card span:nth-child(2){flex:1;display:flex;flex-direction:column}.method-card small{color:var(--muted)}
+.guide-lesson{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.gl{background:var(--glass);border:1px solid var(--glass-b);border-radius:16px;padding:12px 14px}
+.gl p,.gl ol{margin:6px 0 0;line-height:1.45}.gl ol{padding-left:20px}
+.gl.warn{border-color:rgba(190,110,80,.5)}
+body.stage-on.kb-open .hint-btn,body.stage-on.kb-open .hint-box{display:none}
 </style>
 </head>
 <body>
@@ -1526,6 +1564,849 @@ const CHEERS_FR = {
   ko: ["Réessaie !", "Presque ! Réessaie.", "Ne t'inquiète pas, continue !", "Pas tout à fait, tu peux y arriver !", "Ce n'est pas grave, écoute bien la bonne réponse."]
 };
 </script>
+<script>/* =====================================================================
+   SpeakUp — matières générales (la prof Amara enseigne en français)
+   Chaque matière : 4 niveaux, des chapitres avec un petit cours et des questions.
+   Question : { q (affichée), say (lue à voix haute, si différente), o (choix, le 1er est le bon) ou ans (réponses acceptées),
+                fig (dessin), ex (explication), num (réponse numérique), tol (tolérance) }
+   Les questions de maths et de géométrie sont générées une fois pour toutes (graine fixe),
+   pour qu'Amara puisse les lire avec sa voix enregistrée.
+   ===================================================================== */
+const LEVELS = [
+  { name: 'Débutant', desc: 'Primaire' }, { name: 'Intermédiaire', desc: 'Fin du primaire, collège' },
+  { name: 'Avancé', desc: 'Collège, lycée' }, { name: 'Expert', desc: 'Lycée et au-delà' }
+];
+
+/* ---------- outils de génération ---------- */
+function rngFor(key) { let h = 2166136261; for (const ch of key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return mulberry32(h); }
+const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+const pickR = (r, arr) => arr[Math.floor(r() * arr.length)];
+const nf = x => String(x).replace('.', ','); // écriture française des décimaux
+const sayNum = x => String(x).replace('-', 'moins ').replace('.', ' virgule ');
+function numQ(q, say, ans, ex, extra) { return Object.assign({ q, say, ans: [String(ans), nf(ans)], num: ans, ex }, extra || {}); }
+function uniqOpts(correct, wrongs) { const seen = new Set([String(correct)]); const w = []; for (const x of wrongs) { const k = String(x); if (!seen.has(k)) { seen.add(k); w.push(x); } } return [correct, ...w.slice(0, 3)]; }
+
+/* ---------- dessins (SVG) pour la géométrie ---------- */
+const SVG_STYLE = 'fill="rgba(201,169,122,.22)" stroke="#8C6F4A" stroke-width="3" stroke-linejoin="round"';
+const svg = (inner, w = 220, h = 160) => `<svg class="fig" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="Figure">${inner}</svg>`;
+const lbl = (x, y, t, a = 'middle') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="15" font-family="Jost, sans-serif" fill="#3B342E">${t}</text>`;
+function polySvg(n) {
+  const pts = []; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n; pts.push(`${(110 + 62 * Math.cos(a)).toFixed(1)},${(82 + 62 * Math.sin(a)).toFixed(1)}`); }
+  return svg(`<polygon points="${pts.join(' ')}" ${SVG_STYLE}/>`);
+}
+const SHAPES = {
+  carré: () => svg(`<rect x="55" y="25" width="110" height="110" ${SVG_STYLE}/>`),
+  rectangle: () => svg(`<rect x="25" y="40" width="170" height="85" ${SVG_STYLE}/>`),
+  triangle: () => polySvg(3), cercle: () => svg(`<circle cx="110" cy="80" r="62" ${SVG_STYLE}/>`),
+  losange: () => svg(`<polygon points="110,12 180,80 110,148 40,80" ${SVG_STYLE}/>`),
+  pentagone: () => polySvg(5), hexagone: () => polySvg(6), octogone: () => polySvg(8)
+};
+function rectSvg(L, l, unit = 'cm') { return svg(`<rect x="30" y="35" width="160" height="90" ${SVG_STYLE}/>${lbl(110, 26, `${L} ${unit}`)}${lbl(200, 85, `${l} ${unit}`, 'start')}`, 260, 140); }
+function squareSvg(c, unit = 'cm') { return svg(`<rect x="60" y="25" width="100" height="100" ${SVG_STYLE}/>${lbl(110, 17, `${c} ${unit}`)}`, 220, 140); }
+function rightTriSvg(a, b, c, unit = 'cm') {
+  return svg(`<polygon points="40,130 40,30 190,130" ${SVG_STYLE}/><rect x="40" y="114" width="16" height="16" fill="none" stroke="#8C6F4A" stroke-width="2"/>${lbl(32, 85, a ? `${a} ${unit}` : '?', 'end')}${lbl(115, 152, b ? `${b} ${unit}` : '?')}${lbl(125, 72, c ? `${c} ${unit}` : '?', 'start')}`, 240, 160);
+}
+function angleSvg(deg) {
+  const r = 95, a = deg * Math.PI / 180, x = 40 + r * Math.cos(a), y = 130 - r * Math.sin(a);
+  const arc = deg === 90 ? `<rect x="40" y="108" width="22" height="22" fill="none" stroke="#B0763A" stroke-width="2"/>` : `<path d="M ${40 + 26} 130 A 26 26 0 ${deg > 180 ? 1 : 0} 0 ${(40 + 26 * Math.cos(a)).toFixed(1)} ${(130 - 26 * Math.sin(a)).toFixed(1)}" fill="none" stroke="#B0763A" stroke-width="2"/>`;
+  return svg(`<line x1="40" y1="130" x2="200" y2="130" stroke="#8C6F4A" stroke-width="3"/><line x1="40" y1="130" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#8C6F4A" stroke-width="3"/>${arc}`, 240, 150);
+}
+const circleSvg = r => svg(`<circle cx="110" cy="80" r="62" ${SVG_STYLE}/><line x1="110" y1="80" x2="172" y2="80" stroke="#B0763A" stroke-width="2"/>${lbl(141, 72, `r = ${r} cm`)}`);
+function countFig(e, n) { return `<div class="count-fig emoji">${Array(n).fill(e).join(' ')}</div>`; }
+
+/* ---------- générateurs de questions ---------- */
+const OBJ = [['🍎', 'pommes'], ['⭐', 'étoiles'], ['🐟', 'poissons'], ['🎈', 'ballons'], ['🌸', 'fleurs'], ['🚗', 'voitures'], ['🐱', 'chats'], ['🍪', 'biscuits']];
+const NAMES_FR = ['Léa', 'Hugo', 'Inès', 'Lucas', 'Jade', 'Noah', 'Chloé', 'Adam', 'Amara', 'Yanis'];
+const GEN = {
+  add20: r => { const a = ri(r, 1, 10), b = ri(r, 1, 10), big = Math.max(a, b), sm = Math.min(a, b);
+    return numQ(`Combien font ${a} + ${b} ?`, `Combien font ${a} plus ${b} ?`, a + b, a + b > 10 && big < 10 ? `Passe par 10 : ${big} + ${10 - big} = 10, puis 10 + ${sm - (10 - big)} = ${a + b}.` : `Pars de ${big} et avance de ${sm} : ${a + b}.`, { hint: `Pars du plus grand nombre, ${big}, et avance de ${sm}.` }); },
+  sub20: r => { const a = ri(r, 6, 20), b = ri(r, 1, a - 1), u = a - 10;
+    return numQ(`Combien font ${a} − ${b} ?`, `Combien font ${a} moins ${b} ?`, a - b, (u > 0 && b > u ? `Passe par 10 : ${a} − ${u} = 10, puis 10 − ${b - u} = ${a - b}.` : `${a} − ${b} = ${a - b}.`) + ` Vérifie : ${a - b} + ${b} = ${a}.`, { hint: `Recule de ${b} à partir de ${a}, ou cherche ce qu'il faut ajouter à ${b} pour arriver à ${a}.` }); },
+  count: r => { const [e, n] = pickR(r, OBJ), k = ri(r, 2, 10); return numQ(`Combien y a-t-il de ${n} ?`, null, k, `Il y en a ${k}.`, { fig: countFig(e, k) }); },
+  compare: r => { let a = ri(r, 1, 99), b = ri(r, 1, 99); if (a === b) b = a + ri(r, 1, 9); return { q: 'Quel nombre est le plus grand ?', o: [String(Math.max(a, b)), String(Math.min(a, b))], ex: `${Math.max(a, b)} est plus grand que ${Math.min(a, b)}.` }; },
+  double: r => { const a = ri(r, 2, 25); return r() < .5 ? numQ(`Quel est le double de ${a} ?`, null, 2 * a, `Le double de ${a}, c'est ${a} + ${a} = ${2 * a}.`) : numQ(`Quelle est la moitié de ${2 * a} ?`, null, a, `La moitié de ${2 * a}, c'est ${a}.`); },
+  mul: r => { const a = ri(r, 2, 10), b = ri(r, 2, 10);
+    return numQ(`Combien font ${a} × ${b} ?`, `Combien font ${a} fois ${b} ?`, a * b, a === 10 || b === 10 ? `Multiplier par 10, c'est ajouter un zéro à droite : ${a * b}.` : a === 2 ? `${a} × ${b}, c'est le double de ${b} : ${b} + ${b} = ${a * b}.` : `${a} × ${b}, ce sont ${a} paquets de ${b}. ${a - 1} × ${b} = ${(a - 1) * b}, et un paquet de plus : ${(a - 1) * b} + ${b} = ${a * b}.`, { hint: a === 10 || b === 10 ? 'Multiplier par 10, c\'est ajouter un zéro à droite.' : a === 2 ? `C'est le double de ${b}.` : `Pense à ${a - 1} × ${b}, puis ajoute encore ${b}.` }); },
+  add3: r => { const a = ri(r, 120, 899), b = ri(r, 15, 99); return r() < .5 ? numQ(`Combien font ${a} + ${b} ?`, `Combien font ${a} plus ${b} ?`, a + b, `${a} + ${b} = ${a + b}`) : numQ(`Combien font ${a} − ${b} ?`, `Combien font ${a} moins ${b} ?`, a - b, `${a} − ${b} = ${a - b}`); },
+  div: r => { const b = ri(r, 2, 9), k = ri(r, 2, 10), a = b * k; return numQ(`Combien font ${a} ÷ ${b} ?`, `Combien font ${a} divisé par ${b} ?`, k, `${a} ÷ ${b} = ${k}, car ${b} × ${k} = ${a}.`, { hint: `Récite la table de ${b} : quel nombre multiplié par ${b} donne ${a} ?` }); },
+  prob: r => {
+    const n = pickR(r, NAMES_FR), a = ri(r, 5, 30), b = ri(r, 2, 15), t = ri(r, 0, 3);
+    if (t === 0) return numQ(`${n} a ${a} billes. Il en gagne ${b}. Combien en a-t-il maintenant ?`, null, a + b, `${a} + ${b} = ${a + b} billes.`);
+    if (t === 1) { const c = a + b; return numQ(`${n} a ${c} euros. Elle dépense ${b} euros. Combien lui reste-t-il ?`, null, c - b, `${c} − ${b} = ${c - b} euros.`); }
+    if (t === 2) { const p = ri(r, 2, 9), k = ri(r, 2, 8); return numQ(`Un paquet contient ${p} gâteaux. Combien de gâteaux y a-t-il dans ${k} paquets ?`, null, p * k, `${k} × ${p} = ${p * k} gâteaux.`); }
+    const g = ri(r, 2, 6), each = ri(r, 2, 8); return numQ(`On partage ${g * each} bonbons entre ${g} enfants. Combien chaque enfant en reçoit-il ?`, null, each, `${g * each} ÷ ${g} = ${each} bonbons chacun.`);
+  },
+  frac: r => {
+    const t = ri(r, 0, 2);
+    if (t === 0) { const d = pickR(r, [4, 5, 6, 8, 10]), a = ri(r, 1, d - 2), b = ri(r, 1, d - a - 1); return { q: `Combien font ${a}/${d} + ${b}/${d} ?`, say: `Combien font ${a} sur ${d} plus ${b} sur ${d} ?`, ans: [`${a + b}/${d}`], ex: `Même dénominateur : on additionne les numérateurs. ${a} + ${b} = ${a + b}, donc ${a + b}/${d}.` }; }
+    if (t === 1) { const [p, q] = pickR(r, [[1, 2], [1, 3], [2, 3], [3, 4], [2, 5], [3, 5], [1, 4]]), k = ri(r, 2, 5); return { q: `Simplifie la fraction ${p * k}/${q * k}.`, say: `Simplifie la fraction ${p * k} sur ${q * k}.`, ans: [`${p}/${q}`], ex: `On divise le numérateur et le dénominateur par ${k} : ${p}/${q}.` }; }
+    const [p, q] = pickR(r, [[1, 2], [1, 4], [3, 4], [1, 3], [2, 3], [1, 5]]), base = q * ri(r, 2, 10); return numQ(`Combien font les ${p}/${q} de ${base} ?`, `Combien font les ${p} sur ${q} de ${base} ?`, base / q * p, `${base} ÷ ${q} = ${base / q}, puis × ${p} = ${base / q * p}.`);
+  },
+  rel: r => {
+    const a = ri(r, -12, 12) || 3, b = ri(r, -12, 12) || -4, t = ri(r, 0, 2), f = x => x < 0 ? `(−${-x})` : String(x), s = x => x < 0 ? `moins ${-x}` : String(x);
+    if (t === 0) return numQ(`Combien font ${f(a)} + ${f(b)} ?`, `Combien font ${s(a)} plus ${s(b)} ?`, a + b, `${f(a)} + ${f(b)} = ${a + b}`);
+    if (t === 1) return numQ(`Combien font ${f(a)} − ${f(b)} ?`, `Combien font ${s(a)} moins ${s(b)} ?`, a - b, `Soustraire, c'est ajouter l'opposé : ${a - b}.`);
+    return numQ(`Combien font ${f(a)} × ${f(b)} ?`, `Combien font ${s(a)} fois ${s(b)} ?`, a * b, `Règle des signes : ${a * b >= 0 ? 'même signe, résultat positif' : 'signes différents, résultat négatif'}. ${a * b}.`);
+  },
+  prio: r => {
+    const a = ri(r, 2, 9), b = ri(r, 2, 9), c = ri(r, 2, 6), t = ri(r, 0, 2);
+    if (t === 0) return numQ(`Combien font ${a} + ${b} × ${c} ?`, `Combien font ${a} plus ${b} fois ${c} ?`, a + b * c, `La multiplication passe d'abord : ${b} × ${c} = ${b * c}, puis ${a} + ${b * c} = ${a + b * c}.`);
+    if (t === 1) return numQ(`Combien font (${a} + ${b}) × ${c} ?`, `Combien font, entre parenthèses ${a} plus ${b}, fois ${c} ?`, (a + b) * c, `Les parenthèses d'abord : ${a + b}, puis × ${c} = ${(a + b) * c}.`);
+    const d = c * ri(r, 2, 6), e = a * 3 + 10; return numQ(`Combien font ${e} − ${d} ÷ ${c} ?`, `Combien font ${e} moins ${d} divisé par ${c} ?`, e - d / c, `La division d'abord : ${d} ÷ ${c} = ${d / c}, puis ${e} − ${d / c} = ${e - d / c}.`);
+  },
+  pct: r => { const p = pickR(r, [10, 20, 25, 50, 75, 5, 30]), base = pickR(r, [20, 40, 60, 80, 120, 200, 300, 500]); return numQ(`Combien font ${p} % de ${base} ?`, `Combien font ${p} pour cent de ${base} ?`, p * base / 100, `10 % de ${base}, c'est ${nf(base / 10)}. Donc ${p} % = ${nf(base / 10)} × ${nf(p / 10)} = ${nf(p * base / 100)}.`, { hint: `Commence par 10 % de ${base} : divise par 10.` }); },
+  eq: r => { const a = ri(r, 2, 9), x = ri(r, -6, 12), b = ri(r, 1, 20), c = a * x + b; return numQ(`Résous : ${a}x + ${b} = ${c}. Combien vaut x ?`, `Résous l'équation : ${a} x plus ${b} égale ${sayNum(c)}. Combien vaut x ?`, x, `${a}x = ${c} − ${b} = ${c - b}, donc x = ${c - b} ÷ ${a} = ${x}.`); },
+  pow: r => {
+    if (r() < .5) { const b = ri(r, 2, 5), e = ri(r, 2, 4), sup = ['', '', '²', '³', '⁴']; return numQ(`Combien font ${b}${sup[e]} ?`, `Combien font ${b} puissance ${e} ?`, b ** e, `${b}${sup[e]} = ${Array(e).fill(b).join(' × ')} = ${b ** e}.`); }
+    const k = ri(r, 2, 15); return numQ(`Combien vaut √${k * k} ?`, `Combien vaut la racine carrée de ${k * k} ?`, k, `${k} × ${k} = ${k * k}, donc √${k * k} = ${k}.`);
+  },
+  idr: r => { const k = ri(r, 2, 9), t = ri(r, 0, 2);
+    if (t === 0) return { q: `Développe : (x + ${k})²`, say: `Développe : x plus ${k}, le tout au carré.`, o: [`x² + ${2 * k}x + ${k * k}`, `x² + ${k * k}`, `x² + ${k}x + ${k * k}`, `x² + ${2 * k}x + ${2 * k}`], ex: `(a + b)² = a² + 2ab + b², donc x² + ${2 * k}x + ${k * k}.` };
+    if (t === 1) return { q: `Développe : (x − ${k})²`, say: `Développe : x moins ${k}, le tout au carré.`, o: [`x² − ${2 * k}x + ${k * k}`, `x² − ${k * k}`, `x² + ${2 * k}x − ${k * k}`, `x² − ${k}x + ${k * k}`], ex: `(a − b)² = a² − 2ab + b², donc x² − ${2 * k}x + ${k * k}.` };
+    return { q: `Factorise : x² − ${k * k}`, say: `Factorise : x au carré moins ${k * k}.`, o: [`(x − ${k})(x + ${k})`, `(x − ${k})²`, `(x + ${k})²`, `x(x − ${k * k})`], ex: `a² − b² = (a − b)(a + b), donc (x − ${k})(x + ${k}).` }; },
+  der: r => { const a = ri(r, 2, 9), b = ri(r, 1, 9), n = ri(r, 2, 5), t = ri(r, 0, 1), sup = ['', '', '²', '³', '⁴', '⁵'];
+    if (t === 0) return { q: `Quelle est la dérivée de f(x) = x${sup[n]} ?`, say: `Quelle est la dérivée de f de x égale x puissance ${n} ?`, o: [`${n}x${sup[n - 1]}`, `x${sup[n - 1]}`, `${n}x${sup[n]}`, `${n - 1}x${sup[n]}`], ex: `La dérivée de xⁿ est n·xⁿ⁻¹, donc ${n}x${sup[n - 1]}.` };
+    return { q: `Quelle est la dérivée de f(x) = ${a}x² + ${b}x ?`, say: `Quelle est la dérivée de f de x égale ${a} x au carré plus ${b} x ?`, o: [`${2 * a}x + ${b}`, `${a}x + ${b}`, `${2 * a}x² + ${b}`, `${2 * a}x`], ex: `(${a}x²)' = ${2 * a}x et (${b}x)' = ${b}, donc ${2 * a}x + ${b}.` }; },
+  /* géométrie */
+  shapes: r => { const names = Object.keys(SHAPES), n = pickR(r, names); return { q: 'Comment s\'appelle cette figure ?', o: uniqOpts(n, [...names].sort(() => r() - .5)), fig: SHAPES[n](), ex: `C'est un ${n}.` }; },
+  sides: r => { const [n, k] = pickR(r, [['triangle', 3], ['carré', 4], ['pentagone', 5], ['hexagone', 6], ['octogone', 8], ['losange', 4]]); return numQ('Combien de côtés a cette figure ?', null, k, `Un ${n} a ${k} côtés.`, { fig: SHAPES[n]() }); },
+  perim: r => { if (r() < .5) { const L = ri(r, 4, 15), l = ri(r, 2, L - 1); return numQ('Quel est le périmètre de ce rectangle, en cm ?', null, 2 * (L + l), `Périmètre = 2 × (longueur + largeur) = 2 × (${L} + ${l}) = ${2 * (L + l)} cm.`, { fig: rectSvg(L, l) }); }
+    const c = ri(r, 2, 12); return numQ('Quel est le périmètre de ce carré, en cm ?', null, 4 * c, `Périmètre = 4 × côté = 4 × ${c} = ${4 * c} cm.`, { fig: squareSvg(c) }); },
+  aire: r => { const t = ri(r, 0, 2);
+    if (t === 0) { const L = ri(r, 3, 12), l = ri(r, 2, L - 1); return numQ('Quelle est l\'aire de ce rectangle, en cm² ?', 'Quelle est l\'aire de ce rectangle, en centimètres carrés ?', L * l, `Aire = longueur × largeur = ${L} × ${l} = ${L * l} cm².`, { fig: rectSvg(L, l) }); }
+    if (t === 1) { const c = ri(r, 2, 12); return numQ('Quelle est l\'aire de ce carré, en cm² ?', 'Quelle est l\'aire de ce carré, en centimètres carrés ?', c * c, `Aire = côté × côté = ${c} × ${c} = ${c * c} cm².`, { fig: squareSvg(c) }); }
+    const a = 2 * ri(r, 2, 6), b = ri(r, 3, 10); return numQ('Quelle est l\'aire de ce triangle rectangle, en cm² ?', 'Quelle est l\'aire de ce triangle rectangle, en centimètres carrés ?', a * b / 2, `Aire = (base × hauteur) ÷ 2 = (${b} × ${a}) ÷ 2 = ${a * b / 2} cm².`, { fig: rightTriSvg(a, b, null) }); },
+  angles: r => { if (r() < .55) { const [deg, n] = pickR(r, [[35, 'aigu'], [60, 'aigu'], [90, 'droit'], [120, 'obtus'], [150, 'obtus'], [180, 'plat']]); return { q: 'Comment s\'appelle cet angle ?', o: uniqOpts(n, ['aigu', 'droit', 'obtus', 'plat']), fig: angleSvg(deg), ex: `Cet angle mesure ${deg}° : c'est un angle ${n}.` }; }
+    const a = ri(r, 30, 80), b = ri(r, 30, 90); return numQ(`Dans un triangle, deux angles mesurent ${a}° et ${b}°. Combien mesure le troisième, en degrés ?`, `Dans un triangle, deux angles mesurent ${a} degrés et ${b} degrés. Combien mesure le troisième ?`, 180 - a - b, `La somme des angles d'un triangle fait 180°. 180 − ${a} − ${b} = ${180 - a - b}°.`); },
+  pyth: r => { const [x, y, z] = pickR(r, [[3, 4, 5], [6, 8, 10], [5, 12, 13], [8, 15, 17], [9, 12, 15], [12, 16, 20]]);
+    if (r() < .6) return numQ('Ce triangle est rectangle. Quelle est la longueur de l\'hypoténuse, en cm ?', null, z, `Pythagore : ${x}² + ${y}² = ${x * x} + ${y * y} = ${z * z}, et √${z * z} = ${z} cm.`, { fig: rightTriSvg(x, y, null) });
+    return numQ('Ce triangle est rectangle. Quelle est la longueur du côté manquant, en cm ?', null, y, `Pythagore : ${z}² − ${x}² = ${z * z} − ${x * x} = ${y * y}, et √${y * y} = ${y} cm.`, { fig: rightTriSvg(x, null, z) }); },
+  cercle: r => { const R = ri(r, 2, 10);
+    if (r() < .5) return numQ('Quel est le périmètre de ce cercle, en cm ? (π ≈ 3,14, arrondis au dixième)', 'Quel est le périmètre de ce cercle, en centimètres ? Prends pi égal à 3 virgule 14 et arrondis au dixième.', Math.round(2 * 3.14 * R * 10) / 10, `Périmètre = 2 × π × r = 2 × 3,14 × ${R} ≈ ${nf(Math.round(2 * 3.14 * R * 10) / 10)} cm.`, { fig: circleSvg(R), tol: .11 });
+    return numQ('Quelle est l\'aire de ce disque, en cm² ? (π ≈ 3,14, arrondis au dixième)', 'Quelle est l\'aire de ce disque, en centimètres carrés ? Prends pi égal à 3 virgule 14 et arrondis au dixième.', Math.round(3.14 * R * R * 10) / 10, `Aire = π × r² = 3,14 × ${R * R} ≈ ${nf(Math.round(3.14 * R * R * 10) / 10)} cm².`, { fig: circleSvg(R), tol: .11 }); },
+  volume: r => { const t = ri(r, 0, 2);
+    if (t === 0) { const c = ri(r, 2, 9); return numQ(`Quel est le volume d'un cube de ${c} cm de côté, en cm³ ?`, `Quel est le volume d'un cube de ${c} centimètres de côté, en centimètres cubes ?`, c ** 3, `Volume = côté³ = ${c} × ${c} × ${c} = ${c ** 3} cm³.`); }
+    if (t === 1) { const L = ri(r, 3, 10), l = ri(r, 2, 6), h = ri(r, 2, 8); return numQ(`Quel est le volume d'un pavé de ${L} cm × ${l} cm × ${h} cm, en cm³ ?`, `Quel est le volume d'un pavé droit de ${L} centimètres, ${l} centimètres et ${h} centimètres, en centimètres cubes ?`, L * l * h, `Volume = L × l × h = ${L} × ${l} × ${h} = ${L * l * h} cm³.`); }
+    const R = ri(r, 1, 5), h = ri(r, 2, 10), v = Math.round(3.14 * R * R * h * 10) / 10; return numQ(`Quel est le volume d'un cylindre de rayon ${R} cm et de hauteur ${h} cm, en cm³ ? (π ≈ 3,14)`, `Quel est le volume d'un cylindre de rayon ${R} centimètres et de hauteur ${h} centimètres, en centimètres cubes ? Prends pi égal à 3 virgule 14.`, v, `Volume = π × r² × h = 3,14 × ${R * R} × ${h} ≈ ${nf(v)} cm³.`, { tol: .11 }); },
+  thales: r => { const k = ri(r, 2, 4), am = ri(r, 1, 5), an = ri(r, 1, 6); const ab = am * k, ac = an * k;
+    return numQ(`Les droites (MN) et (BC) sont parallèles. AM = ${am}, AB = ${ab} et AC = ${ac}. Combien vaut AN ?`, `Les droites M N et B C sont parallèles. A M égale ${am}, A B égale ${ab} et A C égale ${ac}. Combien vaut A N ?`, an, `Thalès : AM/AB = AN/AC, donc AN = AC × AM ÷ AB = ${ac} × ${am} ÷ ${ab} = ${an}.`); }
+};
+
+/* ---------- questions écrites à la main : [question, bonne réponse, mauvaises…] ---------- */
+const QCM = rows => rows.map(([q, c, ...w]) => { const ex = w.length && w[w.length - 1].startsWith('§') ? w.pop().slice(1) : null; return { q, o: [c, ...w], ex }; });
+const SAISIE = rows => rows.map(([q, ans, ex]) => ({ q, ans: Array.isArray(ans) ? ans : [ans], ex }));
+
+const SUBJECTS = {
+  maths: { name: 'Mathématiques', adj: 'maths', flag: '🧮', chapters: [
+    { lvl: 0, title: 'Additions', emoji: '➕', gen: 'add20', cours: "Additionner, c'est réunir deux quantités. Par exemple, 4 plus 3, c'est 7. Pour t'aider, compte à partir du plus grand nombre." },
+    { lvl: 0, title: 'Soustractions', emoji: '➖', gen: 'sub20', cours: "Soustraire, c'est enlever. 9 moins 4, c'est 5. Tu peux vérifier : 5 plus 4 font bien 9." },
+    { lvl: 0, title: 'Compter', emoji: '🔢', gen: 'count', cours: "Pour compter des objets, touche-les un par un avec ton doigt en disant les nombres : un, deux, trois…" },
+    { lvl: 0, title: 'Comparer, doubles et moitiés', emoji: '⚖️', gen: ['compare', 'double'], cours: "Le double d'un nombre, c'est ce nombre ajouté à lui-même. La moitié, c'est le partager en deux parts égales." },
+    { lvl: 1, title: 'Tables de multiplication', emoji: '✖️', gen: 'mul', cours: "Multiplier, c'est additionner plusieurs fois le même nombre. 4 fois 3, c'est 3 plus 3 plus 3 plus 3, soit 12." },
+    { lvl: 1, title: 'Grands nombres', emoji: '🧾', gen: 'add3', cours: "Pour additionner ou soustraire de grands nombres, travaille colonne par colonne : les unités, puis les dizaines, puis les centaines, sans oublier les retenues." },
+    { lvl: 1, title: 'Divisions', emoji: '➗', gen: 'div', cours: "Diviser, c'est partager en parts égales. 20 divisé par 4, c'est 5, car 4 fois 5 font 20." },
+    { lvl: 1, title: 'Problèmes', emoji: '🧩', gen: 'prob', cours: "Pour résoudre un problème, lis bien l'énoncé, repère les nombres, puis demande-toi : est-ce qu'on ajoute, on enlève, on multiplie ou on partage ?" },
+    { lvl: 2, title: 'Fractions', emoji: '🍕', gen: 'frac', cours: "Une fraction partage une unité en parts égales. Le nombre du bas, le dénominateur, dit en combien de parts ; celui du haut, le numérateur, combien on en prend." },
+    { lvl: 2, title: 'Nombres relatifs', emoji: '🌡️', gen: 'rel', cours: "Les nombres relatifs peuvent être négatifs, comme les températures sous zéro. Pour la multiplication : deux signes pareils donnent un résultat positif, deux signes différents un résultat négatif." },
+    { lvl: 2, title: 'Priorités de calcul', emoji: '🧮', gen: 'prio', cours: "Dans un calcul, on fait d'abord les parenthèses, puis les multiplications et les divisions, et enfin les additions et les soustractions." },
+    { lvl: 2, title: 'Pourcentages', emoji: '💯', gen: 'pct', cours: "Un pourcentage, c'est une part sur cent. 25 pour cent de 80, c'est 80 fois 25, divisé par 100, soit 20." },
+    { lvl: 3, title: 'Équations', emoji: '⚖️', gen: 'eq', cours: "Résoudre une équation, c'est trouver la valeur de x. On isole x en faisant la même opération des deux côtés du signe égal." },
+    { lvl: 3, title: 'Puissances et racines', emoji: '🚀', gen: 'pow', cours: "2 puissance 3, c'est 2 fois 2 fois 2, soit 8. La racine carrée d'un nombre, c'est le nombre qui, multiplié par lui-même, le redonne." },
+    { lvl: 3, title: 'Identités remarquables', emoji: '🧠', gen: 'idr', cours: "Trois formules à connaître : a plus b au carré égale a carré plus 2 a b plus b carré ; a moins b au carré égale a carré moins 2 a b plus b carré ; a carré moins b carré égale a moins b fois a plus b." },
+    { lvl: 3, title: 'Dérivées', emoji: '📈', gen: 'der', cours: "La dérivée mesure la vitesse de variation d'une fonction. La dérivée de x puissance n est n fois x puissance n moins 1." }
+  ] },
+
+  geometrie: { name: 'Géométrie', adj: 'géométrie', flag: '📐', chapters: [
+    { lvl: 0, title: 'Les formes', emoji: '🔷', gen: 'shapes', cours: "Un carré a 4 côtés égaux et 4 angles droits. Un rectangle a 4 angles droits, avec des côtés deux à deux égaux. Un cercle est rond et n'a pas de côté." },
+    { lvl: 0, title: 'Compter les côtés', emoji: '🔺', gen: 'sides', cours: "Un triangle a 3 côtés, un carré 4, un pentagone 5, un hexagone 6 et un octogone 8." },
+    { lvl: 1, title: 'Périmètres', emoji: '📏', gen: 'perim', cours: "Le périmètre, c'est la longueur du tour d'une figure. Pour un rectangle : 2 fois, longueur plus largeur. Pour un carré : 4 fois le côté." },
+    { lvl: 1, title: 'Aires', emoji: '🟩', gen: 'aire', cours: "L'aire, c'est la surface à l'intérieur d'une figure. Rectangle : longueur fois largeur. Triangle rectangle : base fois hauteur, divisé par 2." },
+    { lvl: 2, title: 'Les angles', emoji: '📐', gen: 'angles', cours: "Un angle aigu mesure moins de 90 degrés, un angle droit exactement 90, un angle obtus entre 90 et 180, et un angle plat 180 degrés. Dans un triangle, la somme des angles fait toujours 180 degrés." },
+    { lvl: 2, title: 'Théorème de Pythagore', emoji: '📐', gen: 'pyth', cours: "Dans un triangle rectangle, le carré de l'hypoténuse est égal à la somme des carrés des deux autres côtés." },
+    { lvl: 2, title: 'Le cercle', emoji: '⭕', gen: 'cercle', cours: "Le périmètre d'un cercle vaut 2 fois pi fois le rayon. L'aire d'un disque vaut pi fois le rayon au carré. Pi vaut environ 3 virgule 14." },
+    { lvl: 3, title: 'Volumes', emoji: '🧊', gen: 'volume', cours: "Le volume d'un cube vaut côté fois côté fois côté. Celui d'un pavé : longueur fois largeur fois hauteur. Celui d'un cylindre : pi fois rayon au carré fois hauteur." },
+    { lvl: 3, title: 'Théorème de Thalès', emoji: '📏', gen: 'thales', cours: "Si deux droites sont parallèles dans un triangle, les longueurs sont proportionnelles : A M sur A B égale A N sur A C." },
+    { lvl: 3, title: 'Trigonométrie', emoji: '📐', items: QCM([
+      ["Dans un triangle rectangle, le cosinus d'un angle est égal à…", 'côté adjacent ÷ hypoténuse', 'côté opposé ÷ hypoténuse', 'côté opposé ÷ côté adjacent', 'hypoténuse ÷ côté adjacent', '§Moyen mnémotechnique : SOH CAH TOA. Cosinus = Adjacent / Hypoténuse.'],
+      ["Dans un triangle rectangle, le sinus d'un angle est égal à…", 'côté opposé ÷ hypoténuse', 'côté adjacent ÷ hypoténuse', 'côté opposé ÷ côté adjacent', 'hypoténuse ÷ côté opposé', '§SOH : Sinus = Opposé / Hypoténuse.'],
+      ["Dans un triangle rectangle, la tangente d'un angle est égale à…", 'côté opposé ÷ côté adjacent', 'côté adjacent ÷ côté opposé', 'côté opposé ÷ hypoténuse', 'hypoténuse ÷ côté adjacent', '§TOA : Tangente = Opposé / Adjacent.'],
+      ['Combien vaut cos(60°) ?', '1/2', '√3/2', '√2/2', '1', '§cos 60° = 1/2.'],
+      ['Combien vaut sin(30°) ?', '1/2', '√3/2', '0', '1', '§sin 30° = 1/2.'],
+      ['Combien vaut tan(45°) ?', '1', '0', '1/2', '√3', '§tan 45° = 1, car le côté opposé et le côté adjacent sont égaux.'],
+      ['Combien vaut sin(90°) ?', '1', '0', '1/2', '−1'],
+      ['Combien vaut cos(0°) ?', '1', '0', '1/2', '−1'],
+      ['Que vaut cos²(x) + sin²(x) ?', '1', '0', '2', 'tan(x)', '§C\'est la relation fondamentale de la trigonométrie.'],
+      ['Combien vaut cos(30°) ?', '√3/2', '1/2', '√2/2', '√3'],
+      ['Combien vaut sin(45°) ?', '√2/2', '1/2', '√3/2', '1'],
+      ['Combien de radians vaut un angle de 180° ?', 'π', '2π', 'π/2', '180']
+    ]), cours: "Dans un triangle rectangle, retiens SOH CAH TOA : sinus égale opposé sur hypoténuse, cosinus égale adjacent sur hypoténuse, tangente égale opposé sur adjacent." }
+  ] },
+
+  francais: { name: 'Français', adj: 'français', flag: '📖', chapters: [
+    { lvl: 0, title: 'Nature des mots', emoji: '🔤', items: QCM([
+      ['Dans « Le chat dort », quelle est la nature du mot « chat » ?', 'un nom', 'un verbe', 'un adjectif', 'un déterminant'],
+      ['Dans « Le chat dort », quelle est la nature du mot « dort » ?', 'un verbe', 'un nom', 'un adjectif', 'un déterminant'],
+      ['Dans « une grande maison », quelle est la nature du mot « grande » ?', 'un adjectif', 'un nom', 'un verbe', 'un déterminant'],
+      ['Dans « les enfants jouent », quelle est la nature du mot « les » ?', 'un déterminant', 'un nom', 'un verbe', 'un adjectif'],
+      ['Quel mot est un verbe ?', 'manger', 'table', 'joli', 'sous'],
+      ['Quel mot est un nom ?', 'école', 'courir', 'petit', 'vite'],
+      ['Quel mot est un adjectif ?', 'heureux', 'chanter', 'livre', 'avec'],
+      ['Dans « Il court vite », quelle est la nature de « vite » ?', 'un adverbe', 'un adjectif', 'un nom', 'un verbe'],
+      ['Dans « Elle chante », quelle est la nature de « Elle » ?', 'un pronom', 'un nom', 'un déterminant', 'un verbe'],
+      ['Dans « sur la table », quelle est la nature de « sur » ?', 'une préposition', 'un adverbe', 'un nom', 'un verbe']
+    ]), cours: "Chaque mot a une nature. Le nom désigne une personne, un animal ou une chose. Le verbe exprime une action. L'adjectif décrit le nom. Le déterminant se place devant le nom." },
+    { lvl: 0, title: 'Masculin, féminin, pluriel', emoji: '👫', items: SAISIE([
+      ['Écris le féminin de « un chat » : une …', 'chatte', 'Un chat, une chatte.'],
+      ['Écris le féminin de « un ami » : une …', 'amie', 'On ajoute souvent un « e » au féminin.'],
+      ['Écris le pluriel de « un cheval » : des …', 'chevaux', 'Les noms en « -al » font souvent leur pluriel en « -aux ».'],
+      ['Écris le pluriel de « un oiseau » : des …', 'oiseaux', 'Les noms en « -eau » prennent un « x » au pluriel.'],
+      ['Écris le pluriel de « une fleur » : des …', 'fleurs', 'En général, on ajoute un « s » au pluriel.'],
+      ['Écris le féminin de « un lion » : une …', 'lionne', 'Un lion, une lionne : on double le « n ».'],
+      ['Écris le pluriel de « un jeu » : des …', 'jeux', 'Les noms en « -eu » prennent un « x » au pluriel.'],
+      ['Écris le féminin de l\'adjectif « grand » : elle est …', 'grande', 'Grand, grande.'],
+      ['Écris le pluriel de « un bijou » : des …', 'bijoux', 'Bijou, caillou, chou, genou, hibou, joujou, pou prennent un « x ».'],
+      ['Écris le féminin de « un acteur » : une …', 'actrice', 'Les noms en « -teur » font souvent « -trice ».']
+    ]), cours: "Au pluriel, on ajoute en général un s. Mais attention : les mots en -eau et en -eu prennent un x, et beaucoup de mots en -al deviennent -aux. Au féminin, on ajoute souvent un e." },
+    { lvl: 1, title: 'Conjugaison : présent', emoji: '⏱️', items: SAISIE([
+      ['Conjugue « chanter » au présent : nous …', 'chantons', 'Nous chantons.'],
+      ['Conjugue « finir » au présent : nous …', 'finissons', 'Les verbes du 2e groupe font « -issons ».'],
+      ['Conjugue « être » au présent : vous …', 'êtes', 'Vous êtes.'],
+      ['Conjugue « avoir » au présent : ils …', 'ont', 'Ils ont.'],
+      ['Conjugue « aller » au présent : je …', 'vais', 'Je vais.'],
+      ['Conjugue « faire » au présent : vous …', 'faites', 'Vous faites (et pas « faisez » !).'],
+      ['Conjugue « prendre » au présent : ils …', 'prennent', 'Ils prennent.'],
+      ['Conjugue « pouvoir » au présent : je …', 'peux', 'Je peux.'],
+      ['Conjugue « dire » au présent : vous …', 'dites', 'Vous dites.'],
+      ['Conjugue « manger » au présent : nous …', 'mangeons', 'On garde le « e » pour garder le son « je » : mangeons.']
+    ]), cours: "Au présent, les verbes en -er se terminent par e, es, e, ons, ez, ent. Attention aux verbes irréguliers comme être, avoir, aller et faire, qu'il faut apprendre par cœur." },
+    { lvl: 1, title: 'Les homophones', emoji: '👂', items: QCM([
+      ['Il … mangé une pomme.', 'a', 'à', '§« a » est le verbe avoir : on peut dire « avait ».'],
+      ['Je vais … l\'école.', 'à', 'a', '§« à » est une préposition : on ne peut pas dire « avait ».'],
+      ['Le ciel … bleu.', 'est', 'et', '§« est » est le verbe être : on peut dire « était ».'],
+      ['Il prend du pain … du fromage.', 'et', 'est', '§« et » relie deux mots : on peut dire « et puis ».'],
+      ['Ils … partis tôt.', 'sont', 'son', '§« sont » est le verbe être : on peut dire « étaient ».'],
+      ['Il a perdu … cartable.', 'son', 'sont', '§« son » est un déterminant : on peut dire « mon ».'],
+      ['… enfants jouent dans la cour. (ceux-là)', 'Ces', 'Ses', '§« ces » montre : on peut dire « ces … -là ».'],
+      ['Elle range … affaires. (les siennes)', 'ses', 'ces', '§« ses » marque la possession : on peut dire « les siennes ».'],
+      ['… est-ce que tu viens ?', 'Quand', 'Quant', 'Qu\'en', '§« quand » marque le temps.'],
+      ['Je ne sais pas … il habite.', 'où', 'ou', '§« où » indique le lieu ; « ou » veut dire « ou bien ».']
+    ]), cours: "Les homophones se prononcent pareil mais s'écrivent différemment. Astuce : remplace a par avait, est par était, son par mon. Si ça marche, c'est le verbe ou le déterminant." },
+    { lvl: 2, title: 'Passé composé et imparfait', emoji: '🕰️', items: SAISIE([
+      ['Conjugue « partir » au passé composé : elles … (2 mots)', 'sont parties', 'Avec être, le participe s\'accorde avec le sujet : elles sont parties.'],
+      ['Conjugue « finir » au passé composé : nous … (2 mots)', 'avons fini', 'Nous avons fini.'],
+      ['Conjugue « prendre » au passé composé : j\'… (2 mots)', 'ai pris', 'J\'ai pris.'],
+      ['Conjugue « être » à l\'imparfait : nous …', 'étions', 'Nous étions.'],
+      ['Conjugue « chanter » à l\'imparfait : ils …', 'chantaient', 'Terminaisons de l\'imparfait : ais, ais, ait, ions, iez, aient.'],
+      ['Conjugue « avoir » à l\'imparfait : vous …', 'aviez', 'Vous aviez.'],
+      ['Conjugue « venir » au passé composé : il … (2 mots)', 'est venu', 'Venir se conjugue avec être : il est venu.'],
+      ['Conjugue « faire » à l\'imparfait : je …', 'faisais', 'Je faisais.'],
+      ['Conjugue « voir » au passé composé : tu … (2 mots)', 'as vu', 'Tu as vu.'],
+      ['Conjugue « aller » à l\'imparfait : elles …', 'allaient', 'Elles allaient.']
+    ]), cours: "Le passé composé se forme avec l'auxiliaire être ou avoir au présent, suivi du participe passé. Avec être, le participe s'accorde avec le sujet. L'imparfait se termine par ais, ais, ait, ions, iez, aient." },
+    { lvl: 2, title: 'Les accords', emoji: '🔗', items: QCM([
+      ['Les fleurs que j\'ai … sont belles.', 'cueillies', 'cueilli', 'cueillis', '§Avec avoir, on accorde avec le COD placé avant : « que » = les fleurs.'],
+      ['Elles sont … hier soir.', 'arrivées', 'arrivé', 'arrivés', '§Avec être, on accorde avec le sujet « elles ».'],
+      ['Des chemises … .', 'bleues', 'bleu', 'bleus', '§L\'adjectif s\'accorde avec le nom : chemises, féminin pluriel.'],
+      ['Des robes … (couleur orange).', 'orange', 'oranges', 'orangées', '§Les adjectifs de couleur issus d\'un nom (orange, marron) sont invariables.'],
+      ['Ils ont … toute la journée.', 'travaillé', 'travaillés', 'travailler', '§Pas de COD avant : le participe ne s\'accorde pas.'],
+      ['Nous avons … nos devoirs.', 'fini', 'finis', 'finir', '§Le COD « nos devoirs » est après le verbe : pas d\'accord.'],
+      ['Les filles se sont … .', 'lavées', 'lavé', 'laver'],
+      ['Ma sœur est … contente.', 'très', 'trés', 'trais'],
+      ['Ces livres, je les ai … .', 'lus', 'lu', 'lue', '§Le COD « les » (les livres) est placé avant : on accorde.'],
+      ['Une … heure.', 'demi-heure', 'demie-heure', 'demi heure', '§« Demi » placé devant le nom est invariable et suivi d\'un trait d\'union.']
+    ]), cours: "L'adjectif s'accorde avec le nom. Le participe passé employé avec être s'accorde avec le sujet. Avec avoir, il s'accorde seulement avec le complément d'objet direct placé avant le verbe." },
+    { lvl: 3, title: 'Subjonctif et concordance', emoji: '🎓', items: QCM([
+      ['Il faut que tu … à l\'heure.', 'sois', 'es', 'seras', '§« Il faut que » appelle le subjonctif : que tu sois.'],
+      ['Je veux qu\'il … ses devoirs.', 'fasse', 'fait', 'fera', '§Après « vouloir que », on utilise le subjonctif.'],
+      ['Bien qu\'elle … fatiguée, elle travaille.', 'soit', 'est', 'était', '§« Bien que » est toujours suivi du subjonctif.'],
+      ['Je pense qu\'il … raison.', 'a', 'ait', 'aie', '§« Penser que » à la forme affirmative appelle l\'indicatif.'],
+      ['Je ne pense pas qu\'il … raison.', 'ait', 'a', 'aura', '§À la forme négative, « penser que » appelle souvent le subjonctif.'],
+      ['Si j\'… le temps, je viendrais.', 'avais', 'aurais', 'aie', '§Après « si », jamais de conditionnel : si j\'avais.'],
+      ['Après qu\'il … parti, nous avons dîné.', 'fut', 'soit', 'serait', '§« Après que » est suivi de l\'indicatif.'],
+      ['Il est possible qu\'il … demain.', 'vienne', 'viendra', 'vient'],
+      ['Avant que tu ne … , range ta chambre.', 'partes', 'pars', 'partiras', '§« Avant que » appelle le subjonctif.'],
+      ['Je doute qu\'elle … la réponse.', 'sache', 'sait', 'saura']
+    ]), cours: "Le subjonctif exprime le doute, la volonté ou le sentiment. On l'emploie après il faut que, vouloir que, bien que, avant que. Attention : après si, jamais de conditionnel, et après après que, on met l'indicatif." },
+    { lvl: 3, title: 'Figures de style', emoji: '🎭', items: QCM([
+      ['« Il est fort comme un lion. » Quelle figure de style ?', 'une comparaison', 'une métaphore', 'une hyperbole', 'une personnification', '§Il y a un outil de comparaison : « comme ».'],
+      ['« Cet homme est un lion. » Quelle figure de style ?', 'une métaphore', 'une comparaison', 'un oxymore', 'une litote', '§Une comparaison sans outil de comparaison.'],
+      ['« Je meurs de faim. » Quelle figure de style ?', 'une hyperbole', 'une litote', 'une métaphore', 'une anaphore', '§Une exagération.'],
+      ['« Le vent hurle dans la nuit. » Quelle figure de style ?', 'une personnification', 'une comparaison', 'une hyperbole', 'une litote', '§On prête au vent un comportement humain.'],
+      ['« Cette obscure clarté » (Corneille). Quelle figure de style ?', 'un oxymore', 'une métaphore', 'une anaphore', 'une hyperbole', '§Deux mots de sens contraire réunis.'],
+      ['« Va, je ne te hais point » (Corneille). Quelle figure de style ?', 'une litote', 'une hyperbole', 'un oxymore', 'une comparaison', '§Dire moins pour suggérer plus : je t\'aime.'],
+      ['« Mon bras, qu\'avec respect toute l\'Espagne admire, Mon bras… » La répétition en début de vers est…', 'une anaphore', 'une litote', 'un oxymore', 'une métonymie'],
+      ['« Boire un verre. » On parle du contenant pour le contenu : c\'est…', 'une métonymie', 'une métaphore', 'une litote', 'une hyperbole'],
+      ['« Il n\'est pas bête. » pour dire « il est intelligent » : c\'est…', 'une litote', 'une hyperbole', 'une anaphore', 'un oxymore'],
+      ['« Un silence assourdissant » : c\'est…', 'un oxymore', 'une comparaison', 'une métonymie', 'une anaphore']
+    ]), cours: "Une comparaison rapproche deux éléments avec un outil comme « comme ». La métaphore le fait sans outil. L'hyperbole exagère, la litote dit moins pour suggérer plus, l'oxymore réunit deux mots contraires." }
+  ] },
+
+  dictee: { name: 'Dictée', adj: 'dictée', flag: '✍️', chapters: [
+    { lvl: 0, title: 'Petites phrases', emoji: '✏️', dict: ['Le chat dort sur le lit.', 'Papa lit le journal.', 'Le soleil brille ce matin.', 'Ma sœur joue avec son ballon.', 'Nous allons à l\'école.', 'Le chien court dans le jardin.', 'Il fait froid en hiver.', 'Maman prépare une tarte aux pommes.'], cours: "Écoute bien la phrase en entier, puis écris-la. N'oublie pas la majuscule au début et le point à la fin." },
+    { lvl: 0, title: 'Les sons du français', emoji: '🔊', dict: ['Le bateau est sur l\'eau.', 'Le lion a une belle crinière.', 'Je mange une glace à la fraise.', 'Le train arrive en gare.', 'Mon oncle habite à la campagne.', 'Le poisson nage dans la rivière.'], cours: "Certains sons s'écrivent de plusieurs façons : le son « o » peut s'écrire o, au ou eau. Le son « an » peut s'écrire an ou en." },
+    { lvl: 1, title: 'Les accords', emoji: '🔗', dict: ['Les enfants jouent dans la cour de récréation.', 'Mes grands-parents habitent une petite maison blanche.', 'Les oiseaux chantent dès le lever du soleil.', 'Elles sont parties en vacances à la mer.', 'Nous avons mangé des fraises délicieuses.', 'Les feuilles des arbres tombent en automne.'], cours: "Pense aux accords : le pluriel des noms, l'accord de l'adjectif, et la terminaison du verbe avec son sujet." },
+    { lvl: 1, title: 'Les homophones', emoji: '👂', dict: ['Il a donné son cahier à sa voisine.', 'Mon frère est grand et il est fort.', 'Ces enfants ont perdu leurs affaires.', 'Où vas-tu ? Au parc ou à la piscine ?', 'Ils sont venus avec leurs cousins.', 'Elle a mis ses bottes et son manteau.'], cours: "Attention aux homophones : a ou à, et ou est, son ou sont, ces ou ses, ou ou où. Remplace-les dans ta tête pour trouver la bonne écriture." },
+    { lvl: 2, title: 'Phrases longues', emoji: '📜', dict: ['Pendant les vacances, nous sommes allés nous promener le long de la rivière.', 'Les élèves qui avaient terminé leurs exercices sont sortis en récréation.', 'Malgré la pluie, les randonneurs ont poursuivi leur chemin vers le sommet.', 'La lettre que tu m\'as envoyée est arrivée ce matin.', 'Quand la nuit tomba, les étoiles apparurent une à une dans le ciel.', 'Les pommes que nous avons cueillies étaient sucrées et parfumées.'], cours: "Dans les phrases longues, repère le sujet de chaque verbe. Et souviens-toi : avec avoir, le participe s'accorde avec le complément placé avant." },
+    { lvl: 2, title: 'Le passé simple', emoji: '🏰', dict: ['Le roi entra dans la salle et salua ses invités.', 'Ils marchèrent toute la nuit sans s\'arrêter.', 'Elle ouvrit la fenêtre et regarda la mer.', 'Nous fûmes surpris par l\'orage.', 'Le chevalier prit son épée et partit au combat.', 'Les enfants coururent jusqu\'à la plage.'], cours: "Le passé simple sert à raconter. Pour les verbes en -er : ai, as, a, âmes, âtes, èrent. Pour beaucoup d'autres : is, is, it, îmes, îtes, irent." },
+    { lvl: 3, title: 'Textes', emoji: '📚', dict: ['Au crépuscule, la vieille demeure semblait sommeiller, enveloppée d\'une brume légère que la lune argentait.', 'Les voyageurs, épuisés par une longue marche, s\'étaient réfugiés dans une auberge où brûlait un grand feu.', 'Bien qu\'il eût longtemps hésité, le jeune homme se résolut enfin à quitter son village natal.', 'Les vagues, qu\'un vent violent avait soulevées toute la nuit, venaient se briser contre les rochers.', 'Il fallait que chacun se tînt prêt, car l\'orage menaçait d\'éclater d\'un instant à l\'autre.', 'Les souvenirs qu\'elle avait gardés de son enfance resurgirent soudain, aussi vifs qu\'autrefois.'], cours: "Pour les textes d'expert, pense au subjonctif imparfait, aux participes passés accordés et à la ponctuation. Prends ton temps et relis-toi." },
+    { lvl: 3, title: 'Mots difficiles', emoji: '🏆', dict: ['Un dilemme', 'Il a résolu le problème avec beaucoup de perspicacité.', 'L\'hippopotame et le rhinocéros se baignaient dans le marécage.', 'Ce cauchemar l\'a tenu éveillé jusqu\'à l\'aube.', 'Le chrysanthème est une fleur d\'automne.', 'Elle a acquis une connaissance approfondie de la philosophie.'], cours: "Certains mots ont une orthographe piégeuse : dilemme avec deux m, chrysanthème avec ch et y, hippopotame avec deux p. Prends le temps de bien les mémoriser." }
+  ] },
+
+  histoire: { name: 'Histoire', adj: 'histoire', flag: '🏛️', chapters: [
+    { lvl: 0, title: 'Les grandes périodes', emoji: '⏳', items: QCM([
+      ['Quelle période vient en premier ?', 'la Préhistoire', 'l\'Antiquité', 'le Moyen Âge', 'les Temps modernes'],
+      ['Quelle invention marque la fin de la Préhistoire ?', 'l\'écriture', 'la roue', 'le feu', 'l\'imprimerie', '§L\'invention de l\'écriture, vers 3300 avant J.-C., marque le début de l\'Antiquité.'],
+      ['Où vivaient les hommes préhistoriques ?', 'dans des grottes et des abris', 'dans des châteaux', 'dans des immeubles', 'dans des pyramides'],
+      ['Quelle période suit l\'Antiquité ?', 'le Moyen Âge', 'la Préhistoire', 'les Temps modernes', 'l\'époque contemporaine'],
+      ['À quelle période construisait-on des châteaux forts ?', 'le Moyen Âge', 'l\'Antiquité', 'la Préhistoire', 'l\'époque contemporaine'],
+      ['Dans quelle période vivons-nous aujourd\'hui ?', 'l\'époque contemporaine', 'les Temps modernes', 'le Moyen Âge', 'l\'Antiquité'],
+      ['Qui a construit les pyramides de Gizeh ?', 'les Égyptiens', 'les Romains', 'les Gaulois', 'les Vikings'],
+      ['Comment s\'appelaient les habitants de la Gaule ?', 'les Gaulois', 'les Romains', 'les Francs', 'les Grecs'],
+      ['Que peignaient les hommes de la grotte de Lascaux ?', 'des animaux', 'des châteaux', 'des bateaux', 'des voitures'],
+      ['Quelle civilisation a inventé les Jeux olympiques ?', 'les Grecs', 'les Égyptiens', 'les Gaulois', 'les Vikings']
+    ]), cours: "L'histoire se découpe en grandes périodes : la Préhistoire, l'Antiquité, le Moyen Âge, les Temps modernes et l'époque contemporaine. L'invention de l'écriture marque la fin de la Préhistoire." },
+    { lvl: 0, title: 'Personnages célèbres', emoji: '👑', items: QCM([
+      ['Quel chef gaulois a combattu Jules César ?', 'Vercingétorix', 'Charlemagne', 'Clovis', 'Napoléon'],
+      ['Quel empereur a été couronné en l\'an 800 ?', 'Charlemagne', 'Napoléon', 'Louis XIV', 'Clovis'],
+      ['Quelle jeune fille a combattu les Anglais pendant la guerre de Cent Ans ?', 'Jeanne d\'Arc', 'Marie Curie', 'Marie-Antoinette', 'Aliénor d\'Aquitaine'],
+      ['Quel roi était surnommé le Roi-Soleil ?', 'Louis XIV', 'Louis XVI', 'Henri IV', 'François Ier'],
+      ['Quel roi a fait construire le château de Versailles tel qu\'on le connaît ?', 'Louis XIV', 'Charlemagne', 'Napoléon', 'Louis XVI'],
+      ['Qui est devenu empereur des Français en 1804 ?', 'Napoléon Bonaparte', 'Louis XIV', 'Charles de Gaulle', 'Clovis'],
+      ['Quel navigateur est arrivé en Amérique en 1492 ?', 'Christophe Colomb', 'Magellan', 'Marco Polo', 'Jacques Cartier'],
+      ['Quelle scientifique a reçu deux prix Nobel ?', 'Marie Curie', 'Jeanne d\'Arc', 'Simone Veil', 'Olympe de Gouges'],
+      ['Quel général a lancé l\'appel du 18 juin 1940 ?', 'Charles de Gaulle', 'Napoléon', 'Jean Jaurès', 'Clemenceau'],
+      ['Quel roi des Francs s\'est fait baptiser vers 496 ?', 'Clovis', 'Charlemagne', 'Louis XIV', 'Vercingétorix']
+    ]), cours: "Vercingétorix a résisté à Jules César, Charlemagne a été couronné empereur en 800, Jeanne d'Arc a combattu les Anglais, Louis XIV était le Roi-Soleil et Napoléon est devenu empereur en 1804." },
+    { lvl: 1, title: 'Les dates clés', emoji: '📅', items: QCM([
+      ['En quelle année Clovis est-il baptisé, environ ?', '496', '800', '1492', '1789'],
+      ['En quelle année Charlemagne est-il couronné empereur ?', '800', '496', '1515', '1066'],
+      ['En quelle année a eu lieu la bataille de Marignan ?', '1515', '1492', '1789', '1610', '§Marignan, 1515, victoire de François Ier.'],
+      ['En quelle année Christophe Colomb arrive-t-il en Amérique ?', '1492', '1515', '1789', '1066'],
+      ['En quelle année commence la Révolution française ?', '1789', '1815', '1492', '1914', '§Le 14 juillet 1789, prise de la Bastille.'],
+      ['Quelles sont les dates de la Première Guerre mondiale ?', '1914 – 1918', '1939 – 1945', '1870 – 1871', '1789 – 1799'],
+      ['Quelles sont les dates de la Seconde Guerre mondiale ?', '1939 – 1945', '1914 – 1918', '1954 – 1962', '1870 – 1871'],
+      ['Quel jour fête-t-on la prise de la Bastille ?', 'le 14 juillet', 'le 11 novembre', 'le 8 mai', 'le 1er mai'],
+      ['Que commémore-t-on le 11 novembre ?', 'l\'armistice de 1918', 'la prise de la Bastille', 'la victoire de 1945', 'le sacre de Charlemagne'],
+      ['En quelle année Napoléon perd-il à Waterloo ?', '1815', '1804', '1789', '1848']
+    ]), cours: "Quelques dates à retenir : 496 baptême de Clovis, 800 couronnement de Charlemagne, 1492 arrivée de Colomb en Amérique, 1515 Marignan, 1789 Révolution française, 1914 à 1918 et 1939 à 1945 les deux guerres mondiales." },
+    { lvl: 1, title: 'La Révolution et l\'Empire', emoji: '🇫🇷', items: QCM([
+      ['Quel bâtiment est pris par le peuple le 14 juillet 1789 ?', 'la Bastille', 'le Louvre', 'Versailles', 'les Tuileries'],
+      ['Quel texte est adopté en août 1789 ?', 'la Déclaration des droits de l\'homme et du citoyen', 'le Code civil', 'la Constitution de 1958', 'l\'édit de Nantes'],
+      ['Quel roi est exécuté en 1793 ?', 'Louis XVI', 'Louis XIV', 'Louis XVIII', 'Charles X'],
+      ['Quelle est la devise de la République française ?', 'Liberté, Égalité, Fraternité', 'Travail, Famille, Patrie', 'Honneur et Patrie', 'Paix et Justice'],
+      ['Quel recueil de lois Napoléon crée-t-il en 1804 ?', 'le Code civil', 'la Déclaration des droits', 'la Grande Charte', 'l\'édit de Nantes'],
+      ['Où Napoléon est-il exilé en dernier ?', 'à Sainte-Hélène', 'à l\'île d\'Elbe', 'en Corse', 'en Russie'],
+      ['Quel hymne date de la Révolution ?', 'La Marseillaise', 'L\'Internationale', 'Le Chant des partisans', 'La Madelon'],
+      ['Quelle bataille est une grande victoire de Napoléon en 1805 ?', 'Austerlitz', 'Waterloo', 'Verdun', 'Marignan'],
+      ['Que signifie « abolir les privilèges » (4 août 1789) ?', 'supprimer les avantages de la noblesse et du clergé', 'créer de nouveaux impôts', 'rétablir la royauté', 'interdire les religions'],
+      ['Quel régime est proclamé en 1792 ?', 'la République', 'l\'Empire', 'la monarchie absolue', 'le Consulat']
+    ]), cours: "La Révolution française commence en 1789 avec la prise de la Bastille et la Déclaration des droits de l'homme. La République est proclamée en 1792. Napoléon devient empereur en 1804 et crée le Code civil." },
+    { lvl: 2, title: 'Le XXe siècle', emoji: '🌍', items: QCM([
+      ['Quelle bataille de 1916 est le symbole de la Première Guerre mondiale en France ?', 'Verdun', 'Austerlitz', 'Waterloo', 'Stalingrad'],
+      ['Comment appelle-t-on la vie des soldats de 14-18 dans les tranchées ?', 'la guerre de position', 'la guerre éclair', 'la guerre froide', 'la guerre de Cent Ans'],
+      ['Qui dirige l\'Allemagne nazie ?', 'Adolf Hitler', 'Guillaume II', 'Bismarck', 'Staline'],
+      ['Que se passe-t-il le 6 juin 1944 ?', 'le débarquement en Normandie', 'l\'armistice', 'la chute du mur de Berlin', 'l\'appel du 18 juin'],
+      ['Comment appelle-t-on l\'extermination des Juifs d\'Europe par les nazis ?', 'la Shoah', 'la Réforme', 'la décolonisation', 'la Reconquista'],
+      ['En quelle année les femmes votent-elles pour la première fois en France ?', '1945', '1789', '1918', '1968', '§Le droit de vote leur est accordé en 1944, elles votent pour la première fois en 1945.'],
+      ['Quelle organisation est créée en 1945 pour maintenir la paix ?', 'l\'ONU', 'l\'OTAN', 'l\'Union européenne', 'la SDN'],
+      ['En quelle année tombe le mur de Berlin ?', '1989', '1961', '1945', '1991'],
+      ['Quels pays s\'opposent pendant la guerre froide ?', 'les États-Unis et l\'URSS', 'la France et l\'Allemagne', 'la Chine et le Japon', 'le Royaume-Uni et l\'Espagne'],
+      ['Quand la Ve République est-elle fondée ?', '1958', '1945', '1968', '1981']
+    ]), cours: "Le XXe siècle est marqué par deux guerres mondiales, la Shoah, puis la guerre froide entre les États-Unis et l'URSS, qui se termine avec la chute du mur de Berlin en 1989." },
+    { lvl: 3, title: 'Pour aller plus loin', emoji: '🎓', items: QCM([
+      ['Quel traité met fin à la Première Guerre mondiale avec l\'Allemagne ?', 'le traité de Versailles', 'le traité de Rome', 'le traité de Maastricht', 'le traité de Westphalie'],
+      ['Quel traité fonde la Communauté économique européenne en 1957 ?', 'le traité de Rome', 'le traité de Versailles', 'le traité de Lisbonne', 'le traité de Paris de 1763'],
+      ['En quelle année se termine la guerre d\'Algérie ?', '1962', '1954', '1958', '1945'],
+      ['Quel édit de 1598 accorde la liberté de culte aux protestants ?', 'l\'édit de Nantes', 'l\'édit de Fontainebleau', 'la loi de 1905', 'le concordat'],
+      ['Que prévoit la loi française de 1905 ?', 'la séparation des Églises et de l\'État', 'le droit de vote des femmes', 'l\'école obligatoire', 'l\'abolition de l\'esclavage'],
+      ['En quelle année l\'esclavage est-il définitivement aboli en France ?', '1848', '1789', '1794', '1905', '§Aboli une première fois en 1794, rétabli en 1802, il est définitivement aboli en 1848.'],
+      ['Quel mouvement intellectuel du XVIIIe siècle défend la raison et la liberté ?', 'les Lumières', 'la Renaissance', 'le romantisme', 'l\'humanisme'],
+      ['Qui a écrit « Le Contrat social » ?', 'Jean-Jacques Rousseau', 'Voltaire', 'Montesquieu', 'Diderot'],
+      ['Quelle crise économique commence en 1929 ?', 'la Grande Dépression', 'le choc pétrolier', 'la crise des subprimes', 'la Grande Peur'],
+      ['Quelle révolution débute en Angleterre au XVIIIe siècle grâce à la machine à vapeur ?', 'la révolution industrielle', 'la Révolution française', 'la Révolution russe', 'la révolution néolithique']
+    ]), cours: "Pour aller plus loin : les Lumières au XVIIIe siècle, la révolution industrielle, la loi de 1905 sur la laïcité, les traités qui ont construit l'Europe, et la décolonisation après 1945." }
+  ] },
+
+  geographie: { name: 'Géographie', adj: 'géographie', flag: '🌍', chapters: [
+    { lvl: 0, title: 'La France', emoji: '🇫🇷', items: QCM([
+      ['Quelle est la capitale de la France ?', 'Paris', 'Lyon', 'Marseille', 'Bordeaux'],
+      ['Quel est le plus long fleuve de France ?', 'la Loire', 'la Seine', 'le Rhône', 'la Garonne'],
+      ['Quel fleuve traverse Paris ?', 'la Seine', 'la Loire', 'le Rhin', 'la Garonne'],
+      ['Quel est le plus haut sommet de France ?', 'le mont Blanc', 'le Puy de Dôme', 'le Vignemale', 'le mont Ventoux'],
+      ['Quelle mer borde le sud de la France ?', 'la mer Méditerranée', 'la mer du Nord', 'la Manche', 'la mer Baltique'],
+      ['Quel océan borde l\'ouest de la France ?', 'l\'océan Atlantique', 'l\'océan Pacifique', 'l\'océan Indien', 'l\'océan Arctique'],
+      ['Quelle chaîne de montagnes sépare la France de l\'Espagne ?', 'les Pyrénées', 'les Alpes', 'le Jura', 'les Vosges'],
+      ['Sur quel continent se trouve la France métropolitaine ?', 'l\'Europe', 'l\'Afrique', 'l\'Asie', 'l\'Amérique'],
+      ['Quelle grande ville se trouve au bord de la Méditerranée ?', 'Marseille', 'Lille', 'Strasbourg', 'Rennes'],
+      ['Quelle île française se trouve en Méditerranée ?', 'la Corse', 'la Réunion', 'la Martinique', 'la Guadeloupe']
+    ]), cours: "La France a pour capitale Paris, traversée par la Seine. Son plus long fleuve est la Loire et son plus haut sommet le mont Blanc. Elle est bordée par l'océan Atlantique, la Manche et la mer Méditerranée." },
+    { lvl: 0, title: 'Continents et océans', emoji: '🌐', items: QCM([
+      ['Combien y a-t-il de continents ?', '6', '4', '8', '10', '§On compte souvent 6 continents : Afrique, Amérique, Antarctique, Asie, Europe, Océanie.'],
+      ['Quel est le plus grand océan ?', 'l\'océan Pacifique', 'l\'océan Atlantique', 'l\'océan Indien', 'l\'océan Arctique'],
+      ['Sur quel continent se trouve l\'Égypte ?', 'l\'Afrique', 'l\'Asie', 'l\'Europe', 'l\'Océanie'],
+      ['Sur quel continent se trouve le Brésil ?', 'l\'Amérique', 'l\'Afrique', 'l\'Asie', 'l\'Europe'],
+      ['Sur quel continent se trouve la Chine ?', 'l\'Asie', 'l\'Europe', 'l\'Afrique', 'l\'Océanie'],
+      ['Quel continent est recouvert de glace ?', 'l\'Antarctique', 'l\'Océanie', 'l\'Europe', 'l\'Afrique'],
+      ['Sur quel continent se trouve l\'Australie ?', 'l\'Océanie', 'l\'Asie', 'l\'Amérique', 'l\'Afrique'],
+      ['Quel est le plus grand continent ?', 'l\'Asie', 'l\'Afrique', 'l\'Amérique', 'l\'Europe'],
+      ['Quel océan sépare l\'Europe de l\'Amérique ?', 'l\'océan Atlantique', 'l\'océan Pacifique', 'l\'océan Indien', 'l\'océan Arctique'],
+      ['Sur quel continent se trouvent les Comores ?', 'l\'Afrique', 'l\'Asie', 'l\'Océanie', 'l\'Amérique', '§Les Comores sont un archipel de l\'océan Indien, rattaché à l\'Afrique.']
+    ]), cours: "Il y a six continents : l'Afrique, l'Amérique, l'Antarctique, l'Asie, l'Europe et l'Océanie, et cinq océans. Le plus grand océan est le Pacifique, le plus grand continent est l'Asie." },
+    { lvl: 1, title: 'Capitales d\'Europe', emoji: '🏙️', items: QCM([
+      ['Quelle est la capitale de l\'Espagne ?', 'Madrid', 'Barcelone', 'Séville', 'Lisbonne'],
+      ['Quelle est la capitale de l\'Italie ?', 'Rome', 'Milan', 'Venise', 'Naples'],
+      ['Quelle est la capitale de l\'Allemagne ?', 'Berlin', 'Munich', 'Francfort', 'Vienne'],
+      ['Quelle est la capitale du Royaume-Uni ?', 'Londres', 'Manchester', 'Dublin', 'Édimbourg'],
+      ['Quelle est la capitale du Portugal ?', 'Lisbonne', 'Porto', 'Madrid', 'Faro'],
+      ['Quelle est la capitale de la Belgique ?', 'Bruxelles', 'Anvers', 'Liège', 'Amsterdam'],
+      ['Quelle est la capitale de la Suisse ?', 'Berne', 'Genève', 'Zurich', 'Lausanne', '§Ce n\'est ni Genève ni Zurich : c\'est Berne.'],
+      ['Quelle est la capitale des Pays-Bas ?', 'Amsterdam', 'Rotterdam', 'La Haye', 'Bruxelles'],
+      ['Quelle est la capitale de la Grèce ?', 'Athènes', 'Thessalonique', 'Rome', 'Istanbul'],
+      ['Quelle est la capitale de la Pologne ?', 'Varsovie', 'Cracovie', 'Prague', 'Budapest'],
+      ['Quelle est la capitale de l\'Autriche ?', 'Vienne', 'Berlin', 'Budapest', 'Prague'],
+      ['Quelle est la capitale de la Suède ?', 'Stockholm', 'Oslo', 'Copenhague', 'Helsinki']
+    ]), cours: "Quelques capitales d'Europe : Madrid pour l'Espagne, Rome pour l'Italie, Berlin pour l'Allemagne, Londres pour le Royaume-Uni, Lisbonne pour le Portugal et Bruxelles pour la Belgique." },
+    { lvl: 1, title: 'L\'Afrique', emoji: '🌍', items: QCM([
+      ['Quelle est la capitale de la République démocratique du Congo ?', 'Kinshasa', 'Brazzaville', 'Lubumbashi', 'Kigali'],
+      ['Quelle est la capitale des Comores ?', 'Moroni', 'Mamoudzou', 'Antananarivo', 'Mutsamudu'],
+      ['Quelle est la capitale du Sénégal ?', 'Dakar', 'Bamako', 'Abidjan', 'Conakry'],
+      ['Quelle est la capitale du Maroc ?', 'Rabat', 'Casablanca', 'Marrakech', 'Fès'],
+      ['Quel est le plus long fleuve d\'Afrique ?', 'le Nil', 'le Congo', 'le Niger', 'le Zambèze'],
+      ['Quel est le plus grand désert chaud du monde ?', 'le Sahara', 'le Kalahari', 'le désert de Gobi', 'le désert d\'Atacama'],
+      ['Quelle est la capitale du Kenya ?', 'Nairobi', 'Mombasa', 'Dar es Salaam', 'Kampala'],
+      ['Quelle est la capitale de l\'Égypte ?', 'Le Caire', 'Alexandrie', 'Louxor', 'Khartoum'],
+      ['Quel est le plus haut sommet d\'Afrique ?', 'le Kilimandjaro', 'le mont Kenya', 'le mont Cameroun', 'le Toubkal'],
+      ['Quelle est la capitale de la Côte d\'Ivoire ?', 'Yamoussoukro', 'Abidjan', 'Bouaké', 'Accra', '§Abidjan est la plus grande ville, mais la capitale politique est Yamoussoukro.']
+    ]), cours: "L'Afrique compte 54 pays. Le Nil est son plus long fleuve, le Sahara le plus grand désert chaud du monde et le Kilimandjaro son plus haut sommet." },
+    { lvl: 2, title: 'Le monde', emoji: '🗺️', items: QCM([
+      ['Quelle est la capitale des États-Unis ?', 'Washington', 'New York', 'Los Angeles', 'Chicago'],
+      ['Quelle est la capitale du Canada ?', 'Ottawa', 'Toronto', 'Montréal', 'Vancouver'],
+      ['Quelle est la capitale du Japon ?', 'Tokyo', 'Kyoto', 'Osaka', 'Pékin'],
+      ['Quelle est la capitale de l\'Australie ?', 'Canberra', 'Sydney', 'Melbourne', 'Perth'],
+      ['Quelle est la capitale du Brésil ?', 'Brasilia', 'Rio de Janeiro', 'São Paulo', 'Buenos Aires'],
+      ['Quel est le plus grand pays du monde par la superficie ?', 'la Russie', 'le Canada', 'la Chine', 'les États-Unis'],
+      ['Quel est le pays le plus peuplé du monde (2024) ?', 'l\'Inde', 'la Chine', 'les États-Unis', 'l\'Indonésie'],
+      ['Quel est le plus haut sommet du monde ?', 'l\'Everest', 'le K2', 'le mont Blanc', 'l\'Aconcagua'],
+      ['Quel est le plus long fleuve d\'Amérique du Sud ?', 'l\'Amazone', 'l\'Orénoque', 'le Paraná', 'le Mississippi'],
+      ['Dans quel pays se trouve la ville de Mumbai ?', 'l\'Inde', 'le Pakistan', 'le Bangladesh', 'le Sri Lanka']
+    ]), cours: "Quelques repères : la Russie est le plus grand pays du monde, l'Inde le plus peuplé, l'Everest le plus haut sommet et l'Amazone le plus grand fleuve d'Amérique du Sud." },
+    { lvl: 3, title: 'Grands enjeux', emoji: '🌱', items: QCM([
+      ['Quel gaz est le principal responsable de l\'effet de serre lié aux activités humaines ?', 'le dioxyde de carbone', 'l\'oxygène', 'l\'azote', 'l\'hélium'],
+      ['Comment appelle-t-on la concentration de la population dans les villes ?', 'l\'urbanisation', 'la désertification', 'la mondialisation', 'la déforestation'],
+      ['Quelle forêt est souvent appelée « le poumon de la planète » ?', 'l\'Amazonie', 'la Sibérie', 'la forêt des Landes', 'la forêt du Congo'],
+      ['Comment appelle-t-on l\'intensification des échanges dans le monde entier ?', 'la mondialisation', 'l\'urbanisation', 'la décolonisation', 'l\'exode rural'],
+      ['Combien d\'êtres humains vivent sur Terre en 2024, environ ?', '8 milliards', '2 milliards', '15 milliards', '800 millions'],
+      ['Quel accord international de 2015 vise à limiter le réchauffement climatique ?', 'l\'accord de Paris', 'le protocole de Kyoto', 'le traité de Rome', 'l\'accord de Schengen'],
+      ['Qu\'est-ce qu\'une énergie renouvelable ?', 'une énergie qui se reconstitue naturellement', 'une énergie issue du pétrole', 'une énergie nucléaire', 'une énergie qui s\'épuise vite'],
+      ['Comment appelle-t-on le départ des habitants des campagnes vers les villes ?', 'l\'exode rural', 'l\'étalement urbain', 'la périurbanisation', 'la migration internationale'],
+      ['Quelle est la plus grande métropole du monde par la population ?', 'Tokyo', 'Paris', 'New York', 'Londres'],
+      ['Quel détroit relie la mer Méditerranée à l\'océan Atlantique ?', 'le détroit de Gibraltar', 'le détroit du Bosphore', 'le canal de Suez', 'le Pas de Calais']
+    ]), cours: "Les grands enjeux du monde actuel sont le changement climatique, l'urbanisation, la mondialisation et l'accès aux ressources. L'accord de Paris de 2015 vise à limiter le réchauffement de la planète." }
+  ] }
+};
+
+/* version à voix haute d'un texte écrit (symboles, chiffres romains, sigles) */
+const ROMAN_SAY = { XIV: 'quatorze', XVI: 'seize', XV: 'quinze', XIII: 'treize', XVIIIe: 'dix-huitième', XIXe: 'dix-neuvième', XXe: 'vingtième', XXIe: 'vingt-et-unième', XVIe: 'seizième', XVIIe: 'dix-septième' };
+function speakable(t) {
+  return String(t)
+    .replace(/\b(cos|sin|tan)(²?)\(([^)]*)\)/g, (m, f, sq, a) => ({ cos: 'cosinus', sin: 'sinus', tan: 'tangente' })[f] + (sq ? ' carré' : '') + ' de ' + a)
+    .replace(/(\d+)°/g, '$1 degrés').replace(/°/g, ' degrés').replace(/π/g, 'pi')
+    .replace(/²/g, ' au carré').replace(/³/g, ' au cube').replace(/×/g, ' fois ').replace(/÷/g, ' divisé par ').replace(/√/g, 'racine carrée de ')
+    .replace(/(\d+)\s*%/g, '$1 pour cent').replace(/(\d+)\/(\d+)/g, '$1 sur $2')
+    .replace(/\b(XVIIIe|XIXe|XXe|XXIe|XVIe|XVIIe|XIV|XVI|XV|XIII)\b/g, m => ROMAN_SAY[m])
+    .replace(/\bURSS\b/g, 'U.R.S.S.').replace(/\bONU\b/g, "l'O.N.U.").replace(/l'l'O/g, "l'O").replace(/\bSOH CAH TOA\b/g, 'so, ca, toa')
+    .replace(/\(−\s?(\d+)\)/g, 'moins $1').replace(/\s\+\s/g, ' plus ').replace(/\s=\s/g, ' égale ').replace(/\s[−–]\s/g, ' moins ').replace(/−(\d)/g, 'moins $1')
+    .replace(/(\d)\s?€/g, '$1 euros').replace(/⁴/g, ' puissance 4').replace(/·/g, ' fois ').replace(/\b([A-Z]{2})\/([A-Z]{2})\b/g, '$1 sur $2').replace(/[()]/g, ' ')
+    .replace(/\s+([,.?!])/g, '$1').replace(/\s{2,}/g, ' ').trim();
+}
+
+/* génère les questions de chaque chapitre (une fois, avec une graine fixe) */
+function subjectItems(code, k, ch) {
+  if (ch.items) return ch.items;
+  if (ch.dict) return ch.dict.map(text => ({ dict: text }));
+  const r = rngFor(`${code}-${k}`), gens = Array.isArray(ch.gen) ? ch.gen : [ch.gen], out = [], seen = new Set();
+  for (let guard = 0; out.length < 18 && guard < 400; guard++) { const it = GEN[gens[guard % gens.length]](r); const key = it.q + (it.fig || ''); if (seen.has(key)) continue; seen.add(key); if (it.o) it.o = uniqOpts(it.o[0], it.o.slice(1)); out.push(it); }
+  return out;
+}
+</script>
+<script>/* =====================================================================
+   La méthode d'Amara : chaque chapitre s'enseigne en 4 temps
+   1. L'idée (une image concrète)  2. Un exemple résolu pas à pas (« je te montre »)
+   3. L'astuce pour retenir         4. Le piège à éviter
+   Puis : questions avec indice, correction expliquée, évaluation à 80 %, révisions espacées.
+   Un texte peut être une chaîne, ou [texte affiché, texte dit à voix haute].
+   ===================================================================== */
+const LESSONS = {
+  maths: [
+    { idee: "Additionner, c'est mettre ensemble. Si tu as 4 billes et qu'on t'en donne 3, tu as maintenant 7 billes. Le signe + se lit « plus ».",
+      exemple: { titre: 'Calculons 8 + 5', steps: ['Je pars du plus grand nombre : 8.', "J'avance de 5 pas : 9, 10, 11, 12, 13.", 'Donc 8 + 5 = 13.'] },
+      astuce: "Passe par 10 ! 8 + 5, c'est 8 + 2 pour arriver à 10, puis encore 3 : 13. Et l'ordre ne compte pas : 5 + 8 = 8 + 5.",
+      piege: "Le premier pas après 8, c'est 9 : on ne compte pas le nombre de départ." },
+    { idee: "Soustraire, c'est enlever. Si tu as 9 bonbons et que tu en manges 4, il t'en reste 5. Le signe − se lit « moins ».",
+      exemple: { titre: 'Calculons 14 − 6', steps: ['Je passe par 10 : 14 − 4 = 10.', "Il me reste 2 à enlever : 10 − 2 = 8.", 'Donc 14 − 6 = 8.'] },
+      astuce: "Pour vérifier, fais l'addition à l'envers : 8 + 6 = 14. Si ça tombe juste, ta soustraction est bonne !",
+      piege: "L'ordre compte : 14 − 6 n'est pas pareil que 6 − 14. On part toujours du nombre de départ." },
+    { idee: "Compter, c'est donner un nombre à chaque objet, un seul à la fois. Le dernier nombre que tu dis, c'est le total.",
+      exemple: { titre: 'Comptons 🍎🍎🍎🍎🍎', steps: ['Je touche la première pomme et je dis « un ».', 'Je touche chaque pomme suivante : deux, trois, quatre, cinq.', 'Le dernier nombre est cinq : il y a 5 pommes.'] },
+      astuce: "Pour aller plus vite, compte par groupes de 2 : deux, quatre, six… ou par groupes de 5 : cinq, dix, quinze.",
+      piege: "Ne compte pas deux fois le même objet : avance toujours dans le même sens, de gauche à droite." },
+    { idee: "Comparer, c'est trouver le plus grand. Le double, c'est deux fois le même nombre. La moitié, c'est partager en deux parts égales.",
+      exemple: { titre: 'Comparons 47 et 52', steps: ['Je regarde les dizaines : 4 dizaines contre 5 dizaines.', '5 dizaines, c\'est plus : 52 est le plus grand.', 'Le double de 6, c\'est 6 + 6 = 12, et la moitié de 12, c\'est 6.'] },
+      astuce: "Le signe > est une bouche de crocodile : il ouvre toujours la bouche vers le plus grand nombre, parce qu'il a très faim !",
+      piege: "Un nombre avec plus de chiffres est plus grand : 9 est plus petit que 21, même si 9 est plus grand que 2." },
+    { idee: "Multiplier, c'est additionner plusieurs fois le même nombre. 4 × 3, c'est quatre paquets de trois : 3 + 3 + 3 + 3 = 12.",
+      exemple: { titre: 'Calculons 6 × 7', steps: ['6 × 7, ce sont six paquets de 7.', 'Je connais 5 × 7 = 35.', "J'ajoute un paquet de 7 de plus : 35 + 7 = 42.", 'Donc 6 × 7 = 42.'] },
+      astuce: "L'ordre ne compte pas : 7 × 6 = 6 × 7. Tu n'as donc que la moitié des tables à apprendre ! Récite-les un peu chaque jour.",
+      piege: "Ne confonds pas fois et plus : 3 × 4 = 12, mais 3 + 4 = 7." },
+    { idee: "Dans un grand nombre, chaque chiffre a sa place : les unités, les dizaines, les centaines. On calcule colonne par colonne, en commençant par la droite.",
+      exemple: { titre: 'Calculons 457 + 68', steps: ["Unités : 7 + 8 = 15. J'écris 5 et je retiens 1.", "Dizaines : 5 + 6 + 1 de retenue = 12. J'écris 2 et je retiens 1.", 'Centaines : 4 + 1 de retenue = 5.', 'Résultat : 525.'] },
+      astuce: "Estime d'abord : 457 + 68, c'est environ 460 + 70 = 530. Ton résultat doit être proche, sinon recommence.",
+      piege: "La retenue s'oublie facilement : écris-la en petit au-dessus de la colonne suivante." },
+    { idee: "Diviser, c'est partager en parts égales. 20 ÷ 4, c'est partager 20 bonbons entre 4 enfants : chacun en reçoit 5.",
+      exemple: { titre: 'Calculons 56 ÷ 8', steps: ['Je cherche combien de fois 8 rentre dans 56.', 'Je récite la table de 8 : 8, 16, 24, 32, 40, 48, 56.', 'J\'ai compté 7 fois : 56 ÷ 8 = 7.'] },
+      astuce: "La division est le contraire de la multiplication : si tu connais 8 × 7 = 56, tu connais aussi 56 ÷ 8 = 7.",
+      piege: "On ne peut jamais diviser par zéro. Et l'ordre compte : 56 ÷ 8 n'est pas 8 ÷ 56." },
+    { idee: "Un problème raconte une petite histoire avec des nombres. Il faut d'abord comprendre l'histoire, puis choisir la bonne opération.",
+      exemple: { titre: 'Léa a 12 €. Elle achète un livre à 7 €. Combien lui reste-t-il ?', steps: ['Je repère les nombres : 12 euros et 7 euros.', "Elle dépense : l'argent diminue, c'est une soustraction.", '12 − 7 = 5.', 'Je réponds par une phrase : il lui reste 5 euros.'] },
+      astuce: "Écoute les mots : « en tout », « gagne » → addition. « Reste », « dépense » → soustraction. « Chaque », « fois » → multiplication. « Partage » → division.",
+      piege: "Ne prends pas les nombres au hasard : imagine la scène dans ta tête, et vérifie que ta réponse a du sens." },
+    { idee: "Une fraction, c'est une part d'un tout. Coupe une pizza en 4 parts égales et manges-en 3 : tu as mangé trois quarts de la pizza, qu'on écrit 3/4.",
+      exemple: { titre: 'Calculons 2/8 + 3/8', steps: ['Le nombre du bas, 8, dit que la pizza est coupée en 8 parts.', 'Les nombres du haut comptent les parts prises : 2 parts plus 3 parts.', '2 + 3 = 5 parts, toujours sur 8 : 5/8.'] },
+      astuce: "Pour simplifier une fraction, divise le haut et le bas par le même nombre : 6/8 = 3/4 en divisant par 2. C'est la même quantité de pizza, en parts plus grosses.",
+      piege: "On n'additionne jamais les nombres du bas : 2/8 + 3/8 ne fait pas 5/16. La taille des parts ne change pas !" },
+    { idee: "Les nombres relatifs peuvent être positifs ou négatifs, comme sur un thermomètre : au-dessus de zéro il fait doux, en dessous il gèle.",
+      exemple: { titre: 'Calculons (−3) + 5', steps: ['Je me place sur moins 3 sur le thermomètre.', 'Ajouter 5, c\'est monter de 5 degrés : moins 2, moins 1, 0, 1, 2.', 'Donc (−3) + 5 = 2.'] },
+      astuce: "Règle des signes pour multiplier : deux signes pareils donnent un résultat positif, deux signes différents donnent un résultat négatif.",
+      piege: "Enlever un nombre négatif revient à ajouter : 4 − (−3) = 4 + 3 = 7." },
+    { idee: "Dans un calcul avec plusieurs opérations, on suit un ordre précis, comme une recette : d'abord les parenthèses, puis les multiplications et divisions, enfin les additions et soustractions.",
+      exemple: { titre: 'Calculons 3 + 4 × 5', steps: ["Il n'y a pas de parenthèses.", 'La multiplication passe en premier : 4 × 5 = 20.', 'Puis l\'addition : 3 + 20 = 23.'] },
+      astuce: "Retiens : les parenthèses d'abord, puis fois et divisé, et plus et moins en dernier.",
+      piege: "Ne calcule pas simplement de gauche à droite : 3 + 4 × 5 ne fait pas 35 !" },
+    { idee: "Un pourcentage, c'est une part sur 100. 50 %, c'est la moitié. 25 %, c'est le quart. 10 %, c'est un dixième.",
+      exemple: { titre: 'Calculons 30 % de 80', steps: ['10 % de 80, c\'est 80 ÷ 10 = 8.', '30 %, c\'est trois fois 10 % : 3 × 8 = 24.', 'Donc 30 % de 80 = 24.'] },
+      astuce: "Commence toujours par 10 % : il suffit de diviser par 10. Et 5 %, c'est la moitié de 10 %.",
+      piege: "Un pourcentage dépend du nombre de départ : 50 % de 10, c'est 5, mais 50 % de 1000, c'est 500." },
+    { idee: "Une équation, c'est une balance en équilibre. Pour trouver x, on fait la même chose des deux côtés, pour que la balance reste droite.",
+      exemple: { titre: 'Résolvons 3x + 4 = 19', steps: ["J'enlève 4 des deux côtés : 3x = 15.", 'Je divise les deux côtés par 3 : x = 5.', 'Je vérifie : 3 × 5 + 4 = 19. C\'est juste !'] },
+      astuce: "Défais les opérations dans l'ordre inverse : on enlève d'abord ce qui est ajouté, puis on divise ce qui est multiplié. Et vérifie toujours en remplaçant x.",
+      piege: "Ce que tu fais d'un côté, fais-le aussi de l'autre côté, sinon la balance penche et le résultat est faux." },
+    { idee: ['Une puissance est une multiplication répétée : 2³ = 2 × 2 × 2 = 8. La racine carrée fait l\'inverse du carré : √25 = 5, car 5 × 5 = 25.', "Une puissance est une multiplication répétée : 2 puissance 3, c'est 2 fois 2 fois 2, soit 8. La racine carrée fait l'inverse du carré : racine carrée de 25 égale 5, car 5 fois 5 font 25."],
+      exemple: { titre: ['Calculons 3⁴ puis √49', 'Calculons 3 puissance 4, puis racine carrée de 49'], steps: [['3⁴ = 3 × 3 × 3 × 3.', '3 puissance 4, c\'est 3 fois 3 fois 3 fois 3.'], ['3 × 3 = 9, puis × 3 = 27, puis × 3 = 81.', '3 fois 3 font 9, fois 3 font 27, fois 3 font 81.'], ['√49 : quel nombre fois lui-même donne 49 ? C\'est 7.', 'Racine carrée de 49 : quel nombre multiplié par lui-même donne 49 ? C\'est 7.']] },
+      astuce: "Apprends les carrés par cœur jusqu'à 15 × 15 = 225 : les racines deviennent alors très faciles.",
+      piege: ["2³ ne fait pas 2 × 3 = 6 ! L'exposant dit combien de fois on multiplie le nombre par lui-même.", "2 puissance 3 ne fait pas 2 fois 3 ! L'exposant dit combien de fois on multiplie le nombre par lui-même."] },
+    { idee: ['Trois formules font gagner beaucoup de temps : (a + b)² = a² + 2ab + b², (a − b)² = a² − 2ab + b², et (a − b)(a + b) = a² − b².', "Trois formules font gagner beaucoup de temps : a plus b au carré égale a carré plus 2 a b plus b carré. a moins b au carré égale a carré moins 2 a b plus b carré. Et a moins b, fois a plus b, égale a carré moins b carré."],
+      exemple: { titre: ['Développons (x + 3)²', 'Développons x plus 3, au carré'], steps: [['Ici, a = x et b = 3.', 'Ici, a vaut x et b vaut 3.'], ['a² = x², 2ab = 2 × x × 3 = 6x, b² = 9.', 'a carré donne x carré. 2 a b donne 2 fois x fois 3, soit 6 x. b carré donne 9.'], ['Donc (x + 3)² = x² + 6x + 9.', 'Donc x plus 3 au carré égale x carré plus 6 x plus 9.']] },
+      astuce: "Imagine un grand carré de côté a + b découpé en 4 morceaux : un carré a², un carré b², et deux rectangles a fois b. Voilà d'où vient le 2ab !",
+      piege: ['(x + 3)² ne fait pas x² + 9 : n\'oublie jamais le double produit 2ab.', 'x plus 3 au carré ne fait pas x carré plus 9 : n\'oublie jamais le double produit, 2 a b.'] },
+    { idee: "La dérivée mesure à quelle vitesse une fonction change, comme le compteur d'une voiture mesure à quelle vitesse la distance change.",
+      exemple: { titre: ['Dérivons f(x) = 3x² + 5x', 'Dérivons f de x égale 3 x carré plus 5 x'], steps: [['Règle : la dérivée de xⁿ est n·xⁿ⁻¹. Pour 3x², on descend le 2 : 3 × 2x = 6x.', 'Règle : la dérivée de x puissance n est n fois x puissance n moins 1. Pour 3 x carré, on descend le 2 : 3 fois 2 x, soit 6 x.'], ['La dérivée de 5x est 5.', 'La dérivée de 5 x est 5.'], ["Donc f'(x) = 6x + 5.", 'Donc f prime de x égale 6 x plus 5.']] },
+      astuce: "Dérive chaque morceau séparément, puis additionne. Et la dérivée d'un nombre tout seul vaut toujours 0.",
+      piege: ['N\'oublie pas de baisser l\'exposant de 1 : la dérivée de x³ est 3x², pas 3x³.', 'N\'oublie pas de baisser l\'exposant de 1 : la dérivée de x au cube est 3 x carré, pas 3 x au cube.'] }
+  ],
+  geometrie: [
+    { idee: "Chaque figure a sa carte d'identité : le nombre de côtés, leur longueur, et les angles. Le carré a 4 côtés égaux et 4 angles droits.",
+      exemple: { titre: 'Reconnaissons un rectangle', steps: ['Je compte les côtés : il y en a 4.', 'Je regarde les coins : ce sont 4 angles droits, comme le coin d\'une feuille.', 'Les côtés face à face sont égaux, mais pas tous les quatre : c\'est un rectangle.'] },
+      astuce: "Un carré est un rectangle très spécial, dont tous les côtés sont égaux. Le losange, lui, a 4 côtés égaux mais pas d'angle droit.",
+      piege: "Un cercle n'a ni côté ni coin : ce n'est pas un polygone." },
+    { idee: "Le nom d'une figure dit souvent son nombre de côtés : tri veut dire 3, penta veut dire 5, hexa veut dire 6, octo veut dire 8.",
+      exemple: { titre: "Comptons les côtés d'un hexagone", steps: ['Je pose mon doigt sur un coin.', 'Je suis chaque côté en comptant : un, deux, trois, quatre, cinq, six.', 'Je reviens à mon point de départ : 6 côtés, c\'est un hexagone.'] },
+      astuce: "Pense à la pieuvre, l'octopus, qui a 8 bras : un octogone a 8 côtés. Et les alvéoles des abeilles sont des hexagones.",
+      piege: "Marque le coin de départ, sinon tu risques de compter un côté deux fois." },
+    { idee: "Le périmètre, c'est la longueur du tour d'une figure, comme une fourmi qui marche tout autour.",
+      exemple: { titre: 'Périmètre d\'un rectangle de 8 cm sur 3 cm', steps: ['Le tour, c\'est longueur + largeur + longueur + largeur.', '8 + 3 + 8 + 3 = 22.', 'Ou plus vite : 2 × (8 + 3) = 2 × 11 = 22 cm.'] },
+      astuce: "Pour un carré, les 4 côtés sont égaux : périmètre = 4 × côté.",
+      piege: "Ne confonds pas périmètre et aire : le périmètre est une longueur, en cm, l'aire est une surface, en cm²." },
+    { idee: "L'aire, c'est la surface à l'intérieur d'une figure : le nombre de petits carreaux de 1 cm de côté qu'on peut poser dedans.",
+      exemple: { titre: 'Aire d\'un rectangle de 5 cm sur 3 cm', steps: ['Je peux poser 3 rangées de 5 carreaux.', '3 × 5 = 15 carreaux.', "L'aire est donc 15 cm²."] },
+      astuce: "Un triangle rectangle, c'est un rectangle coupé en deux par la diagonale : son aire, c'est base × hauteur, divisé par 2.",
+      piege: "L'aire s'écrit en unités carrées : cm², m². On multiplie les longueurs, on ne les additionne pas." },
+    { idee: "Un angle mesure l'ouverture entre deux traits, comme l'ouverture des aiguilles d'une horloge. Il se mesure en degrés avec un rapporteur.",
+      exemple: { titre: 'Classons un angle de 120°', steps: ['Je compare avec l\'angle droit, qui mesure 90°.', '120° est plus ouvert que 90° mais moins que 180°.', 'C\'est donc un angle obtus.'] },
+      astuce: "Aigu, c'est pointu, moins de 90°. Droit, c'est le coin d'une feuille, 90°. Obtus, c'est plus ouvert. Plat, c'est une ligne droite, 180°. Et dans un triangle, les trois angles font toujours 180° en tout.",
+      piege: "La longueur des traits ne change pas l'angle : seule l'ouverture compte." },
+    { idee: "Dans un triangle rectangle, le côté le plus long, en face de l'angle droit, s'appelle l'hypoténuse. Pythagore a découvert que son carré est égal à la somme des carrés des deux autres côtés.",
+      exemple: { titre: ['Triangle rectangle de côtés 3 cm et 4 cm', 'Un triangle rectangle de côtés 3 et 4 centimètres'], steps: [['3² + 4² = 9 + 16 = 25.', '3 au carré plus 4 au carré égale 9 plus 16, soit 25.'], ['L\'hypoténuse au carré vaut 25.', "L'hypoténuse au carré vaut 25."], ['Hypoténuse = √25 = 5 cm.', 'L\'hypoténuse vaut racine carrée de 25, soit 5 centimètres.']] },
+      astuce: "Retiens le triangle 3, 4, 5 : c'est le plus célèbre. Les maçons l'utilisent depuis l'Antiquité pour tracer des angles droits avec une corde !",
+      piege: "Pour trouver un petit côté, on soustrait : côté² = hypoténuse² − autre côté². On n'additionne pas dans ce cas." },
+    { idee: "Le rayon va du centre au bord du cercle. Le diamètre traverse tout le cercle : il vaut deux rayons. Le nombre pi, environ 3,14, relie le tour du cercle à son diamètre.",
+      exemple: { titre: 'Cercle de rayon 5 cm', steps: ['Périmètre = 2 × π × r = 2 × 3,14 × 5 = 31,4 cm.', 'Aire = π × r × r = 3,14 × 5 × 5 = 78,5 cm².'] },
+      astuce: "Le tour d'un cercle mesure toujours un peu plus de 3 fois son diamètre. Essaie avec une ficelle autour d'une assiette !",
+      piege: "Ne confonds pas rayon et diamètre : si on te donne le diamètre, divise-le d'abord par 2." },
+    { idee: "Le volume mesure la place occupée à l'intérieur d'un objet : le nombre de petits cubes de 1 cm de côté qu'on peut y ranger.",
+      exemple: { titre: 'Volume d\'un pavé de 4 cm × 3 cm × 2 cm', steps: ['Au fond, je pose 4 × 3 = 12 petits cubes.', 'J\'empile 2 étages : 12 × 2 = 24.', 'Le volume est 24 cm³.'] },
+      astuce: "Pour tous les « tubes » droits, pavé ou cylindre : volume = aire du fond × hauteur.",
+      piege: "Le volume s'écrit en unités cubes : cm³, m³. Et 1 litre, c'est 1 dm³, soit 1000 cm³." },
+    { idee: "Thalès dit que si on trace une parallèle à un côté d'un triangle, on obtient un petit triangle qui est un agrandissement réduit du grand : toutes les longueurs sont proportionnelles.",
+      exemple: { titre: 'AM = 2, AB = 6, AC = 9 : combien vaut AN ?', steps: ['Le petit triangle est 3 fois plus petit, car 6 ÷ 2 = 3.', 'Donc AN = AC ÷ 3 = 9 ÷ 3 = 3.', 'On peut écrire : AM/AB = AN/AC, soit 2/6 = 3/9.'] },
+      astuce: "Pense à une photo réduite : tout est divisé par le même nombre, le coefficient de réduction.",
+      piege: "Les droites doivent être parallèles, sinon on ne peut pas utiliser Thalès. Et compare toujours les côtés qui se correspondent." },
+    { idee: "La trigonométrie relie les angles et les côtés d'un triangle rectangle avec trois outils : le sinus, le cosinus et la tangente.",
+      exemple: { titre: 'Triangle rectangle : hypoténuse 10, côté opposé à l\'angle 6', steps: ['Sinus = opposé ÷ hypoténuse.', 'Sinus = 6 ÷ 10 = 0,6.', 'Avec la calculatrice, on retrouve l\'angle : environ 37°.'] },
+      astuce: ["Retiens le mot magique SOH CAH TOA : Sinus = Opposé/Hypoténuse, Cosinus = Adjacent/Hypoténuse, Tangente = Opposé/Adjacent.", "Retiens le mot magique : so, ca, toa. Sinus égale opposé sur hypoténuse. Cosinus égale adjacent sur hypoténuse. Tangente égale opposé sur adjacent."],
+      piege: "Le côté opposé et le côté adjacent dépendent de l'angle que tu regardes : repère toujours l'angle d'abord." }
+  ],
+  francais: [
+    { idee: "Chaque mot a une nature, comme un métier. Le nom désigne une personne, un animal ou une chose. Le verbe dit l'action. L'adjectif décrit le nom. Le déterminant annonce le nom.",
+      exemple: { titre: 'Analysons : « Le petit chat dort. »', steps: ['« Le » annonce le nom : c\'est un déterminant.', '« petit » décrit le chat : c\'est un adjectif.', '« chat » est un animal : c\'est un nom.', '« dort » dit ce que fait le chat : c\'est un verbe.'] },
+      astuce: "Pour trouver un verbe, change le temps : « il dort » devient « il dormait ». Si le mot change, c'est un verbe. Pour un nom, essaie de mettre « le » ou « un » devant.",
+      piege: "Un même mot peut changer de nature : dans « le dîner », dîner est un nom ; dans « nous allons dîner », c'est un verbe." },
+    { idee: "Les noms et les adjectifs changent de forme selon le genre, masculin ou féminin, et le nombre, singulier ou pluriel.",
+      exemple: { titre: 'Mettons au pluriel : « un beau château »', steps: ['« un » devient « des ».', '« beau » se termine par -eau : il prend un x, « beaux ».', '« château » aussi : « châteaux ».', 'Résultat : « des beaux châteaux ».'] },
+      astuce: "En général, on ajoute un s au pluriel et un e au féminin. Retiens la phrase des 7 mots en -ou qui prennent un x : « Viens, mon chou, mon bijou, mon joujou, sur mes genoux, et jette des cailloux à ce hibou plein de poux ».",
+      piege: "Certains mots ne changent pas au pluriel : ceux qui finissent déjà par s, x ou z, comme une souris, des souris." },
+    { idee: "Conjuguer, c'est accorder le verbe avec la personne qui fait l'action : je, tu, il, nous, vous, ils.",
+      exemple: { titre: 'Conjuguons « chanter » au présent', steps: ['Je retire -er pour trouver le radical : chant.', "J'ajoute les terminaisons : e, es, e, ons, ez, ent.", 'Je chante, tu chantes, il chante, nous chantons, vous chantez, ils chantent.'] },
+      astuce: "Pour les verbes en -er, la terminaison -ent de « ils » ne se prononce pas : « ils chantent » se dit comme « il chante ».",
+      piege: "Être, avoir, aller et faire sont irréguliers : « vous êtes », « vous faites », « ils vont ». Il faut les apprendre par cœur." },
+    { idee: "Les homophones se prononcent pareil mais s'écrivent différemment et n'ont pas le même sens : a et à, est et et, son et sont, ou et où.",
+      exemple: { titre: 'Choisissons entre « a » et « à » : « Il … faim. »', steps: ['Je remplace par « avait » : « Il avait faim. »', 'La phrase a du sens : c\'est le verbe avoir.', 'J\'écris « a » sans accent : « Il a faim. »'] },
+      astuce: "Les remplacements magiques : a → avait. Est → était. Et → et puis. Son → mon. Sont → étaient. Ou → ou bien. Si ça marche, tu as trouvé !",
+      piege: "« Où » avec un accent indique un lieu : « Où vas-tu ? ». Sans accent, « ou » propose un choix : « du thé ou du café »." },
+    { idee: "Le passé composé raconte une action terminée : « j'ai mangé ». L'imparfait décrit le décor ou une habitude du passé : « il faisait beau ».",
+      exemple: { titre: 'Conjuguons « aller » au passé composé avec « elles »', steps: ['« Aller » se conjugue avec l\'auxiliaire être : elles sont.', 'Le participe passé est « allé ».', 'Avec être, il s\'accorde avec le sujet, ici féminin pluriel : « elles sont allées ».'] },
+      astuce: "La plupart des verbes utilisent avoir. Ceux qui utilisent être sont surtout des verbes de mouvement : aller, venir, partir, arriver, entrer, sortir, naître, mourir, tomber, rester.",
+      piege: "Pour savoir si le participe finit par é, i ou u, mets-le au féminin : « prise » donne « pris », « finie » donne « fini »." },
+    { idee: "Accorder, c'est faire porter aux mots les mêmes marques que le mot dont ils dépendent : le genre et le nombre.",
+      exemple: { titre: 'Accordons : « Les fleurs que j\'ai cueilli… »', steps: ['Le verbe est conjugué avec avoir.', 'Je cherche le complément : « que », qui remplace « les fleurs », placé avant le verbe.', 'Il est féminin pluriel : « les fleurs que j\'ai cueillies ».'] },
+      astuce: "Avec être, le participe s'accorde avec le sujet. Avec avoir, jamais avec le sujet : seulement avec le complément d'objet direct s'il est placé avant.",
+      piege: "Les adjectifs de couleur qui sont des noms, comme orange ou marron, restent invariables : « des robes orange »." },
+    { idee: "Le subjonctif exprime ce qui n'est pas certain : un souhait, un doute, une obligation, un sentiment. On le trouve souvent après « que ».",
+      exemple: { titre: 'Complétons : « Il faut que tu … (faire) tes devoirs. »', steps: ['« Il faut que » exprime une obligation : on utilise le subjonctif.', 'Le subjonctif de faire est « que tu fasses ».', '« Il faut que tu fasses tes devoirs. »'] },
+      astuce: "Pour tester, remplace par le verbe faire : « il faut que je fasse ». Si tu dirais « fasse », c'est bien le subjonctif.",
+      piege: "Après « si », jamais de conditionnel : « si j'avais », pas « si j'aurais ». Et après « après que », on met l'indicatif." },
+    { idee: "Une figure de style est une façon originale de dire les choses, pour créer une image ou une émotion chez le lecteur.",
+      exemple: { titre: 'Analysons : « Cette femme est une rose. »', steps: ['On rapproche une femme et une rose.', 'Il n\'y a pas d\'outil de comparaison comme « comme ».', 'C\'est donc une métaphore. Avec « comme », ce serait une comparaison.'] },
+      astuce: "L'hyperbole exagère : « je meurs de faim ». La litote dit moins pour faire comprendre plus : « ce n'est pas mauvais ». L'oxymore unit deux contraires : « une obscure clarté ».",
+      piege: "La comparaison a toujours un outil, comme « comme », « tel » ou « pareil à ». La métaphore n'en a pas." }
+  ],
+  dictee: [
+    { idee: "Une phrase commence toujours par une majuscule et se termine par un point. Entre les deux, chaque mot est séparé par un espace.",
+      exemple: { titre: 'Comment réussir une dictée', steps: ['J\'écoute la phrase en entier, sans écrire.', 'J\'écris en répétant les mots dans ma tête.', 'Je me relis : la majuscule, les accords, le point final.'] },
+      astuce: "Relis-toi trois fois : une fois pour le sens, une fois pour les accords, une fois pour les accents et la ponctuation.",
+      piege: "Le verbe s'accorde avec son sujet : « le chat dort », mais « les chats dorment »." },
+    { idee: "Un même son peut s'écrire de plusieurs façons : le son « o » peut s'écrire o, au ou eau. Le son « in » peut s'écrire in, ain ou ein.",
+      exemple: { titre: 'Écrivons « le bateau est sur l\'eau »', steps: ['« bateau » finit par -eau, comme beaucoup de noms.', '« eau » s\'écrit avec les trois lettres e, a, u.', '« est » est le verbe être : je peux dire « était ».'] },
+      astuce: "Pense à un mot de la même famille : « grand » s'écrit avec un d, comme dans « grandir ». Ça t'aide à trouver la lettre muette.",
+      piege: "Devant m, b et p, on écrit m au lieu de n : « une jambe », « le temps », « une pompe »." },
+    { idee: "Dans une phrase, les mots forment des équipes : le nom, ses adjectifs et son déterminant portent les mêmes marques, et le verbe s'accorde avec le sujet.",
+      exemple: { titre: 'Écrivons « les enfants jouent »', steps: ['« les » est au pluriel : « enfants » prend un s.', 'Qui joue ? Les enfants : le sujet est au pluriel.', 'Le verbe prend -ent : « jouent ».'] },
+      astuce: "Pour trouver le sujet, pose la question « qui est-ce qui ? » devant le verbe.",
+      piege: "Le sujet peut être loin du verbe : « Les oiseaux du jardin chantent » : ce sont les oiseaux qui chantent, pas le jardin." },
+    { idee: "Les homophones sont des mots qui sonnent pareil. Pour bien les écrire en dictée, il faut réfléchir au sens de la phrase.",
+      exemple: { titre: 'Écrivons « Il a donné son cahier à sa voisine »', steps: ['« a » : je peux dire « il avait donné », c\'est le verbe avoir.', '« son » cahier : je peux dire « mon cahier », c\'est un déterminant.', '« à » sa voisine : je ne peux pas dire « avait », donc à prend un accent.'] },
+      astuce: "Utilise les remplacements magiques : avait, était, mon, étaient, ou bien. Ils marchent aussi en dictée.",
+      piege: "« Leur » devant un nom pluriel prend un s : « leurs affaires ». Devant un verbe, jamais : « je leur parle »." },
+    { idee: "Une phrase longue contient plusieurs informations reliées par des virgules ou des petits mots comme qui, que, quand, malgré.",
+      exemple: { titre: 'Découpons une phrase longue', steps: ['Je repère le verbe principal et son sujet.', 'Je repère les morceaux ajoutés, souvent entre virgules.', 'J\'accorde chaque verbe avec son propre sujet.'] },
+      astuce: "Après « qui », le verbe s'accorde avec le mot que « qui » remplace : « les élèves qui avaient terminé ».",
+      piege: "Un complément placé en début de phrase est suivi d'une virgule : « Pendant les vacances, nous sommes partis »." },
+    { idee: "Le passé simple est le temps des récits et des contes : il raconte les actions principales de l'histoire, une par une.",
+      exemple: { titre: 'Écrivons « Le roi entra et salua ses invités »', steps: ['« entrer » est un verbe en -er.', 'Au passé simple, avec il, il se termine par -a : « il entra ».', 'Même chose pour « saluer » : « il salua ».'] },
+      astuce: "Verbes en -er : ai, as, a, âmes, âtes, èrent. Les autres verbes : is, is, it, îmes, îtes, irent, ou us, us, ut, ûmes, ûtes, urent.",
+      piege: "Avec nous et vous, n'oublie pas l'accent circonflexe : « nous fûmes », « vous chantâtes »." },
+    { idee: "Un texte littéraire utilise des mots riches et des phrases bien construites. Écouter attentivement chaque mot permet de bien l'écrire.",
+      exemple: { titre: 'Préparer un texte long', steps: ['J\'écoute le texte en entier pour comprendre l\'histoire.', 'J\'écris en suivant le rythme de la voix, groupe de mots par groupe de mots.', 'Je me relis en vérifiant les accords des adjectifs et des participes.'] },
+      astuce: "Les adjectifs s'accordent avec le nom qu'ils décrivent, même s'ils sont éloignés : « la vieille demeure, enveloppée de brume ».",
+      piege: "Les participes passés employés comme adjectifs s'accordent aussi : « des voyageurs épuisés »." },
+    { idee: "Certains mots du français ont une orthographe surprenante, souvent héritée du grec ou du latin. Il faut les mémoriser.",
+      exemple: { titre: 'Mémorisons « rhinocéros »', steps: ['« rh » vient du grec : on ne l\'entend pas, mais il est là.', 'Le son « o » s\'écrit simplement o.', 'Il finit par un s, même au singulier : un rhinocéros.'] },
+      astuce: "Pour retenir un mot difficile, découpe-le en syllabes, épelle-le à voix haute, puis écris-le de mémoire.",
+      piege: "Les mots en -mm- et -nn- : « dilemme » s'écrit avec deux m, et « hippopotame » avec deux p." }
+  ],
+  histoire: [
+    { idee: "L'histoire se découpe en grandes périodes, comme les chapitres d'un livre : la Préhistoire, l'Antiquité, le Moyen Âge, les Temps modernes et l'époque contemporaine.",
+      exemple: { titre: 'Les grandes dates qui séparent les périodes', steps: ['Vers 3300 avant Jésus-Christ, l\'écriture est inventée : fin de la Préhistoire.', 'En 476, l\'Empire romain d\'Occident tombe : début du Moyen Âge.', 'En 1492, Colomb arrive en Amérique : début des Temps modernes.', 'En 1789, la Révolution française : début de l\'époque contemporaine.'] },
+      astuce: "Retiens la phrase : « Pierre Avait Mangé Toutes les Cerises » : Préhistoire, Antiquité, Moyen Âge, Temps modernes, époque Contemporaine.",
+      piege: "Avant Jésus-Christ, les années se comptent à l'envers : l'an 500 avant J.-C. est plus ancien que l'an 100 avant J.-C." },
+    { idee: "Les grands personnages de l'histoire ont marqué leur époque. Les associer à une image aide à s'en souvenir.",
+      exemple: { titre: 'Associons chaque personnage à son image', steps: ['Vercingétorix : le chef gaulois qui a résisté à Jules César.', 'Charlemagne : l\'empereur à la barbe fleurie, couronné en 800.', 'Jeanne d\'Arc : la jeune fille en armure de la guerre de Cent Ans.', 'Louis XIV : le Roi-Soleil de Versailles.', 'Napoléon : l\'empereur au bicorne.'] },
+      astuce: "Range les personnages sur une frise dans l'ordre : Vercingétorix, Clovis, Charlemagne, Jeanne d'Arc, Louis XIV, Napoléon.",
+      piege: "Charlemagne n'a pas inventé l'école, mais il a beaucoup encouragé l'enseignement." },
+    { idee: "Les dates sont les repères de l'histoire, comme les panneaux sur une route. Il suffit d'en connaître quelques-unes pour s'orienter.",
+      exemple: { titre: 'Construisons une frise', steps: ['496 : Clovis est baptisé.', '800 : Charlemagne devient empereur.', '1492 : Colomb arrive en Amérique.', '1789 : la Révolution française.', '1914-1918 et 1939-1945 : les deux guerres mondiales.'] },
+      astuce: "Associe chaque date à une image : 1515, Marignan, se retient grâce à la répétition des deux 15.",
+      piege: "Le 14 juillet, on fête la prise de la Bastille de 1789, et le 11 novembre l'armistice de 1918 : ne les mélange pas." },
+    { idee: "En 1789, le peuple français se révolte contre les injustices de la monarchie absolue. C'est la naissance de nombreuses idées qui guident encore la France.",
+      exemple: { titre: 'Les étapes de la Révolution', steps: ['14 juillet 1789 : prise de la Bastille.', 'Août 1789 : abolition des privilèges et Déclaration des droits de l\'homme.', '1792 : la République est proclamée.', '1804 : Napoléon devient empereur.'] },
+      astuce: "La devise « Liberté, Égalité, Fraternité » et l'hymne « La Marseillaise » sont nés pendant la Révolution.",
+      piege: "Louis XVI, exécuté en 1793, n'est pas Louis XIV, le Roi-Soleil, qui avait régné un siècle plus tôt." },
+    { idee: "Le vingtième siècle a connu deux guerres mondiales terribles, puis une longue rivalité entre deux grandes puissances : la guerre froide.",
+      exemple: { titre: 'Les grands moments du siècle', steps: ['1914-1918 : Première Guerre mondiale, avec la bataille de Verdun.', '1939-1945 : Seconde Guerre mondiale et la Shoah.', '1945 : création de l\'ONU pour préserver la paix.', '1989 : chute du mur de Berlin, fin de la guerre froide.'] },
+      astuce: "La guerre froide s'appelle ainsi car les États-Unis et l'URSS ne se sont jamais affrontés directement.",
+      piege: "Le 6 juin 1944, c'est le débarquement en Normandie, pas la fin de la guerre, qui arrive en mai 1945 en Europe." },
+    { idee: "Pour aller plus loin, il faut comprendre les grandes idées et les transformations qui ont façonné le monde d'aujourd'hui.",
+      exemple: { titre: 'Des idées qui changent le monde', steps: ['Au dix-huitième siècle, les Lumières défendent la raison et la liberté.', 'La révolution industrielle transforme le travail grâce à la machine à vapeur.', 'En 1905, la loi sépare les Églises et l\'État : c\'est la laïcité.', 'Après 1945, l\'Europe se construit et les colonies deviennent indépendantes.'] },
+      astuce: "Cherche toujours les causes et les conséquences : pourquoi c'est arrivé, et qu'est-ce que ça a changé.",
+      piege: "La laïcité ne combat pas les religions : elle garantit la liberté de croire ou de ne pas croire." }
+  ],
+  geographie: [
+    { idee: "La France métropolitaine a la forme d'un hexagone. Elle est entourée par des mers, des océans et des montagnes.",
+      exemple: { titre: 'Faisons le tour de la France', steps: ['Au nord-ouest, la Manche. À l\'ouest, l\'océan Atlantique.', 'Au sud, la mer Méditerranée et les Pyrénées.', 'À l\'est, les Alpes, avec le mont Blanc, le plus haut sommet.', 'Au centre coule la Loire, le plus long fleuve, et la Seine traverse Paris.'] },
+      astuce: "Les cinq grands fleuves : la Loire, la Seine, le Rhône, la Garonne et le Rhin. Dessine-les sur une carte pour les retenir.",
+      piege: "Le mont Blanc est dans les Alpes, pas dans les Pyrénées." },
+    { idee: "La Terre est couverte surtout d'océans. Les terres forment de grands ensembles : les continents.",
+      exemple: { titre: 'Les continents et les océans', steps: ['Six continents : Afrique, Amérique, Antarctique, Asie, Europe, Océanie.', 'Cinq océans : Pacifique, Atlantique, Indien, Arctique, Austral.', 'Le Pacifique est le plus grand océan, l\'Asie le plus grand continent.'] },
+      astuce: "Regarde un globe ou un planisphère : situer les choses sur une carte les fixe dans la mémoire.",
+      piege: "L'Antarctique, au pôle Sud, est un continent. L'Arctique, au pôle Nord, est surtout un océan gelé." },
+    { idee: "Chaque pays a une capitale, la ville où siège son gouvernement.",
+      exemple: { titre: 'Un voyage en Europe', steps: ['Espagne : Madrid. Portugal : Lisbonne.', 'Italie : Rome. Grèce : Athènes.', 'Allemagne : Berlin. Belgique : Bruxelles. Royaume-Uni : Londres.'] },
+      astuce: "Associe chaque capitale à une image : Rome et le Colisée, Athènes et ses temples, Londres et Big Ben.",
+      piege: "La plus grande ville n'est pas toujours la capitale : aux Pays-Bas, la capitale est Amsterdam, mais le gouvernement siège à La Haye." },
+    { idee: "L'Afrique est un immense continent de 54 pays, avec des déserts, des forêts, des savanes et de grands fleuves.",
+      exemple: { titre: 'Les records de l\'Afrique', steps: ['Le Nil est son plus long fleuve.', 'Le Sahara est le plus grand désert chaud du monde.', 'Le Kilimandjaro, en Tanzanie, est son plus haut sommet.'] },
+      astuce: "Quelques capitales : Kinshasa pour la RDC, Dakar pour le Sénégal, Rabat pour le Maroc, Moroni pour les Comores, Nairobi pour le Kenya.",
+      piege: "La capitale du Maroc est Rabat, pas Casablanca, même si Casablanca est la plus grande ville." },
+    { idee: "Le monde est fait de pays très différents par leur taille, leur population et leurs paysages.",
+      exemple: { titre: 'Quelques records du monde', steps: ['La Russie est le plus grand pays par sa superficie.', 'L\'Inde est le pays le plus peuplé.', 'L\'Everest est le plus haut sommet, et l\'Amazone le plus grand fleuve d\'Amérique du Sud.'] },
+      astuce: "Grand ne veut pas dire peuplé : le Canada est immense mais compte peu d'habitants.",
+      piege: "La capitale de l'Australie est Canberra, et celle du Canada est Ottawa, pas Sydney ni Toronto." },
+    { idee: "Aujourd'hui, l'humanité fait face à de grands défis : le climat, la croissance des villes, les échanges mondiaux et les ressources.",
+      exemple: { titre: 'Comprendre le réchauffement climatique', steps: ['Les activités humaines rejettent du dioxyde de carbone.', 'Ce gaz retient la chaleur autour de la Terre : c\'est l\'effet de serre.', 'Pour le limiter, on développe les énergies renouvelables, comme le soleil et le vent.'] },
+      astuce: "Pense aux trois mots clés : urbanisation pour les villes, mondialisation pour les échanges, développement durable pour l'avenir.",
+      piege: "Une énergie renouvelable se reconstitue naturellement : le soleil, le vent, l'eau. Le pétrole et le charbon, eux, s'épuisent." }
+  ]
+};
+
+/* explications pour les questions écrites à la main (Amara les dit après une erreur) */
+const EXPL = {
+  'Combien vaut sin(90°) ?': "Pour un angle de 90 degrés, le côté opposé se confond avec l'hypoténuse : le sinus vaut 1.",
+  'Combien vaut cos(0°) ?': "Pour un angle nul, le côté adjacent se confond avec l'hypoténuse : le cosinus vaut 1.",
+  'Combien vaut cos(30°) ?': "Valeur à retenir : le cosinus de 30 degrés vaut racine de 3 sur 2, environ 0,87.",
+  'Combien vaut sin(45°) ?': "À 45 degrés, sinus et cosinus sont égaux : racine de 2 sur 2, environ 0,71.",
+  'Combien de radians vaut un angle de 180° ?': "Un demi-tour vaut pi radians, et un tour complet vaut 2 pi.",
+  'Dans « Le chat dort », quelle est la nature du mot « chat » ?': "Chat désigne un animal, et on peut mettre « le » devant : c'est un nom.",
+  'Dans « Le chat dort », quelle est la nature du mot « dort » ?': "Dort dit ce que fait le chat, et il change avec le temps : il dormait. C'est un verbe.",
+  'Dans « une grande maison », quelle est la nature du mot « grande » ?': "Grande décrit la maison : c'est un adjectif.",
+  'Dans « les enfants jouent », quelle est la nature du mot « les » ?': "Les annonce le nom enfants : c'est un déterminant.",
+  'Quel mot est un verbe ?': "Manger exprime une action et se conjugue : je mange, tu manges. C'est un verbe.",
+  'Quel mot est un nom ?': "On peut dire « l'école » : c'est un nom, il désigne un lieu.",
+  'Quel mot est un adjectif ?': "Heureux décrit quelqu'un : un enfant heureux. C'est un adjectif.",
+  'Dans « Il court vite », quelle est la nature de « vite » ?': "Vite précise comment il court et ne s'accorde jamais : c'est un adverbe.",
+  'Dans « Elle chante », quelle est la nature de « Elle » ?': "Elle remplace un nom, par exemple Marie : c'est un pronom.",
+  'Dans « sur la table », quelle est la nature de « sur » ?': "Sur relie des mots et indique un lieu, il ne change jamais : c'est une préposition.",
+  'Les filles se sont … .': "Avec un verbe pronominal et l'auxiliaire être, le participe s'accorde ici avec le sujet, les filles : lavées.",
+  'Ma sœur est … contente.': "Très est un adverbe : il ne s'accorde pas et précise l'adjectif contente.",
+  "Il est possible qu'il … demain.": "« Il est possible que » exprime un doute : on emploie le subjonctif, qu'il vienne.",
+  "Je doute qu'elle … la réponse.": "Douter exprime l'incertitude : subjonctif. Le subjonctif de savoir est « qu'elle sache ».",
+  "« Mon bras, qu'avec respect toute l'Espagne admire, Mon bras… » La répétition en début de vers est…": "Répéter le même mot au début de plusieurs vers ou phrases, c'est une anaphore.",
+  '« Boire un verre. » On parle du contenant pour le contenu : c\'est…': "On boit le contenu, pas le verre : désigner une chose par une autre qui lui est liée, c'est une métonymie.",
+  '« Il n\'est pas bête. » pour dire « il est intelligent » : c\'est…': "Dire moins pour faire comprendre plus, c'est une litote.",
+  '« Un silence assourdissant » : c\'est…': "Silence et assourdissant sont des contraires réunis : c'est un oxymore.",
+  'Quelle période vient en premier ?': "La Préhistoire est la toute première période : elle se termine avec l'invention de l'écriture.",
+  'Où vivaient les hommes préhistoriques ?': "Les hommes préhistoriques s'abritaient dans des grottes et sous des abris, souvent en se déplaçant pour chasser.",
+  "Quelle période suit l'Antiquité ?": "Après l'Antiquité vient le Moyen Âge, à partir de l'an 476.",
+  'À quelle période construisait-on des châteaux forts ?': "Les châteaux forts, avec leurs chevaliers, datent du Moyen Âge.",
+  "Dans quelle période vivons-nous aujourd'hui ?": "Depuis la Révolution de 1789, nous sommes dans l'époque contemporaine.",
+  'Qui a construit les pyramides de Gizeh ?': "Les pyramides de Gizeh sont les tombeaux des pharaons de l'Égypte ancienne.",
+  "Comment s'appelaient les habitants de la Gaule ?": "La Gaule, c'est l'ancien nom de notre territoire, et ses habitants étaient les Gaulois.",
+  'Que peignaient les hommes de la grotte de Lascaux ?': "À Lascaux, les hommes préhistoriques ont peint des animaux : chevaux, taureaux, cerfs.",
+  'Quelle civilisation a inventé les Jeux olympiques ?': "Les Jeux olympiques sont nés en Grèce antique, à Olympie, il y a près de 2800 ans.",
+  'Quel chef gaulois a combattu Jules César ?': "Vercingétorix a uni les Gaulois contre César, avant d'être vaincu à Alésia en 52 avant Jésus-Christ.",
+  "Quel empereur a été couronné en l'an 800 ?": "Charlemagne, roi des Francs, est couronné empereur à Rome en 800.",
+  'Quelle jeune fille a combattu les Anglais pendant la guerre de Cent Ans ?': "Jeanne d'Arc a libéré Orléans en 1429 pendant la guerre de Cent Ans.",
+  'Quel roi était surnommé le Roi-Soleil ?': "Louis XIV avait choisi le soleil comme emblème : c'est le Roi-Soleil.",
+  "Quel roi a fait construire le château de Versailles tel qu'on le connaît ?": "Louis XIV a transformé un petit château de chasse en l'immense palais de Versailles.",
+  'Qui est devenu empereur des Français en 1804 ?': "Napoléon Bonaparte se fait sacrer empereur des Français en 1804.",
+  'Quel navigateur est arrivé en Amérique en 1492 ?': "En 1492, Christophe Colomb cherchait la route des Indes et arrive en Amérique.",
+  'Quelle scientifique a reçu deux prix Nobel ?': "Marie Curie a reçu le prix Nobel de physique puis celui de chimie, pour ses travaux sur la radioactivité.",
+  "Quel général a lancé l'appel du 18 juin 1940 ?": "Le 18 juin 1940, depuis Londres, le général de Gaulle appelle les Français à continuer le combat.",
+  'Quel roi des Francs s\'est fait baptiser vers 496 ?': "Clovis, roi des Francs, se fait baptiser à Reims vers 496.",
+  'En quelle année Clovis est-il baptisé, environ ?': "Clovis est baptisé vers 496, à Reims.",
+  'En quelle année Charlemagne est-il couronné empereur ?': "Charlemagne est couronné empereur en l'an 800 : une date ronde facile à retenir.",
+  'En quelle année Christophe Colomb arrive-t-il en Amérique ?': "Colomb arrive en Amérique en 1492, ce qui marque le début des Temps modernes.",
+  'Quelles sont les dates de la Première Guerre mondiale ?': "La Première Guerre mondiale dure de 1914 à 1918, quatre longues années.",
+  'Quelles sont les dates de la Seconde Guerre mondiale ?': "La Seconde Guerre mondiale dure de 1939 à 1945.",
+  'Quel jour fête-t-on la prise de la Bastille ?': "La fête nationale, le 14 juillet, rappelle la prise de la Bastille en 1789.",
+  'Que commémore-t-on le 11 novembre ?': "Le 11 novembre 1918, l'armistice met fin aux combats de la Première Guerre mondiale.",
+  'En quelle année Napoléon perd-il à Waterloo ?': "Napoléon est battu à Waterloo en 1815, puis exilé à Sainte-Hélène.",
+  'Quel bâtiment est pris par le peuple le 14 juillet 1789 ?': "La Bastille était une prison, symbole du pouvoir absolu du roi.",
+  'Quel texte est adopté en août 1789 ?': "La Déclaration des droits de l'homme et du citoyen affirme que les hommes naissent libres et égaux en droits.",
+  'Quel roi est exécuté en 1793 ?': "Louis XVI est guillotiné en janvier 1793, après la proclamation de la République.",
+  'Quelle est la devise de la République française ?': "La devise de la République est Liberté, Égalité, Fraternité.",
+  'Quel recueil de lois Napoléon crée-t-il en 1804 ?': "Le Code civil de 1804 rassemble les lois sur la famille et la propriété. Il existe encore aujourd'hui.",
+  'Où Napoléon est-il exilé en dernier ?': "Après Waterloo, Napoléon est exilé sur l'île de Sainte-Hélène, où il meurt en 1821.",
+  'Quel hymne date de la Révolution ?': "La Marseillaise a été composée en 1792, pendant la Révolution.",
+  'Quelle bataille est une grande victoire de Napoléon en 1805 ?': "Austerlitz, en 1805, est la plus célèbre victoire de Napoléon.",
+  'Que signifie « abolir les privilèges » (4 août 1789) ?': "Abolir les privilèges, c'est supprimer les avantages de la noblesse et du clergé : tous deviennent égaux devant la loi.",
+  'Quel régime est proclamé en 1792 ?': "En septembre 1792, la monarchie est abolie et la République est proclamée.",
+  'Quelle bataille de 1916 est le symbole de la Première Guerre mondiale en France ?': "Verdun, en 1916, a duré dix mois et fait des centaines de milliers de morts.",
+  "Comment appelle-t-on la vie des soldats de 14-18 dans les tranchées ?": "Les armées restaient enterrées face à face dans les tranchées : c'est la guerre de position.",
+  "Qui dirige l'Allemagne nazie ?": "Adolf Hitler dirige l'Allemagne nazie de 1933 à 1945.",
+  'Que se passe-t-il le 6 juin 1944 ?': "Le 6 juin 1944, les Alliés débarquent en Normandie pour libérer la France.",
+  "Comment appelle-t-on l'extermination des Juifs d'Europe par les nazis ?": "La Shoah désigne l'extermination de six millions de Juifs d'Europe par les nazis.",
+  'Quelle organisation est créée en 1945 pour maintenir la paix ?': "L'ONU, l'Organisation des Nations unies, est créée en 1945 pour maintenir la paix.",
+  'En quelle année tombe le mur de Berlin ?': "Le mur de Berlin tombe en 1989 : c'est la fin de la division de l'Europe.",
+  'Quels pays s\'opposent pendant la guerre froide ?': "Pendant la guerre froide, les États-Unis et l'URSS s'opposent sans jamais se battre directement.",
+  'Quand la Ve République est-elle fondée ?': "La cinquième République est fondée en 1958, avec le général de Gaulle.",
+  'Quel traité met fin à la Première Guerre mondiale avec l\'Allemagne ?': "Le traité de Versailles, signé en 1919, met fin à la guerre avec l'Allemagne.",
+  'Quel traité fonde la Communauté économique européenne en 1957 ?': "Le traité de Rome de 1957 est l'acte de naissance de la construction européenne.",
+  "En quelle année se termine la guerre d'Algérie ?": "La guerre d'Algérie se termine en 1962, avec l'indépendance de l'Algérie.",
+  'Quel édit de 1598 accorde la liberté de culte aux protestants ?': "Henri IV signe l'édit de Nantes en 1598 pour mettre fin aux guerres de religion.",
+  'Que prévoit la loi française de 1905 ?': "La loi de 1905 sépare les Églises et l'État : c'est la base de la laïcité.",
+  'Quel mouvement intellectuel du XVIIIe siècle défend la raison et la liberté ?': "Les Lumières, avec Voltaire, Rousseau et Diderot, veulent éclairer les esprits par la raison.",
+  'Qui a écrit « Le Contrat social » ?': "Jean-Jacques Rousseau publie Le Contrat social en 1762.",
+  'Quelle crise économique commence en 1929 ?': "En 1929, la Bourse de New York s'effondre : c'est le début de la Grande Dépression.",
+  "Quelle révolution débute en Angleterre au XVIIIe siècle grâce à la machine à vapeur ?": "La machine à vapeur lance la révolution industrielle, d'abord en Angleterre.",
+  'Quelle est la capitale de la France ?': "Paris est la capitale de la France, traversée par la Seine.",
+  'Quel est le plus long fleuve de France ?': "La Loire est le plus long fleuve de France, plus de 1000 kilomètres.",
+  'Quel fleuve traverse Paris ?': "La Seine traverse Paris avant de se jeter dans la Manche.",
+  'Quel est le plus haut sommet de France ?': "Le mont Blanc, dans les Alpes, culmine à environ 4800 mètres.",
+  'Quelle mer borde le sud de la France ?': "Au sud, la France est bordée par la mer Méditerranée.",
+  "Quel océan borde l'ouest de la France ?": "À l'ouest, ce sont les vagues de l'océan Atlantique.",
+  "Quelle chaîne de montagnes sépare la France de l'Espagne ?": "Les Pyrénées forment la frontière entre la France et l'Espagne.",
+  'Sur quel continent se trouve la France métropolitaine ?': "La France métropolitaine est en Europe.",
+  'Quelle grande ville se trouve au bord de la Méditerranée ?': "Marseille est le grand port français de la Méditerranée.",
+  'Quelle île française se trouve en Méditerranée ?': "La Corse est une île française de la Méditerranée.",
+  'Quel est le plus grand océan ?': "Le Pacifique est le plus grand océan : il couvre presque un tiers de la planète.",
+  "Sur quel continent se trouve l'Égypte ?": "L'Égypte est au nord-est de l'Afrique, traversée par le Nil.",
+  'Sur quel continent se trouve le Brésil ?': "Le Brésil est en Amérique du Sud.",
+  'Sur quel continent se trouve la Chine ?': "La Chine est en Asie.",
+  'Quel continent est recouvert de glace ?': "L'Antarctique, au pôle Sud, est presque entièrement recouvert de glace.",
+  "Sur quel continent se trouve l'Australie ?": "L'Australie fait partie de l'Océanie.",
+  'Quel est le plus grand continent ?': "L'Asie est le plus grand continent, et aussi le plus peuplé.",
+  "Quel océan sépare l'Europe de l'Amérique ?": "L'océan Atlantique sépare l'Europe et l'Afrique de l'Amérique.",
+  "Quelle est la capitale de l'Espagne ?": "Madrid est la capitale de l'Espagne, au centre du pays.",
+  "Quelle est la capitale de l'Italie ?": "Rome, la ville du Colisée, est la capitale de l'Italie.",
+  "Quelle est la capitale de l'Allemagne ?": "Berlin est la capitale de l'Allemagne.",
+  'Quelle est la capitale du Royaume-Uni ?': "Londres, avec Big Ben, est la capitale du Royaume-Uni.",
+  'Quelle est la capitale du Portugal ?': "Lisbonne est la capitale du Portugal, au bord de l'Atlantique.",
+  'Quelle est la capitale de la Belgique ?': "Bruxelles est la capitale de la Belgique, et aussi le siège de l'Union européenne.",
+  'Quelle est la capitale des Pays-Bas ?': "Amsterdam, la ville des canaux, est la capitale des Pays-Bas.",
+  'Quelle est la capitale de la Grèce ?': "Athènes, avec le Parthénon, est la capitale de la Grèce.",
+  'Quelle est la capitale de la Pologne ?': "Varsovie est la capitale de la Pologne.",
+  "Quelle est la capitale de l'Autriche ?": "Vienne, la ville de Mozart, est la capitale de l'Autriche.",
+  'Quelle est la capitale de la Suède ?': "Stockholm est la capitale de la Suède.",
+  'Quelle est la capitale de la République démocratique du Congo ?': "Kinshasa, au bord du fleuve Congo, est la capitale de la RDC.",
+  'Quelle est la capitale des Comores ?': "Moroni, sur l'île de Grande Comore, est la capitale des Comores.",
+  'Quelle est la capitale du Sénégal ?': "Dakar est la capitale du Sénégal, à la pointe ouest de l'Afrique.",
+  'Quelle est la capitale du Maroc ?': "Rabat est la capitale du Maroc, même si Casablanca est plus grande.",
+  "Quel est le plus long fleuve d'Afrique ?": "Le Nil, qui traverse l'Égypte, est le plus long fleuve d'Afrique.",
+  'Quel est le plus grand désert chaud du monde ?': "Le Sahara, au nord de l'Afrique, est le plus grand désert chaud du monde.",
+  'Quelle est la capitale du Kenya ?': "Nairobi est la capitale du Kenya.",
+  "Quelle est la capitale de l'Égypte ?": "Le Caire, au bord du Nil, est la capitale de l'Égypte.",
+  "Quel est le plus haut sommet d'Afrique ?": "Le Kilimandjaro, en Tanzanie, est le toit de l'Afrique.",
+  'Quelle est la capitale des États-Unis ?': "Washington est la capitale des États-Unis, même si New York est plus grande.",
+  'Quelle est la capitale du Canada ?': "Ottawa est la capitale du Canada, pas Toronto ni Montréal.",
+  'Quelle est la capitale du Japon ?': "Tokyo est la capitale du Japon.",
+  "Quelle est la capitale de l'Australie ?": "Canberra a été choisie comme capitale, entre Sydney et Melbourne.",
+  'Quelle est la capitale du Brésil ?': "Brasilia, construite dans les années 1950, est la capitale du Brésil, pas Rio.",
+  'Quel est le plus grand pays du monde par la superficie ?': "La Russie est le plus grand pays du monde : elle s'étend sur deux continents.",
+  'Quel est le pays le plus peuplé du monde (2024) ?': "Depuis 2023, l'Inde a dépassé la Chine : c'est le pays le plus peuplé.",
+  'Quel est le plus haut sommet du monde ?': "L'Everest, dans l'Himalaya, mesure environ 8850 mètres.",
+  "Quel est le plus long fleuve d'Amérique du Sud ?": "L'Amazone traverse la grande forêt amazonienne.",
+  'Dans quel pays se trouve la ville de Mumbai ?': "Mumbai, autrefois appelée Bombay, est une immense ville de l'Inde.",
+  "Quel gaz est le principal responsable de l'effet de serre lié aux activités humaines ?": "Le dioxyde de carbone, rejeté quand on brûle du pétrole, du charbon ou du gaz, réchauffe la planète.",
+  'Comment appelle-t-on la concentration de la population dans les villes ?': "L'urbanisation, c'est la croissance des villes : plus de la moitié de l'humanité vit en ville.",
+  'Quelle forêt est souvent appelée « le poumon de la planète » ?': "L'Amazonie, la plus grande forêt tropicale, absorbe beaucoup de dioxyde de carbone.",
+  "Comment appelle-t-on l'intensification des échanges dans le monde entier ?": "La mondialisation, c'est la multiplication des échanges de marchandises, d'informations et de personnes.",
+  "Combien d'êtres humains vivent sur Terre en 2024, environ ?": "Nous sommes environ 8 milliards d'êtres humains sur Terre.",
+  "Quel accord international de 2015 vise à limiter le réchauffement climatique ?": "L'accord de Paris, signé en 2015, vise à limiter le réchauffement sous 2 degrés.",
+  "Qu'est-ce qu'une énergie renouvelable ?": "Une énergie renouvelable, comme le soleil ou le vent, se reconstitue naturellement et ne s'épuise pas.",
+  "Comment appelle-t-on le départ des habitants des campagnes vers les villes ?": "Quand les habitants quittent les campagnes pour les villes, on parle d'exode rural.",
+  'Quelle est la plus grande métropole du monde par la population ?': "L'agglomération de Tokyo compte environ 37 millions d'habitants.",
+  'Quel détroit relie la mer Méditerranée à l\'océan Atlantique ?': "Le détroit de Gibraltar sépare l'Espagne du Maroc, entre la Méditerranée et l'Atlantique."
+};
+</script>
 <script>'use strict';
 /* =====================================================================
    SpeakUp — moteur de l'application
@@ -1568,6 +2449,10 @@ for (const [code, C] of Object.entries(COURSES)) {
   });
   COURSE_LIST.push({ code, ...C, units });
 }
+for (const [code, M] of Object.entries(typeof SUBJECTS !== 'undefined' ? SUBJECTS : {})) // matières : Amara professeure généraliste
+  COURSE_LIST.push({ code, kind: 'subject', name: M.name, adj: M.adj, flag: M.flag, tts: 'fr-FR', sr: 'fr-FR', tips: [],
+    units: M.chapters.map((ch, k) => ({ title: ch.title, emoji: ch.emoji, desc: LEVELS[ch.lvl].name, lvl: ch.lvl, cours: ch.cours, lesson: (typeof LESSONS !== 'undefined' && LESSONS[code] || [])[k] || null,
+      items: subjectItems(code, k, ch).map(it => (it.ex || typeof EXPL === 'undefined' || !EXPL[it.q] ? it : Object.assign(it, { ex: EXPL[it.q] }))), tips: [ch.cours], words: [], sents: [] })) });
 let COURSE, UNITS, ALLW, ALLS, SENT_BY_ID, WORD_BY_EN, GLOSS, RDMAP, ORDER;
 function loadCourse(code) {
   COURSE = COURSE_LIST.find(c => c.code === code) || COURSE_LIST[0];
@@ -1580,7 +2465,7 @@ function loadCourse(code) {
   GLOSS = COURSE.code === 'en' ? { ...GLOSS_EXTRA } : {}; RDMAP = {};
   ALLW.forEach(w => { GLOSS[w.en.toLowerCase()] = w.fr; if (w.rd) RDMAP[w.en] = w.rd; });
   ALLS.forEach(x => { if (!x.rd) return; const t = tokens(first(x.en)), rr = tokens(x.rd); if (t.length === rr.length) t.forEach((tk, i) => { RDMAP[tk] = RDMAP[tk] || rr[i]; }); });
-  ORDER = UNITS.flatMap(U => NODE_TYPES.map(n => `${U.u}-${n.k}`));
+  ORDER = UNITS.flatMap(U => nodes().map(n => `${U.u}-${n.k}`));
 }
 const disp = t => COURSE.code === 'zh' ? t.replace(/ /g, '') : t;
 const PUNCT = /[.,!?;:"“”«»()¿¡…。，！？、；：؟،]/g;
@@ -1589,6 +2474,12 @@ const NODE_TYPES = [
   { k: '0', t: 'lesson', l: 0 }, { k: '1', t: 'lesson', l: 1 }, { k: 'c', t: 'chest' },
   { k: '2', t: 'lesson', l: 2 }, { k: '3', t: 'lesson', l: 3 }, { k: '4', t: 'review', l: 4 }, { k: 't', t: 'trophy', l: 5 }
 ];
+/* matières : chaque chapitre = le cours, deux séries d'exercices, puis l'évaluation */
+const SUBJ_NODES = [{ k: '0', t: 'cours', l: 0 }, { k: '1', t: 'lesson', l: 1 }, { k: '2', t: 'lesson', l: 2 }, { k: 't', t: 'trophy', l: 3 }];
+const isSubj = () => !!COURSE && COURSE.kind === 'subject';
+const nodes = () => isSubj() ? SUBJ_NODES : NODE_TYPES;
+const subjLevel = () => (S.levels || {})[COURSE.code] || 0;
+const levelUnits = () => UNITS.filter(U => U.lvl === subjLevel());
 
 /* ---------- État ---------- */
 const KEY = 'speakup-v1';
@@ -1769,9 +2660,10 @@ function voiceKind() {
 const AUDIO = typeof AUDIO_INDEX !== 'undefined' ? AUDIO_INDEX : null; // { cours: { f|m|s: 'hash,hash,…' } }
 const AUDIO_SETS = {};
 function fnv(t) { let h = 0x811c9dc5; for (const ch of t) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
-const aiOn = () => !!AUDIO && S.settings.aiVoice !== false && !!AUDIO[COURSE.code];
+const audioCode = () => isSubj() ? 'fr-sub' : COURSE.code;
+const aiOn = () => !!AUDIO && S.settings.aiVoice !== false && !!AUDIO[audioCode()];
 const AI_VOICES = { af_bella: 'Bella', af_heart: 'Heart', am_puck: 'Puck', am_michael: 'Michael', ef_dora: 'Dora', em_alex: 'Alex', if_sara: 'Sara', im_nicola: 'Nicola', pf_dora: 'Dora', pm_alex: 'Alex' };
-function aiVoiceList() { return aiOn() ? Object.keys(AI_VOICES).filter(v => AUDIO[COURSE.code][v]) : []; }
+function aiVoiceList() { return aiOn() ? Object.keys(AI_VOICES).filter(v => AUDIO[audioCode()][v]) : []; }
 function aiVoiceId() {
   const list = aiVoiceList(), pick = (S.settings.aiPick || {})[COURSE.code];
   if (list.includes(pick)) return pick;
@@ -1780,9 +2672,9 @@ function aiVoiceId() {
 }
 const aiLabel = v => `${AI_VOICES[v]} (${v[1] === 'm' ? 'homme' : 'femme'})`;
 function clipFor(text, group, code) {
-  const c = code || COURSE.code;
+  const c = code || audioCode();
   if (!AUDIO || S.settings.aiVoice === false || !AUDIO[c]) return null;
-  const groups = group ? [group] : c === COURSE.code ? [aiVoiceId()] : Object.keys(AUDIO[c]).filter(g => g !== 's').slice(0, 1);
+  const groups = group ? [group] : c === audioCode() ? [aiVoiceId()] : Object.keys(AUDIO[c]).filter(g => g !== 's').slice(0, 1);
   for (const g of groups) {
     const idx = AUDIO[c][g]; if (!idx) continue;
     const set = AUDIO_SETS[c + g] || (AUDIO_SETS[c + g] = new Set(idx.split(',')));
@@ -1994,7 +2886,7 @@ function render() {
   $('.side').innerHTML = `<div class="logo">${pip('happy', 40)}<span>SpeakUp</span></div>` +
     NAV.map(([k, i, l]) => `<button class="nav-btn ${VIEW === k ? 'on' : ''}" data-act="nav" data-v="${k}"><span class="ni emoji">${i}</span><span class="nl">${l}</span></button>`).join('');
   const views = { learn: viewLearn, stories: viewStories, sounds: viewSounds, practice: viewPractice, league: viewLeague, quests: viewQuests, shop: viewShop, profile: viewProfile };
-  $('#main').innerHTML = (stageOn() ? sheetHead() : topbar()) + (stageOn() && VIEW === 'learn' ? viewLearnStage() : views[VIEW]());
+  $('#main').innerHTML = (stageOn() ? sheetHead() : topbar()) + (VIEW === 'learn' && isSubj() ? viewSubject() : stageOn() && VIEW === 'learn' ? viewLearnStage() : views[VIEW]());
   $('#rail').innerHTML = stageOn() ? '' : railHTML();
   if (VIEW === 'learn' && !stageOn()) { const c = $('.node.cur'); if (c && !render._scrolled && currentKey() !== '0-0') { render._scrolled = true; c.scrollIntoView({ block: 'center' }); } }
   if (VIEW === 'learn' && stageOn() && !render._scrolled) { const c = $('.chapter.cur'); render._scrolled = true; if (c && currentKey() !== '0-0') c.scrollIntoView({ block: 'start' }); }
@@ -2002,7 +2894,7 @@ function render() {
 function topbar() {
   const h = unlimited() ? '∞' : S.hearts;
   return `<div class="topbar">
-    <button class="stat flag" data-act="courses" title="Changer de langue"><span class="emoji">${COURSE.code === 'en' ? (S.settings.accent === 'en-GB' ? '🇬🇧' : '🇺🇸') : COURSE.flag}</span><span class="cname">${esc(COURSE.name)}</span> ▾</button>
+    <button class="stat flag" data-act="courses" title="Changer de cours"><span class="emoji">${COURSE.code === 'en' ? (S.settings.accent === 'en-GB' ? '🇬🇧' : '🇺🇸') : COURSE.flag}</span><span class="cname">${esc(COURSE.name)}</span> ▾</button>
     <button class="stat fire ${streakAlive() && S.lastDay === dayStr() ? '' : 'dim'}" data-act="streakInfo" title="Série"><span class="emoji">🔥</span>${S.streak}</button>
     <button class="stat gem" data-act="nav" data-v="shop" title="Gemmes"><span class="emoji">💎</span>${S.gems}</button>
     <button class="stat heart" data-act="heartsInfo" title="Cœurs"><span class="emoji">❤️</span>${h}</button>
@@ -2026,10 +2918,13 @@ function railHTML() {
 
 /* ---------- Vue : parcours ---------- */
 const isDone = k => !!S.done[k];
-const currentKey = () => ORDER.find(k => !S.done[k]) || null;
-function isUnlocked(k) { const c = currentKey(); return c === null || ORDER.indexOf(k) <= ORDER.indexOf(c); }
+const currentKey = () => (isSubj() ? levelUnits().flatMap(U => SUBJ_NODES.map(n => `${U.u}-${n.k}`)) : ORDER).find(k => !S.done[k]) || null;
+function isUnlocked(k) {
+  if (isSubj()) { const [u, kk] = k.split('-'), i = SUBJ_NODES.findIndex(n => n.k === kk); return SUBJ_NODES.slice(0, i).every(n => S.done[`${u}-${n.k}`]); }
+  const c = currentKey(); return c === null || ORDER.indexOf(k) <= ORDER.indexOf(c);
+}
 const unitDone = u => !!S.done[`${u}-t`];
-function curUnit() { const c = currentKey(); return c ? +c.split('-')[0] : UNITS.length - 1; }
+function curUnit() { const c = currentKey(); if (c) return +c.split('-')[0]; return isSubj() ? (levelUnits().slice(-1)[0] || UNITS[0]).u : UNITS.length - 1; }
 /* ---------- Installation sur l'écran d'accueil ---------- */
 const STANDALONE = (() => { try { return window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; } })();
 const IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -2082,7 +2977,8 @@ function viewLearn() {
   return html + '</div>';
 }
 function nodeLabel(k) {
-  const [u, kk] = k.split('-'); const n = NODE_TYPES.find(x => x.k === kk);
+  const [u, kk] = k.split('-'); const n = nodes().find(x => x.k === kk);
+  if (isSubj()) return { cours: 'Le cours', lesson: `Exercices ${n.l}`, trophy: 'Évaluation du chapitre' }[n.t];
   if (n.t === 'chest') return 'Coffre bonus';
   if (n.t === 'trophy') return 'Évaluation de l\'unité';
   if (n.t === 'review') return 'Révision de l\'unité';
@@ -2296,7 +3192,7 @@ function viewProfile() {
   const max = Math.max(S.goal, ...days.map(d => S.xpDays[d.k] || 0));
   const st = S.settings, sw = (k, on) => `<button class="switch ${on ? 'on' : ''}" data-act="toggle" data-k="${k}" role="switch" aria-checked="${on}"></button>`;
   const acc = S.stats.total ? Math.round(S.stats.correct / S.stats.total * 100) : 0;
-  return `<div class="page-title">${pip('happy', 90)}<div><h1>${esc(S.name || 'Apprenant')}</h1><p class="muted">${COURSE.flag} Apprend le ${esc(COURSE.adj)} · inscrit le ${new Date(S.created).toLocaleDateString('fr-FR')}</p></div></div>
+  return `<div class="page-title">${pip('happy', 90)}<div><h1>${esc(S.name || 'Apprenant')}</h1><p class="muted">${COURSE.flag} ${isSubj() ? `Étudie : ${esc(COURSE.name)}` : `Apprend le ${esc(COURSE.adj)}`} · inscrit le ${new Date(S.created).toLocaleDateString('fr-FR')}</p></div></div>
   <div class="stats-grid">
     <div class="stat-box"><span class="se emoji">🔥</span><div><b>${S.streak}</b><span class="muted">Série (record ${S.bestStreak})</span></div></div>
     <div class="stat-box"><span class="se emoji">⚡</span><div><b>${S.xp}</b><span class="muted">XP au total</span></div></div>
@@ -2312,7 +3208,7 @@ function viewProfile() {
     <div class="set-row"><span>Ton prénom</span><input type="text" id="set-name" value="${esc(S.name)}" maxlength="20" placeholder="Prénom"></div>
     <div class="set-row"><span>Objectif quotidien</span><select data-set="goal">${[[10, 'Tranquille'], [20, 'Normal'], [30, 'Sérieux'], [50, 'Intense']].map(([v, l]) => `<option value="${v}" ${S.goal === v ? 'selected' : ''}>${l} — ${v} XP/jour</option>`).join('')}</select></div>
     ${canInstall() ? '<div class="set-row"><span>📲 Installer SpeakUp sur l\'écran d\'accueil</span><button class="btn sm pri" data-act="install">Installer</button></div>' : ''}
-    <div class="set-row"><span>Langue apprise</span><button class="btn sm" data-act="courses">${COURSE.flag} ${esc(COURSE.name)} ▾</button></div>
+    <div class="set-row"><span>Cours suivi</span><button class="btn sm" data-act="courses">${COURSE.flag} ${esc(COURSE.name)} ▾</button></div>
     <div class="set-row" ${COURSE.code !== 'en' ? 'hidden' : ''}><span>Accent</span><select data-set="accent"><option value="en-US" ${st.accent === 'en-US' ? 'selected' : ''}>🇺🇸 Américain</option><option value="en-GB" ${st.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 Britannique</option></select></div>
     <div class="set-row"><span>Vitesse de la voix</span><select data-set="rate">${[[.8, 'Lente'], [1, 'Normale'], [1.15, 'Rapide']].map(([v, l]) => `<option value="${v}" ${st.rate === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="set-row"><span>Thème</span><select data-set="theme">${[['auto', 'Automatique'], ['light', 'Clair'], ['dark', 'Sombre']].map(([v, l]) => `<option value="${v}" ${st.theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -2355,7 +3251,7 @@ function methodHTML() {
    CONSTRUCTION DES LEÇONS
    ===================================================================== */
 const SPEAKY = new Set(['speak', 'speak_word', 'shadow']);
-const LISTENY = new Set(['listen_tiles', 'listen_type', 'minimal', 'listen_pick']);
+const LISTENY = new Set(['listen_tiles', 'listen_type', 'minimal', 'listen_pick', 'dict']);
 function fixType(t) {
   if (!canListen()) t = { listen_tiles: 'tr_en', listen_type: 'tr_en', listen_pick: 'what' }[t] || t;
   if (t === 'speak') { const m = speakMode(); t = m === 'mic' ? 'speak' : m === 'shadow' ? 'shadow' : canListen() ? 'listen_tiles' : 'tr_fr'; }
@@ -2525,6 +3421,7 @@ function cheer(ok, then) {
 let CAP_T = null;
 function caption(text) {
   const b = $('#sayb'); if (!stageOn() || !b || !text) return;
+  if (L && L.ex[L.i] && L.ex[L.i].t === 'cours' && L.phase === 'answer') return; // le cours est déjà affiché en entier
   const listening = L && L.ex[L.i] && (LISTENY.has(L.ex[L.i].t) || L.phase === 'answer' && L.ex[L.i].t === 'speak' && false);
   b.innerHTML = listening && L.phase === 'answer' ? '<span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Amara parle… écoute bien' : `<span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span> ${esc(text)}`;
   b.classList.remove('cheer', 'good', 'bad'); b.classList.add('on');
@@ -2564,11 +3461,12 @@ function viewLearnStage() {
   return html;
 }
 function stepModal(k) {
-  const [u, kk] = k.split('-'), n = NODE_TYPES.find(x => x.k === kk), U = UNITS[+u], unl = isUnlocked(k), done = isDone(k);
+  const [u, kk] = k.split('-'), n = nodes().find(x => x.k === kk), U = UNITS[+u], unl = isUnlocked(k), done = isDone(k);
   if (!unl) { openModal(`<div class="onb">${pip('normal', 90)}<h2>${esc(nodeLabel(k))}</h2><p class="muted">Termine d'abord les étapes précédentes avec Amara pour débloquer celle-ci.</p></div>`); return; }
   if (n.t === 'chest') { if (done) openModal(`<div class="onb"><h2>Coffre ouvert</h2><p class="muted">Tu as déjà récupéré ce trésor.</p></div>`); else openChest(k); return; }
   const xp = n.t === 'trophy' ? 20 : n.t === 'review' ? 15 : 10;
-  const sub = n.t === 'trophy' ? 'Prouve ce que tu sais sur tout le chapitre.' : n.t === 'review' ? 'Toutes les phrases du chapitre, mélangées.' : 'Nouveaux mots et phrases avec Amara.';
+  let sub = n.t === 'trophy' ? 'Prouve ce que tu sais sur tout le chapitre.' : n.t === 'review' ? 'Toutes les phrases du chapitre, mélangées.' : 'Nouveaux mots et phrases avec Amara.';
+  if (isSubj()) sub = n.t === 'cours' ? 'Amara t\'explique la leçon, puis tu t\'entraînes.' : n.t === 'trophy' ? 'Prouve ce que tu sais sur tout le chapitre.' : 'Des questions pour t\'entraîner, à l\'écrit ou à voix haute.';
   openModal(`<div class="onb">${pip('happy', 90)}<div class="kicker">${esc(U.title)}</div><h2>${esc(nodeLabel(k))}</h2><p class="muted">${sub}</p>
     <button class="btn pri wide" data-act="startNode" data-k="${k}">${done ? 'Refaire' : 'Commencer'} · +${xp} XP</button></div>`);
 }
@@ -2604,13 +3502,14 @@ function narrate(ex) {
   const target = L.autoTarget, idx = L.i; L.autoTarget = null;
   const frPrompt = ex.t === 'tr_en' && ex.s ? first(ex.s.fr) : null;
   const still = () => !!L && L.i === idx && L.phase === 'answer';
+  if (SUBJ_EX.has(ex.t)) return narrateSubj(ex, still);
   if (title) sayFr(title, null, { when: still });
   if (frPrompt) sayFr(frPrompt, null, { when: still }); else if (target) say(target, false, undefined, undefined, null, undefined, { when: still });
 }
 /* le français est dit avec la MÊME voix que la langue apprise (Bella, Puck…) ; sinon voix française de secours */
 function sayFr(text, onEnd, opts) {
-  const own = AUDIO && AUDIO['fr-' + COURSE.code] && aiVoiceId() ? 'fr-' + COURSE.code : null;
-  say(text, false, undefined, own ? aiVoiceId() : undefined, onEnd || null, own || 'fr', opts || {});
+  const fc = isSubj() ? 'fr-sub' : 'fr-' + COURSE.code, own = AUDIO && AUDIO[fc] && aiVoiceId() ? fc : null;
+  say(text, !!(opts && opts.slow), undefined, own ? aiVoiceId() : undefined, onEnd || null, own || 'fr', opts || {});
 }
 
 function showEx() {
@@ -2776,6 +3675,260 @@ function renderTiles() {
   setReady(L.picked.length > 0);
 }
 
+/* =====================================================================
+   MATIÈRES : Amara professeure généraliste (maths, géométrie, français, dictée, histoire, géographie)
+   ===================================================================== */
+const SUBJ_EX = new Set(['cours', 'sq', 'sn', 'dict']);
+const AMARA_HELLO = 'Bonjour ! Je suis Amara, ta professeure. On apprend ensemble ?';
+const DICT_INTRO = 'Écoute bien, puis écris la phrase.';
+const MASTERY = 0.8;
+const END_OK = ['Bravo, leçon terminée ! Tu progresses très bien.', 'Excellent travail ! Chaque leçon te rend plus fort.', 'Bien joué ! Reviens demain pour réviser, ta mémoire te dira merci.'];
+const END_TROPHY = 'Félicitations ! Tu maîtrises ce chapitre.';
+const MASTERY_SAY = "Tu y es presque ! Pour valider le chapitre, il faut 80 pour cent de bonnes réponses. Revoyons le cours ensemble, puis tu réessaieras.";
+function masteryScreen(pct) {
+  save(); sfx.bad(); sayFr(MASTERY_SAY);
+  const u = L.u;
+  $('#overlay').innerHTML = `<div class="end">${pip('normal', 140)}<h1>Presque !</h1>
+    <p class="muted">Tu as eu <b>${pct} %</b> de bonnes réponses du premier coup. Pour valider le chapitre, il en faut <b>80 %</b>.<br>C'est en revoyant ses erreurs qu'on apprend le mieux.</p>
+    <div class="goal-opts" style="width:min(360px,90vw)"><button class="btn pri" data-act="retryCours" data-u="${u}">📖 Revoir le cours</button><button class="btn" data-act="exitLesson">Plus tard</button></div></div>`;
+}
+const subjEx = (U, i) => { const it = U.items[i]; return { t: it.dict ? 'dict' : it.o ? 'sq' : 'sn', it, u: U.u, sid: `${U.u}:${i}` }; };
+function buildSubjectLesson(u, l) {
+  const U = UNITS[u], n = U.items[0].dict ? [3, 5, 5, 6][l] : [6, 8, 8, 10][l];
+  const ex = shuffle(U.items.map((_, i) => i)).slice(0, n).map(i => subjEx(U, i));
+  if (l === 0) ex.unshift({ t: 'cours', u });
+  return ex;
+}
+function buildSubjectPractice(m) {
+  if (m !== 'mistakes') { // révision espacée : d'abord les erreurs, puis des questions mélangées des chapitres déjà vus
+    const errs = S.mistakes.filter(id => String(id).includes(':')).slice(-4).map(id => { const [u, i] = id.split(':').map(Number); return UNITS[u] && UNITS[u].items[i] ? subjEx(UNITS[u], i) : null; }).filter(Boolean);
+    const us = UNITS.filter(U => S.done[`${U.u}-0`]); if (!us.length) return errs.length ? errs : null;
+    const seen = new Set(errs.map(e => e.sid));
+    return errs.concat(shuffle(us.flatMap(U => U.items.map((_, i) => subjEx(U, i)))).filter(e => !seen.has(e.sid)).slice(0, 10 - errs.length));
+  }
+  const ex = S.mistakes.filter(id => String(id).includes(':')).slice(-12).map(id => { const [u, i] = id.split(':').map(Number); return UNITS[u] && UNITS[u].items[i] ? subjEx(UNITS[u], i) : null; }).filter(Boolean);
+    return ex.length ? shuffle(ex) : null;
+}
+/* ce qu'Amara lit : le cours, la question (version parlée), la dictée deux fois (normale puis lente) */
+function narrateSubj(ex, still) {
+  if (ex.t === 'cours') return speakSlide();
+  if (ex.t === 'dict') { sayFr(DICT_INTRO, null, { when: still }); sayFr(ex.it.dict, null, { when: still }); sayFr(ex.it.dict, null, { when: still, slow: true }); return; }
+  sayFr(ex.it.say || speakable(ex.it.q), null, { when: still });
+}
+const txtShow = x => Array.isArray(x) ? x[0] : x, txtSay = x => Array.isArray(x) ? x[1] : speakable(x);
+/* la leçon d'Amara en 4 temps : l'idée, un exemple pas à pas, l'astuce, le piège */
+const SLIDE_HEAD = [['💡', "L'idée", "L'idée."], ['👩🏾‍🏫', 'Je te montre, pas à pas', 'Je te montre, pas à pas.'], ['🧠', "L'astuce pour retenir", "L'astuce pour retenir."], ['⚠️', 'Attention au piège', 'Attention au piège !']];
+function lessonOf(U) { return U.lesson || { idee: U.cours, exemple: null, astuce: U.cours, piege: null }; }
+function slidesOf(U) { const ls = lessonOf(U); return [0, 1, 2, 3].filter(i => i === 0 || (i === 1 ? ls.exemple : i === 2 ? ls.astuce && ls.astuce !== ls.idee : ls.piege)); }
+function speakSlide() {
+  const ex = L.ex[L.i], U = UNITS[ex.u], ls = lessonOf(U), k = slidesOf(U)[L.slide], idx = L.i, sl = L.slide;
+  const still = () => !!L && L.i === idx && L.slide === sl && L.phase === 'answer';
+  stopSpeech();
+  if (L.slide === 0) sayFr(`Le cours : ${U.title}.`, null, { when: still });
+  sayFr(SLIDE_HEAD[k][2], null, { when: still });
+  if (k === 0) sayFr(txtSay(ls.idee), null, { when: still });
+  if (k === 2) sayFr(txtSay(ls.astuce), null, { when: still });
+  if (k === 3) sayFr(txtSay(ls.piege), null, { when: still });
+  if (k === 1) { // l'exemple apparaît ligne par ligne, au rythme de la voix d'Amara
+    const show = n => { const el = $(`#step-${n}`); if (el && still()) el.classList.add('on'); };
+    sayFr(txtSay(ls.exemple.titre), () => show(1), { when: still });
+    ls.exemple.steps.forEach((st, n) => sayFr(txtSay(st), () => show(n + 2), { when: still }));
+  }
+}
+const subjAnsText = it => it.dict ? it.dict : it.num != null ? nf(it.num) : it.o ? it.o[0] : it.ans[0];
+/* « La bonne réponse est : … » — seulement quand la réponse se dit bien à voix haute */
+function ansSpeech(it) {
+  if (it.dict) return it.dict;
+  const a = it.num != null ? sayNum(it.num) : subjAnsText(it);
+  return /[²³⁴⁵×÷√=\/()^]|\d\s*x|x\s*[+−-]/.test(a) ? null : speakable(`La bonne réponse est : ${a}.`);
+}
+/* toutes les phrases que dit Amara dans les matières (pour les enregistrer avec sa voix) */
+function subjectSpeechTexts() {
+  const out = new Set([AMARA_HELLO, DICT_INTRO, MASTERY_SAY, END_TROPHY, ...END_OK, ...SLIDE_HEAD.map(h => h[2]), ...CHEERS_FR.ok, ...CHEERS_FR.ko, ...LEVELS.map(v => `Niveau ${v.name}.`)]);
+  COURSE_LIST.filter(c => c.kind === 'subject').forEach(c => c.units.forEach(U => {
+    out.add(`Le cours : ${U.title}.`); out.add(speakable(U.cours));
+    const ls = U.lesson; if (ls) { [ls.idee, ls.astuce, ls.piege].filter(Boolean).forEach(x => out.add(txtSay(x))); if (ls.exemple) [ls.exemple.titre, ...ls.exemple.steps].forEach(x => out.add(txtSay(x))); }
+    U.items.forEach(it => { if (it.dict) out.add(it.dict); else out.add(it.say || speakable(it.q)); const a = ansSpeech(it); if (a) out.add(a); if (it.ex) out.add(speakable(it.ex)); if (it.hint) out.add(speakable(it.hint)); });
+  }));
+  return [...out];
+}
+
+/* --- vérification des réponses --- */
+const plainFr = t => String(t).toLowerCase().replace(/(\d+)\s*sur\s*(\d+)/g, '$1/$2').replace(/[’`]/g, "'").replace(/\s*\/\s*/g, '/').replace(/\s*'\s*/g, "'").replace(/[.!?;:«»"…,]/g, ' ').replace(/\s+/g, ' ').trim();
+const noAcc = t => plainFr(t).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe').replace(/æ/g, 'ae');
+function parseNum(v) { const m = String(v).replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.').match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; }
+function checkSubj(it, v) {
+  if (it.num != null) { const x = parseNum(v); return { ok: x != null && Math.abs(x - it.num) <= (it.tol || 1e-9) }; }
+  if (it.ans.some(a => plainFr(a) === plainFr(v))) return { ok: true };
+  if (it.ans.some(a => noAcc(a) === noAcc(v))) return { ok: true, typo: true };
+  return { ok: false };
+}
+/* dictée : on aligne les mots (comme un correcteur) et on souligne ceux qui sont faux ou oubliés */
+function dictDiff(target, typed) {
+  const words = t => String(t).replace(/[’`]/g, "'").split(/\s+/).map(w => w.replace(/^[«"(]+|[.,;:!?»")…]+$/g, '')).filter(Boolean);
+  const T = words(target), U = words(typed), tl = T.map(w => w.toLowerCase()), ul = U.map(w => w.toLowerCase());
+  const n = T.length, m = U.length, D = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = tl[i] === ul[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
+  const okT = new Array(n).fill(false); let i = 0, j = 0;
+  while (i < n && j < m) { if (tl[i] === ul[j]) { okT[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
+  const matched = okT.filter(Boolean).length, errors = (n - matched) + Math.max(0, m - matched - (n - matched));
+  const accOnly = errors > 0 && noAcc(target) === noAcc(typed);
+  const html = T.map((w, k) => okT[k] ? esc(w) : `<span class="wd-no">${esc(w)}</span>`).join(' ');
+  return { ok: errors === 0 || accOnly, typo: accOnly, errors, html };
+}
+
+/* --- rendus --- */
+const hintBtn = () => '<button class="btn sm ghost hint-btn" data-act="hint" id="hintBtn">💡 Un indice</button><div class="hint-box" id="hintBox" hidden></div>';
+function subjHint() {
+  const ex = L.ex[L.i], ls = lessonOf(UNITS[ex.u]), tip = ex.it.hint || (ex.t === 'dict' ? (ls.piege || ls.astuce) : ls.astuce);
+  const box = $('#hintBox'); if (!box || !tip) return;
+  box.hidden = false; box.innerHTML = `💡 ${esc(txtShow(tip))}`; $('#hintBtn').remove();
+  L.hinted = true; sayFr(txtSay(tip));
+}
+const subjMicBtn = () => SR && !EMBED && S.settings.mic !== false ? `<button class="mic" id="mic" data-act="subjMic">🎙️ Réponds à voix haute</button><div class="heard" id="heard"></div>` : '';
+Object.assign(RENDER, {
+  cours(ex) {
+    const U = UNITS[ex.u], ls = lessonOf(U), list = slidesOf(U);
+    if (L.slide == null) L.slide = 0;
+    const k = list[L.slide], last = L.slide === list.length - 1, [ic, head] = SLIDE_HEAD[k];
+    let body;
+    if (k === 1) body = `<p class="cours-ex-t">${esc(txtShow(ls.exemple.titre))}</p><ol class="cours-steps">${ls.exemple.steps.map((st, n) => `<li id="step-${n + 1}" class="${L.slideSeen ? 'on' : ''}">${esc(txtShow(st))}</li>`).join('')}</ol>`;
+    else body = `<p class="cours-txt">${esc(txtShow(k === 0 ? ls.idee : k === 2 ? ls.astuce : ls.piege))}</p>`;
+    lessonShell(exHeader(`📖 ${esc(U.title)}`, ex) + `<div class="cours-dots">${list.map((_, i) => `<i class="${i === L.slide ? 'on' : i < L.slide ? 'done' : ''}"></i>`).join('')}</div>
+      <div class="cours-card slide-${k}"><div class="cours-head"><span class="emoji">${ic}</span> ${head}</div>${body}
+      <button class="btn sm ghost" data-act="slideAgain">🔁 Réécouter</button></div>`,
+      `<div class="l-foot-in">${L.slide > 0 ? '<button class="btn" data-act="slidePrev">← Retour</button>' : '<span></span>'}<button class="btn pri" id="checkBtn" data-act="${last ? 'coursOk' : 'slideNext'}">${last ? 'J\'ai compris ✓' : 'Suivant →'}</button></div>`);
+  },
+  sq(ex) {
+    const it = ex.it, opts = shuffle(it.o);
+    lessonShell(exHeader(esc(it.q), ex) + (it.fig ? `<div class="subj-fig">${it.fig}</div>` : '') +
+      hintBtn() + `<div class="opts">${opts.map((o, i) => `<button class="opt" data-opt="${i}" data-act="pick" data-v="${esc(o)}"><span class="k">${i + 1}</span>${esc(o)}</button>`).join('')}</div>${subjMicBtn()}`, footAnswer());
+    L.check = () => ({ ok: L.sel === it.o[0], ans: it.o[0], sub: it.ex });
+  },
+  sn(ex) {
+    const it = ex.it, numeric = it.num != null;
+    lessonShell(exHeader(esc(it.q), ex) + (it.fig ? `<div class="subj-fig">${it.fig}</div>` : '') +
+      hintBtn() + `<input class="typed" id="typed" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ${numeric ? 'inputmode="decimal"' : ''} placeholder="${numeric ? 'Ta réponse (un nombre)' : 'Écris ta réponse'}">${subjMicBtn()}`, footAnswer());
+    const inp = $('#typed'); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
+    L.check = () => ({ ...checkSubj(it, inp.value), ans: subjAnsText(it), sub: it.ex });
+  },
+  dict(ex) {
+    const t = ex.it.dict;
+    lessonShell(exHeader('✍️ Dictée : écoute et écris', ex) + spkButtons(t, true) +
+      `<textarea class="typed" id="typed" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" placeholder="Écris la phrase dictée par Amara"></textarea>
+      <p class="muted" style="text-align:center">🔊 pour réécouter, 🐢 pour l'entendre lentement. Attention aux accents et aux accords !</p>${hintBtn()}`, footAnswer('Je ne peux pas écouter'));
+    L.listen = true;
+    const inp = $('#typed'); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
+    L.check = () => { const d = dictDiff(t, inp.value); return { ok: d.ok, typo: d.typo, ans: t, html: d.ok && !d.typo ? null : d.html, sub: d.ok ? (d.typo ? 'Attention aux accents.' : null) : `${d.errors} faute${d.errors > 1 ? 's' : ''} — les mots soulignés sont à revoir.` }; };
+  }
+});
+/* répondre à voix haute : Amara t'écoute (reconnaissance vocale en français) */
+const FR_NUMS = { zéro: 0, un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, onze: 11, douze: 12, treize: 13, quatorze: 14, quinze: 15, seize: 16, vingt: 20, trente: 30, quarante: 40, cinquante: 50, soixante: 60, cent: 100, mille: 1000 };
+function spokenToNum(t) {
+  let s = ' ' + t.toLowerCase().replace(/-/g, ' ') + ' ';
+  s = s.replace(/\bmoins\s+/g, '-').replace(/\s*virgule\s*/g, ',');
+  if (parseNum(s) != null) return s.trim();
+  const w = s.trim().split(/\s+/).map(x => FR_NUMS[x]).filter(x => x != null);
+  return w.length ? String(w.reduce((a, b) => b === 100 || b === 1000 ? (a || 1) * b : a + b, 0)) : t;
+}
+function matchOption(alts, opts) {
+  let best = null;
+  for (const a of alts) {
+    const ha = ' ' + noAcc(a) + ' ';
+    for (const o of opts) { const ho = noAcc(o); if (ho && (ha.includes(' ' + ho + ' ') || ha.trim() === ho || ho.includes(ha.trim()) && ha.trim().length > 3) && (!best || ho.length > noAcc(best).length)) best = o; }
+    if (best) return best;
+    const num = parseNum(spokenToNum(a)); if (num != null) { const o = opts.find(x => parseNum(x) === num && /^\s*-?[\d,.]+\s*$/.test(x)); if (o) return o; }
+  }
+  return best;
+}
+function subjMic() {
+  if (!L || L.phase !== 'answer' || !SR) return;
+  if (REC) { try { REC.stop(); } catch (e) { } return; }
+  stopSpeech();
+  const ex = L.ex[L.i], it = ex.it, btn = $('#mic'), heard = $('#heard'), r = new SR(); REC = r;
+  r.lang = 'fr-FR'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
+  let alts = null;
+  btn.classList.add('rec'); btn.innerHTML = '🔴 Je t\'écoute… (touche pour arrêter)';
+  r.onresult = e => { const res = e.results[e.results.length - 1], a = [...res].map(x => x.transcript); heard.innerHTML = `<span class="muted">${esc(a[0])}</span>`; if (res.isFinal) alts = a; };
+  r.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') heard.innerHTML = '🚫 Micro refusé. Autorise le micro, ou réponds en touchant ou en écrivant.';
+    else if (e.error === 'no-speech') heard.innerHTML = 'Je n\'ai rien entendu. Réessaie en parlant plus fort.';
+    else if (e.error === 'network') heard.innerHTML = '🌐 La reconnaissance vocale nécessite Internet.';
+  };
+  r.onend = () => {
+    REC = null; if (!L || L.ex[L.i] !== ex || L.phase !== 'answer') return;
+    btn.classList.remove('rec'); btn.innerHTML = '🎙️ Réponds à voix haute';
+    if (!alts) return;
+    S.stats.speaks++; questProgress('speak');
+    if (it.o) {
+      const o = matchOption(alts, it.o), el = o && $$('.l-body [data-opt]').find(b => b.dataset.v === o);
+      if (!el) { heard.innerHTML += '<div class="muted" style="margin-top:6px">Je n\'ai pas reconnu une des réponses proposées. Réessaie, ou touche ta réponse.</div>'; return; }
+      pick(el); doCheck(); return;
+    }
+    const inp = $('#typed'), cand = alts.map(a => it.num != null ? spokenToNum(a) : a.trim());
+    inp.value = cand.find(c => checkSubj(it, c).ok) || cand[0]; setReady(true); doCheck();
+  };
+  try { r.start(); } catch (e) { REC = null; }
+}
+
+/* --- vue d'accueil d'une matière : niveau au choix, chapitres, cours --- */
+function viewSubject() {
+  const lv = subjLevel(), units = levelUnits(), ck = currentKey(), cur = ck ? UNITS[+ck.split('-')[0]] : null;
+  const doneLv = units.reduce((a, U) => a + SUBJ_NODES.filter(n => S.done[`${U.u}-${n.k}`]).length, 0), totLv = units.length * SUBJ_NODES.length;
+  const cta = ck ? `<button class="btn pri wide hero-cta" data-act="startNode" data-k="${ck}">▶&nbsp; ${ck.endsWith('-0') ? 'Le cours' : nodeLabel(ck)} : ${esc(cur.title)}</button>`
+    : `<p class="muted" style="margin-top:10px">🎓 Bravo, tu as terminé le niveau ${esc(LEVELS[lv].name)} !${lv < LEVELS.length - 1 ? ' Passe au niveau suivant.' : ''}</p>${lv < LEVELS.length - 1 ? `<button class="btn pri wide hero-cta" data-act="setLevel" data-l="${lv + 1}">Niveau ${esc(LEVELS[lv + 1].name)} →</button>` : ''}`;
+  const quick = [['📖', 'Le cours', 'guide', `data-u="${(cur || units[0]).u}"`], ['🧠', 'Révision', 'practice', 'data-m="srs"'], ['🩹', 'Erreurs', 'practice', 'data-m="mistakes"'], ['🎒', 'Matières', 'courses', '']];
+  let html = installBanner() + `<section class="today">
+    <div class="kicker">Avec Amara · ${esc(COURSE.name)}</div>
+    <div class="lvl-row" role="tablist" aria-label="Niveau">${LEVELS.map((v, i) => `<button class="lvl ${i === lv ? 'on' : ''}" data-act="setLevel" data-l="${i}" role="tab" aria-selected="${i === lv}"><b>${esc(v.name)}</b><small>${esc(v.desc)}</small></button>`).join('')}</div>
+    <h2>${esc(cur ? cur.title : LEVELS[lv].name)}</h2><p class="muted">Niveau ${esc(LEVELS[lv].name)} · ${units.length} chapitre${units.length > 1 ? 's' : ''}</p>
+    <div class="bar"><i style="width:${totLv ? doneLv / totLv * 100 : 0}%"></i></div>
+    ${cta}
+    <div class="today-stats">
+      <button data-act="streakInfo"><span class="emoji">🔥</span><b>${S.streak}</b><small>jours</small></button>
+      <button data-act="nav" data-v="quests"><span class="emoji">🎯</span><b>${todayXP()}/${S.goal}</b><small>XP du jour</small></button>
+      <button data-act="nav" data-v="league"><span class="emoji">${TIERS[S.league.tier][1]}</span><b>${leagueBoard().findIndex(r => r.me) + 1}<sup>e</sup></b><small>ligue ${TIERS[S.league.tier][0]}</small></button>
+    </div></section>
+    <div class="quick">${quick.map(([e, l, a, d]) => `<button class="quick-btn" data-act="${a}" ${d}><span class="pearl emoji">${e}</span><small>${l}</small></button>`).join('')}</div>
+    <button class="method-card" data-act="method"><span class="emoji">🎓</span><span><b>La méthode d'Amara</b><small>Comprendre, s'entraîner, retenir : comment on apprend vraiment</small></span><span>›</span></button>
+    <h3 class="section-h">Les chapitres</h3>`;
+  units.forEach((U, idx) => {
+    const u = U.u, dc = SUBJ_NODES.filter(n => S.done[`${u}-${n.k}`]).length, isCur = cur && cur.u === u;
+    html += `<section class="chapter ${isCur ? 'cur' : ''} ${dc === SUBJ_NODES.length ? 'done' : ''}">
+      <div class="ch-head"><div><div class="kicker">Chapitre ${idx + 1} · ${dc}/${SUBJ_NODES.length}</div><h3><span class="emoji">${U.emoji}</span> ${esc(U.title)}</h3><p class="muted">${U.items.length} ${U.items[0].dict ? 'dictées' : 'questions'}</p></div>
+        <div class="ch-btns"><button class="btn sm" data-act="guide" data-u="${u}">Cours</button></div></div>
+      <div class="steps">${SUBJ_NODES.map(n => {
+        const k = `${u}-${n.k}`, done = S.done[k], unl = isUnlocked(k), c = k === ck;
+        return `<button class="step ${done ? 'done' : ''} ${c ? 'cur' : ''} ${unl ? '' : 'lock'}" data-act="step" data-k="${k}" aria-label="${esc(nodeLabel(k))}"><span class="emoji">${done ? '✓' : unl ? (n.t === 'cours' ? '📖' : STEP_ICON[n.t]) : '·'}</span></button>`;
+      }).join('')}</div></section>`;
+  });
+  return html;
+}
+function subjMethodHTML() {
+  const row = (e, t, d) => `<div class="method"><span class="me emoji">${e}</span><div><b>${t}</b><div class="muted">${d}</div></div></div>`;
+  return `<div class="onb"><div style="font-size:60px" class="emoji">🎓</div><h2>La méthode d'Amara</h2><p class="muted">Les techniques que la recherche en sciences de l'éducation a montrées comme les plus efficaces, pour les enfants comme pour les adultes.</p></div>
+    ${row('💡', 'Une idée, une image', 'Chaque notion commence par une image concrète : une pizza pour les fractions, un thermomètre pour les nombres négatifs.')}
+    ${row('👩🏾‍🏫', 'Je te montre, pas à pas', 'Amara résout un exemple devant toi, une étape à la fois, avant que tu essaies.')}
+    ${row('🧠', 'Astuces et pièges', 'Un moyen simple de retenir, et l\'erreur la plus fréquente à éviter.')}
+    ${row('✍️', 'Se tester pour retenir', 'Répondre à des questions fixe mieux les connaissances que relire. Tu peux répondre en touchant, en écrivant ou à voix haute.')}
+    ${row('💬', 'Corriger en expliquant', 'Après une erreur, Amara te donne la bonne réponse et t\'explique pourquoi. Une erreur comprise est une leçon apprise.')}
+    ${row('🏆', 'Maîtriser avant d\'avancer', 'Un chapitre est validé à 80 % de bonnes réponses : on construit sur du solide.')}
+    ${row('📅', 'Réviser au bon moment', 'La révision mélange tes erreurs et les anciens chapitres : revoir un peu chaque jour vaut mieux que beaucoup en une fois.')}`;
+}
+function subjGuideHTML(u) {
+  const U = UNITS[u], sample = U.items.slice(0, U.items[0].dict ? 2 : 4);
+  return `<h2><span class="emoji">${U.emoji}</span> ${esc(U.title)}</h2><div class="kicker">${esc(COURSE.name)} · niveau ${esc(LEVELS[U.lvl].name)}</div>
+    ${(() => { const ls = lessonOf(U); return `<div class="guide-lesson">
+      <div class="gl"><b>💡 L'idée</b><p>${esc(txtShow(ls.idee))}</p></div>
+      ${ls.exemple ? `<div class="gl"><b>👩🏾‍🏫 ${esc(txtShow(ls.exemple.titre))}</b><ol>${ls.exemple.steps.map(st => `<li>${esc(txtShow(st))}</li>`).join('')}</ol></div>` : ''}
+      ${ls.astuce ? `<div class="gl"><b>🧠 L'astuce</b><p>${esc(txtShow(ls.astuce))}</p></div>` : ''}
+      ${ls.piege ? `<div class="gl warn"><b>⚠️ Le piège</b><p>${esc(txtShow(ls.piege))}</p></div>` : ''}
+      ${spkButtons(speakable(U.cours))}</div>`; })()}
+    <h3 class="section-h">${U.items[0].dict ? '✍️ Exemples de dictées' : '✏️ Exemples'}</h3>
+    ${sample.map(it => `<div class="phr"><div>${it.fig ? `<div class="subj-fig sm">${it.fig}</div>` : ''}<b>${esc(it.dict || it.q)}</b>${it.dict ? '' : `<div class="muted">Réponse : ${esc(subjAnsText(it))}${it.ex ? ' — ' + esc(it.ex) : ''}</div>`}</div></div>`).join('')}
+    <button class="btn pri wide" style="margin-top:14px" data-act="startNode" data-k="${u}-0">▶ Commencer ce chapitre</button>`;
+}
+
 /* --- Interactions --- */
 function pick(el) {
   if (L.phase !== 'answer') return;
@@ -2853,11 +4006,13 @@ function grade(r, o = {}) {
     if ([5, 10, 15, 20].includes(L.combo)) comboBanner(L.combo);
     if (ex.retry && ex.s) S.mistakes = S.mistakes.filter(id => id !== ex.s.id);
     if (L.kind === 'practice' && ex.s) S.mistakes = S.mistakes.filter(id => id !== ex.s.id);
+    if (ex.sid && (ex.retry || L.kind === 'practice')) S.mistakes = S.mistakes.filter(id => id !== ex.sid);
   } else {
     L.combo = 0; L.mistakes++; sfx.bad();
     if (L.jumpLives != null) L.jumpLives--;
     else if (!o.noHeart && !HEARTLESS.has(L.kind)) loseHeart();
     if (ex.s && !S.mistakes.includes(ex.s.id)) S.mistakes.push(ex.s.id);
+    if (ex.sid && !S.mistakes.includes(ex.sid)) S.mistakes.push(ex.sid);
     if (L.kind !== 'jump' && !SPEAKY.has(ex.t) && (ex.retryN || 0) < 2) L.ex.push({ ...ex, retry: true, retryN: (ex.retryN || 0) + 1, isNew: false });
   }
   // répétition espacée
@@ -2868,13 +4023,17 @@ function grade(r, o = {}) {
   const foot = $('#lfoot');
   foot.className = 'l-foot ' + (r.ok ? 'good' : 'badf');
   const title = r.ok ? (r.typo ? 'Attention à l\'orthographe !' : rand(PRAISE)) : 'Réponse correcte :';
-  const ans = r.ok ? (r.typo ? `<div class="fb-ans">${esc(r.ans)}</div>` : '') : `<div class="fb-ans">${esc(r.ans)}</div>`;
-  foot.innerHTML = `<div class="l-foot-in"><div class="fb"><div class="fb-ico emoji">${r.ok ? '✅' : '❌'}</div><div><h3>${title}</h3>${ans}${r.sub ? `<div class="muted">${esc(r.sub)}</div>` : ''}</div></div>
+  const ans = r.html ? `<div class="fb-ans">${r.html}</div>` : r.ok ? (r.typo ? `<div class="fb-ans">${esc(r.ans)}</div>` : '') : `<div class="fb-ans">${esc(r.ans)}</div>`;
+  foot.innerHTML = `<div class="l-foot-in"><div class="fb"><div class="fb-ico emoji">${r.ok ? '✅' : '❌'}</div><div><h3>${title}</h3>${ans}${r.sub ? (ex.it && ex.it.ex && r.sub === ex.it.ex ? `<div class="fb-why">💡 <b>Pourquoi ?</b> ${esc(r.sub)}</div>` : `<div class="muted">${esc(r.sub)}</div>`) : ''}</div></div>
     <button class="btn ${r.ok ? 'ok' : 'bad'}" id="contBtn" data-act="continue">Continuer</button></div>`;
   $$('.l-body button, .l-body input, .l-body textarea').forEach(b => { if (!b.classList.contains('spk') && !b.classList.contains('tw')) b.disabled = true; });
   $('.l-top .l-hearts').textContent = L.jumpLives != null ? `🛡️ ${L.jumpLives}` : HEARTLESS.has(L.kind) || unlimited() ? '❤️ ∞' : `❤️ ${S.hearts}`;
-  const sayAns = !r.ok && first(r.ans) && /[a-z\u0600-\u06FF\u4E00-\u9FFF]/i.test(r.ans) && (L.tileLang === 'en' || ex.t === 'listen_type' || ex.t === 'speak' || ex.t === 'fill') ? () => say(r.ans) : null;
+  const sayAns = !ex.it && !r.ok && first(r.ans) && /[a-z\u0600-\u06FF\u4E00-\u9FFF]/i.test(r.ans) && (L.tileLang === 'en' || ex.t === 'listen_type' || ex.t === 'speak' || ex.t === 'fill') ? () => say(r.ans) : null;
   cheer(r.ok); if (sayAns) sayAns();
+  if (ex.it) {
+    if (!ex.retry) { L.first = L.first || { ok: 0, n: 0 }; L.first.n++; if (r.ok) L.first.ok++; }
+    if (!r.ok) { const a = ansSpeech(ex.it); if (a) sayFr(a); if (ex.it.ex) sayFr(speakable(ex.it.ex)); else if (ex.t === 'dict') { const tip = lessonOf(UNITS[ex.u]).piege; if (tip) sayFr(txtSay(tip)); } }
+  }
   setTimeout(() => $('#contBtn') && $('#contBtn').focus(), 50);
 }
 function comboBanner(n) {
@@ -2903,6 +4062,7 @@ function endScreen(passed) {
   }
   const acc = L.total ? Math.round(L.correct / L.total * 100) : 100;
   const perfect = L.mistakes === 0;
+  if (isSubj() && L.kind === 'trophy' && L.first && L.first.n && L.first.ok / L.first.n < MASTERY) return masteryScreen(Math.round(L.first.ok / L.first.n * 100));
   let base = { lesson: 10, review: 15, trophy: 20, practice: 10, jump: 20, sound: 10 }[L.kind] || 10;
   base += perfect ? 5 : 0; base += Math.min(5, Math.floor(L.maxCombo / 5));
   const xp = addXP(base);
@@ -2916,6 +4076,7 @@ function endScreen(passed) {
   const newDay = markActive(); S.gems += perfect ? 5 : 2;
   checkAch(); save();
   sfx.win(); confetti();
+  if (isSubj()) sayFr(L.kind === 'trophy' ? END_TROPHY : rand(END_OK));
   const box = (h, c, v) => `<div class="es" style="border-color:${c}"><div class="h" style="background:${c}">${h}</div><div class="v">${v}</div></div>`;
   const titles = { trophy: 'Unité terminée !', jump: 'Saut réussi !', review: 'Révision terminée !', practice: 'Pratique terminée !', sound: 'Son travaillé !' };
   $('#overlay').innerHTML = `<div class="end">${pip('happy', 160, 'pip-bounce')}
@@ -3030,7 +4191,7 @@ function storyEnd() {
 function onboarding() {
   openModal(`<div class="onb">${pip('happy', 130, 'pip-bounce')}<h2>Hello ! Moi c'est Pip 🦜</h2>
     <p class="muted">Je vais t'aider à <b>parler une nouvelle langue</b>, quelques minutes par jour.</p>
-    <h3 style="margin-top:16px">Quelle langue veux-tu apprendre ?</h3>
+    <h3 style="margin-top:16px">Que veux-tu apprendre ?</h3>
     <div class="course-grid">${COURSE_LIST.map(c => `<button class="opt ${c.code === S.course ? 'sel' : ''}" data-act="onbCourse" data-c="${c.code}"><span class="emoji" style="font-size:26px">${c.flag}</span><b>${esc(c.name)}</b></button>`).join('')}</div>
     <input type="text" id="onb-name" class="typed" style="margin:16px 0 4px;text-align:center" placeholder="Ton prénom" maxlength="20">
     <h3 style="margin-top:16px">Ton objectif quotidien</h3>
@@ -3069,10 +4230,10 @@ function coursesHTML() {
   const group = (title, list) => `<h3 class="section-h" style="margin-top:14px">${title}</h3><div class="course-grid">${list.map(c => {
     const p = courseProgress(c.code);
     return `<button class="opt ${c.code === S.course ? 'sel' : ''}" data-act="pickCourse" data-c="${c.code}"><span class="emoji" style="font-size:30px">${c.flag}</span>
-      <span style="flex:1"><b>${esc(c.name)}</b>${c.beta ? ' <span class="pill">bêta</span>' : ''}<br><span class="muted" style="font-size:13px">${p.done}/${p.units} unités</span></span></button>`;
+      <span style="flex:1"><b>${esc(c.name)}</b>${c.beta ? ' <span class="pill">bêta</span>' : ''}<br><span class="muted" style="font-size:13px">${p.done}/${p.units} ${c.kind === 'subject' ? 'chapitres' : 'unités'}</span></span></button>`;
   }).join('')}</div>`;
-  return `<h2>🌍 Choisis ta langue</h2><p class="muted">Ta série, tes XP, tes gemmes et ta ligue sont communs à toutes les langues. Chaque langue garde sa propre progression.</p>
-    ${group('Europe', pick(['en', 'es', 'it', 'de', 'pt']))}${group('Afrique', pick(['sw', 'ln', 'zdj', 'ar']))}${group('Asie', pick(['zh']))}`;
+  return `<h2>🎒 Que veux-tu apprendre ?</h2><p class="muted">Amara t'enseigne les langues et les matières de l'école, du niveau débutant à expert. Ta série, tes XP et ta ligue sont communs ; chaque cours garde sa progression.</p>
+    ${group('Matières avec Amara', COURSE_LIST.filter(c => c.kind === 'subject'))}${group('Langues — Europe', pick(['en', 'es', 'it', 'de', 'pt']))}${group('Langues — Afrique', pick(['sw', 'ln', 'zdj', 'ar']))}${group('Langues — Asie', pick(['zh']))}`;
 }
 
 /* =====================================================================
@@ -3084,10 +4245,20 @@ const ACT = {
   node: el => nodeClick(el),
   openChest: el => openChest(el.dataset.k),
   startNode: el => {
-    const k = el.dataset.k, [u, kk] = k.split('-'), n = NODE_TYPES.find(x => x.k === kk);
+    const k = el.dataset.k, [u, kk] = k.split('-'), n = nodes().find(x => x.k === kk);
+    if (isSubj()) { startLesson({ kind: n.t === 'trophy' ? 'trophy' : 'lesson', key: k, u: +u, ex: buildSubjectLesson(+u, n.l) }); return; }
     startLesson({ kind: n.t === 'lesson' ? 'lesson' : n.t, key: k, u: +u, ex: buildUnitLesson(+u, n.l) });
   },
-  guide: el => openModal(guideHTML(+el.dataset.u)),
+  guide: el => openModal(isSubj() ? subjGuideHTML(+el.dataset.u) : guideHTML(+el.dataset.u)),
+  setLevel: el => { S.levels = { ...(S.levels || {}), [COURSE.code]: +el.dataset.l }; save(); render(); sayFr(`Niveau ${LEVELS[+el.dataset.l].name}.`); },
+  retryCours: el => { const u = +el.dataset.u; exitLesson(); startLesson({ kind: 'lesson', key: `${u}-0`, u, ex: buildSubjectLesson(u, 0) }); },
+  method: () => openModal(isSubj() ? subjMethodHTML() : methodHTML()),
+  coursOk: () => { if (!L || L.phase !== 'answer') return; stopSpeech(); L.slide = null; L.i++; showEx(); },
+  slideNext: () => { if (!L || L.phase !== 'answer') return; L.slide++; L.slideSeen = false; RENDER.cours(L.ex[L.i]); speakSlide(); },
+  slidePrev: () => { if (!L || L.phase !== 'answer' || !L.slide) return; L.slide--; L.slideSeen = true; RENDER.cours(L.ex[L.i]); speakSlide(); },
+  slideAgain: () => { if (!L || L.phase !== 'answer') return; $$('.cours-steps li').forEach(li => li.classList.remove('on')); speakSlide(); },
+  hint: (el, e) => { if (L && L.ex[L.i] && L.ex[L.i].it) return subjHint(); e.stopPropagation(); showHint(el); },
+  subjMic: () => subjMic(),
   jump: el => {
     const u = +el.dataset.u;
     openModal(`<div class="onb">${pip('wow', 110)}<h2>Sauter à l'unité ${u + 1} ?</h2><p class="muted">Réussis un test sur le contenu des unités précédentes avec <b>3 erreurs maximum</b> pour tout débloquer jusqu'ici.</p>
@@ -3095,18 +4266,17 @@ const ACT = {
   },
   startJump: el => { const u = +el.dataset.u; startLesson({ kind: 'jump', u, ex: buildJump(u) }); },
   say: (el, e) => { e.stopPropagation(); const who = el.dataset.who; say(el.dataset.t, !!el.dataset.slow, who && CHARACTERS[who] ? CHARACTERS[who].pitch : undefined, who ? 's' : undefined); },
-  hint: (el, e) => { e.stopPropagation(); showHint(el); },
   story: el => startStory(el.dataset.id),
   sound: el => soundDetail(el.dataset.id),
   soundPractice: el => startLesson({ kind: 'sound', soundId: el.dataset.id, ex: buildSound(el.dataset.id) }),
   practice: el => {
     const m = el.dataset.m;
+    if (isSubj()) { const sx = buildSubjectPractice(m); if (!sx) { toast(m === 'mistakes' ? 'Aucune erreur à corriger 🎉' : 'Commence d\'abord un chapitre !'); return; } startLesson({ kind: 'practice', ex: sx }); return; }
     if (m === 'speak' && speakMode() === 'off') { toast('Active les exercices oraux dans Profil → Réglages.'); return; }
     const ex = buildPractice(m);
     if (!ex) { toast(m === 'mistakes' ? 'Aucune erreur à corriger 🎉' : 'Termine d\'abord une leçon !'); return; }
     startLesson({ kind: 'practice', ex });
   },
-  method: () => openModal(methodHTML()),
   streakInfo: () => openModal(`<div class="onb"><div style="font-size:80px" class="emoji">🔥</div><h2>Série de ${S.streak} jour${S.streak > 1 ? 's' : ''}</h2>
     <p class="muted">${S.lastDay === dayStr() ? 'Tu as déjà pratiqué aujourd\'hui. Reviens demain pour continuer !' : 'Termine une leçon aujourd\'hui pour prolonger ta série.'}</p>
     <p>🧊 Gels de série : <b>${S.freezes}</b>/2 · Record : <b>${S.bestStreak}</b></p></div>`),
@@ -3119,7 +4289,7 @@ const ACT = {
   buyDouble: () => { if (buy(100)) { S.doubleUntil = Date.now() + 15 * 60000; save(); render(); toast('⚡ Double XP activé pour 15 minutes !'); } },
   pipSkin: el => { const k = el.dataset.k; if (!S.owned[k]) { if (!buy(PIP_COLORS[k].price)) return; S.owned[k] = true; } S.pip = k; save(); render(); },
   toggle: el => { const k = el.dataset.k; S.settings[k] = !S.settings[k]; if (k === 'mic' && S.settings.mic) S.micOffUntil = 0; save(); render(); },
-  'test-voice': () => say(COURSE.code === 'en' ? 'Hello! My name is Pip. Let\'s learn English together!' : ALLS.length ? ALLS[0].en : UNITS[0].words[0].en),
+  'test-voice': () => isSubj() ? sayFr(AMARA_HELLO) : say(COURSE.code === 'en' ? 'Hello! My name is Pip. Let\'s learn English together!' : ALLS.length ? ALLS[0].en : UNITS[0].words[0].en),
   export: async () => {
     if (EMBED && window.claude && window.claude.use) {
       const dl = await window.claude.use('downloads');
@@ -3135,7 +4305,7 @@ const ACT = {
   resetYes: () => { localStorage.removeItem(KEY); S = DEFAULT(); loadCourse('en'); save(); closeModal(); VIEW = 'learn'; render(); onboarding(); },
   onbGoal: el => { $$('[data-act=onbGoal]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.goal = +el.dataset.v; },
   onbAcc: el => { $$('[data-act=onbAcc]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.settings.accent = el.dataset.v; say('Hello!'); },
-  onbCourse: el => { $$('[data-act=onbCourse]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.course = el.dataset.c; loadCourse(S.course); say(COURSE.code === 'en' ? 'Hello!' : UNITS[0].words[0].en); },
+  onbCourse: el => { $$('[data-act=onbCourse]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.course = el.dataset.c; loadCourse(S.course); if (isSubj()) sayFr(AMARA_HELLO); else say(COURSE.code === 'en' ? 'Hello!' : UNITS[0].words[0].en); },
   courses: () => openModal(coursesHTML()),
   install: () => openModal(installHTML()),
   installNow: async () => { if (!INSTALL_PROMPT) return; INSTALL_PROMPT.prompt(); try { await INSTALL_PROMPT.userChoice; } catch (e) { } INSTALL_PROMPT = null; closeModal(); render(); },
@@ -3167,6 +4337,8 @@ const ACT = {
     if (!L || L.phase !== 'answer') return;
     const ex = L.ex[L.i];
     if (L.listen && (LISTENY.has(ex.t) || ex.t === 'listen_pick')) return cantListen();
+    if (ex.t === 'cours') return ACT.coursOk();
+    if (ex.it) return grade({ ok: false, ans: subjAnsText(ex.it), sub: ex.it.ex });
     const ans = ex.s ? (ex.t === 'tr_fr' || ex.t === 'choose_tr' ? first(ex.s.fr) : disp(first(ex.s.en))) : ex.w ? `${ex.w.en} = ${ex.w.fr}` : ex.ans || ex.word || '';
     grade({ ok: false, ans }, { noHeart: SPEAKY.has(ex.t) });
   },
