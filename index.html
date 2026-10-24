@@ -465,7 +465,9 @@ body.stage-on.in-lesson{--stage-h:38dvh}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body.stage-on{--sheet:rgba(88,81,74,.92)}}
 body.stage-on #stage{display:block;position:fixed;top:0;left:0;right:0;max-width:600px;margin:0 auto;height:var(--stage-h);overflow:hidden;z-index:1;transition:height .35s ease;background:#CFC4B6}
 #stage .st-img,#stage .st-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
+#stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%;transition:opacity .2s}
 #stage .st-vid{opacity:0;transition:opacity .15s}
+#stage.talking .st-idle{opacity:0}
 #stage.talking .st-vid{opacity:1}
 #stage .st-fade{position:absolute;inset:auto 0 0 0;height:48%;background:linear-gradient(rgba(40,32,26,0),rgba(40,32,26,.6));pointer-events:none}
 #stage .st-top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 0}
@@ -538,7 +540,7 @@ body.stage-on #app{min-height:0;height:auto}
 #stage .st-tap{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer}
 #stage .st-img{animation:breathe 9s ease-in-out infinite;transform-origin:50% 20%}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025) translateY(-3px)}}
-@media (prefers-reduced-motion:reduce){#stage .st-img{animation:none}}
+@media (prefers-reduced-motion:reduce){#stage .st-img{animation:none}#stage .st-idle{display:none}}
 body.stage-on #main::before{margin-bottom:10px}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px}
 .sh-prof{display:flex;flex-direction:column;align-items:flex-start;text-align:left;color:var(--ink);min-width:0}
@@ -3364,14 +3366,17 @@ function teacher(size, mood = 'talk') {
   if (!profOn()) return pip(mood, size);
   return `<div class="prof" style="--s:${size}px"><img src="prof/rest.jpg" alt="Ta prof"><video muted playsinline loop preload="auto"><source src="prof/face.mp4" type="video/mp4"><source src="prof/face.webm" type="video/webm"></video></div>`;
 }
+function idleVideo() { const v = $('#stage .st-idle'); if (v && v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); } }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) idleVideo(); });
+document.addEventListener('touchstart', idleVideo, { passive: true, once: true });
 function profTalk(on) {
   document.querySelectorAll('.prof, #stage').forEach(p => {
-    const v = p.querySelector('video'); if (!v) return;
+    const v = p.querySelector('video:not(.st-idle)'); if (!v) return;
     if (on) {
       p.classList.add('talking');
       try { if (v.readyState > 0) v.currentTime = Math.random() * Math.max(0, (v.duration || 8) - 2); } catch (e) { }
       const pr = v.play(); if (pr && pr.catch) pr.catch(() => { });
-    } else { p.classList.remove('talking'); v.pause(); }
+    } else { p.classList.remove('talking'); v.pause(); idleVideo(); }
   });
 }
 /* =====================================================================
@@ -3386,6 +3391,7 @@ function renderStage() {
     st.dataset.ready = '1';
     st.innerHTML = `<button class="st-tap" data-act="profVideo" aria-label="Écouter le message d'Amara, ta prof">
       <img class="st-img" src="prof/full.jpg" alt="Amara, ta prof, qui te regarde">
+      <video class="st-idle" muted playsinline loop autoplay preload="auto" poster="prof/idle.jpg" aria-hidden="true"><source src="prof/idle.mp4" type="video/mp4"><source src="prof/idle.webm" type="video/webm"></video>
       <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video></button>`;
   }
 }
