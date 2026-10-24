@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SpeakUp — Apprends l'anglais</title>
+<title>SpeakUp — Apprends les langues</title>
 <meta name="theme-color" content="#6C4CF5">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="SpeakUp">
@@ -303,6 +303,16 @@ textarea.typed:focus,input.typed:focus{outline:none;border-color:var(--sky)}
 .goal-opts{display:grid;gap:10px;margin:16px 0}
 .pip-bounce{animation:bob 1.2s ease-in-out infinite}
 .combo-banner{position:fixed;left:50%;top:90px;transform:translateX(-50%);background:var(--fire);color:#fff;font-weight:900;padding:10px 20px;border-radius:99px;z-index:150;animation:popin .2s}
+
+/* ---------- Multilingue ---------- */
+.rd{display:block;font-size:12px;font-weight:700;color:var(--muted);line-height:1.2;margin-top:2px}
+ruby rt{font-size:.5em;font-weight:700;color:var(--muted)}
+.tgt[dir=rtl],[dir=rtl] .tile,.bank[dir=rtl] .tile{font-size:1.12em}
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:8px 0 14px}
+.course-grid .opt{gap:10px;padding:12px}
+.stat.flag{font-size:15px;gap:6px;color:var(--ink)}
+.stat.flag .emoji{font-size:20px}
+@media (max-width:700px){.stat.flag .cname{display:none}}
 </style>
 </head>
 <body>
@@ -965,6 +975,257 @@ const BOT_NAMES = ["Léa", "Hugo", "Chloé", "Lucas", "Inès", "Nathan", "Manon"
   "Jade", "Louis", "Zoé", "Gabriel", "Alice", "Rayan", "Lina", "Ethan", "Emma B.", "Paul", "Nina", "Sacha", "Clara", "Théo", "Lou", "Malo"];
 const AVATARS = ["🦊", "🐼", "🐯", "🐨", "🐸", "🐵", "🦄", "🐙", "🦉", "🐧", "🐢", "🦁", "🐰", "🐻", "🐹", "🦋", "🐳", "🦖"];
 </script>
+<script>/* =====================================================================
+   SpeakUp — cours des autres langues
+   CORE : le programme commun, écrit une seule fois en français (+ dessins).
+   COURSES[code].units[k] traduit l'unité CORE[k] : w = mots, s = phrases,
+   dans le même ordre. null = élément (ou unité) absent pour cette langue.
+   Pour le chinois et l'arabe : [texte, lecture], la lecture (pinyin ou
+   transcription) ayant exactement le même nombre de mots que le texte.
+   ===================================================================== */
+const CORE = [
+  { title: "Les bases", emoji: "👋", desc: "Saluer et remercier",
+    words: [["bonjour", "👋"], ["au revoir", "🙋"], ["oui", "✅"], ["non", "❌"], ["merci", "💐"], ["s'il te plaît", "🙏"], ["pardon", "😔"], ["bonne nuit", "🌙"]],
+    sents: ["Bonjour, Anna !", "Au revoir, Tom !", "Merci beaucoup.", "Oui, s'il te plaît.|Oui, s'il vous plaît.", "Non, merci.", "Bonne nuit, Anna."] },
+  { title: "Se présenter", emoji: "🧑", desc: "Dire qui tu es",
+    words: [["homme", "👨"], ["femme", "👩"], ["garçon", "👦"], ["fille", "👧"], ["ami", "🤝"], ["nom", "📛"], ["enfant", "🧒"], ["professeur", "🧑‍🏫"]],
+    sents: ["Je m'appelle Anna.|Mon nom est Anna.", "Comment tu t'appelles ?|Comment vous appelez-vous ?|Quel est ton nom ?|Quel est votre nom ?", "Je suis un homme.", "Elle est professeure.|Elle est professeur.|C'est une professeure.", "C'est mon ami.|Il est mon ami.", "Enchanté.|Enchantée."] },
+  { title: "La nourriture", emoji: "🍎", desc: "Manger et boire",
+    words: [["pomme", "🍎"], ["pain", "🍞"], ["eau", "💧"], ["lait", "🥛"], ["café", "☕"], ["thé", "🍵"], ["riz", "🍚"], ["poisson", "🐟"]],
+    sents: ["Je mange une pomme.", "Elle boit de l'eau.|Il boit de l'eau.", "Je bois du café.", "Le pain est bon.", "J'ai faim.", "Je voudrais un thé, s'il te plaît.|Je voudrais un thé, s'il vous plaît.|Je voudrais du thé, s'il te plaît."] },
+  { title: "La famille", emoji: "👨‍👩‍👧", desc: "Parler de tes proches",
+    words: [["mère", "🤱"], ["père", "🧔"], ["sœur", "👭"], ["frère", "👬"], ["bébé", "👶"], ["famille", "👨‍👩‍👧"], ["grand-mère", "👵"], ["grand-père", "👴"]],
+    sents: ["C'est ma mère.|Voici ma mère.", "J'ai une sœur.", "Mon père est grand.", "J'aime ma famille.|J'adore ma famille.", "Le bébé dort.", "Tu as des enfants ?|As-tu des enfants ?|Est-ce que tu as des enfants ?|Avez-vous des enfants ?|Vous avez des enfants ?"] },
+  { title: "Les animaux", emoji: "🐶", desc: "Les animaux familiers et sauvages",
+    words: [["chien", "🐶"], ["chat", "🐱"], ["oiseau", "🐦"], ["cheval", "🐴"], ["vache", "🐄"], ["poule", "🐔"], ["lion", "🦁"], ["éléphant", "🐘"]],
+    sents: ["Le chien est noir.", "J'ai un chat.", "L'oiseau chante.", "Le lion est grand.|Le lion est gros.", "La vache mange.", "J'aime les animaux.|J'adore les animaux."] },
+  { title: "Les nombres", emoji: "🔢", desc: "Compter de 1 à 10",
+    words: [["un", "1️⃣"], ["deux", "2️⃣"], ["trois", "3️⃣"], ["quatre", "4️⃣"], ["cinq", "5️⃣"], ["six", "6️⃣"], ["sept", "7️⃣"], ["huit", "8️⃣"], ["neuf", "9️⃣"], ["dix", "🔟"]],
+    sents: ["J'ai deux frères.", "J'ai trois chats.", "Quel âge as-tu ?|Quel âge avez-vous ?|Tu as quel âge ?", "J'ai dix ans.", "Cinq pommes, s'il te plaît.|Cinq pommes, s'il vous plaît.", "Quelle heure est-il ?|Il est quelle heure ?"] },
+  { title: "Couleurs & maison", emoji: "🎨", desc: "Décrire ce que tu vois",
+    words: [["rouge", "🟥"], ["bleu", "🟦"], ["vert", "🟩"], ["jaune", "🟨"], ["noir", "⬛"], ["blanc", "⬜"], ["maison", "🏠"], ["voiture", "🚗"]],
+    sents: ["La voiture est rouge.", "La maison est blanche.", "Le ciel est bleu.", "Mon chat est noir.", "La banane est jaune.", "J'ai une voiture verte."] },
+  { title: "En ville", emoji: "🏙️", desc: "Se déplacer, acheter",
+    words: [["marché", "🛒"], ["école", "🏫"], ["hôpital", "🏥"], ["hôtel", "🏨"], ["argent", "💵"], ["billet", "🎫"], ["bus", "🚌"], ["route", "🛣️"]],
+    sents: ["Où est le marché ?", "Je vais à l'école.", "Où sont les toilettes ?|Où est la salle de bain ?", "C'est combien ?|Combien ça coûte ?|Ça coûte combien ?", "Je cherche l'hôtel.", "C'est trop cher."] },
+  { title: "Les verbes", emoji: "🏃", desc: "Les actions de tous les jours",
+    words: [["manger", "🍽️"], ["boire", "🥤"], ["dormir", "😴"], ["aller", "🚶"], ["venir", "🏃"], ["parler", "🗣️"], ["comprendre", "💡"], ["vouloir", "🎯"]],
+    sents: ["Je ne comprends pas.", "Tu parles français ?|Parles-tu français ?|Est-ce que tu parles français ?|Vous parlez français ?|Parlez-vous français ?", "Je veux dormir.", "Viens ici !|Venez ici !", "Où vas-tu ?|Tu vas où ?|Où est-ce que tu vas ?|Où allez-vous ?", "Parle lentement, s'il te plaît.|Parlez lentement, s'il vous plaît."] },
+  { title: "Conversation", emoji: "💬", desc: "Les phrases qui sauvent",
+    words: [["aujourd'hui", "📅"], ["demain", "🌄"], ["hier", "⏪"], ["beaucoup", "➕"], ["un peu", "🤏"], ["bien", "👍"], ["ici", "📍"], ["maintenant", "⏱️"]],
+    sents: ["Comment ça va ?|Comment vas-tu ?|Comment allez-vous ?|Ça va ?", "Ça va bien, merci.|Je vais bien, merci.", "À demain !", "Je parle un peu.", "Tu habites où ?|Où habites-tu ?|Où est-ce que tu habites ?|Où habitez-vous ?", "Bienvenue !"] }
+];
+
+const COURSES = {
+  es: { name: "Espagnol", adj: "espagnol", flag: "🇪🇸", tts: "es-ES", sr: "es-ES",
+    tips: ["Les noms sont masculins ou féminins : <b>el</b>/<b>la</b> (le/la), <b>un</b>/<b>una</b>.", "Les questions et exclamations s'ouvrent avec <b>¿</b> et <b>¡</b> à l'envers.", "Le <b>j</b> (et le g devant e/i) se prononce comme un « r » raclé du fond de la gorge : <b>jamón</b>.", "Le <b>r</b> est roulé, le <b>rr</b> encore plus fort.", "Les accents écrits (á, é, í, ó, ú) montrent la syllabe à appuyer."],
+    units: [
+      { w: ["hola", "adiós", "sí", "no", "gracias", "por favor", "perdón|lo siento", "buenas noches"],
+        s: ["¡Hola, Anna!", "¡Adiós, Tom!", "Muchas gracias.", "Sí, por favor.", "No, gracias.", "Buenas noches, Anna."] },
+      { w: ["hombre", "mujer", "chico", "chica", "amigo", "nombre", "niño", "profesor"],
+        s: ["Me llamo Anna.|Mi nombre es Anna.", "¿Cómo te llamas?|¿Cómo se llama?|¿Cuál es tu nombre?", "Soy un hombre.|Soy hombre.", "Ella es profesora.|Es profesora.", "Es mi amigo.|Él es mi amigo.", "Encantado.|Encantada.|Mucho gusto."] },
+      { w: ["manzana", "pan", "agua", "leche", "café", "té", "arroz", "pescado"],
+        s: ["Como una manzana.|Yo como una manzana.", "Ella bebe agua.|Él bebe agua.", "Bebo café.|Yo bebo café.|Tomo café.", "El pan es bueno.|El pan está bueno.", "Tengo hambre.", "Quisiera un té, por favor.|Quiero un té, por favor."] },
+      { w: ["madre", "padre", "hermana", "hermano", "bebé", "familia", "abuela", "abuelo"],
+        s: ["Es mi madre.|Esta es mi madre.", "Tengo una hermana.", "Mi padre es alto.", "Quiero a mi familia.|Amo a mi familia.", "El bebé duerme.|El bebé está durmiendo.", "¿Tienes hijos?|¿Tiene hijos?|¿Tienen hijos?"] },
+      { w: ["perro", "gato", "pájaro", "caballo", "vaca", "gallina", "león", "elefante"],
+        s: ["El perro es negro.", "Tengo un gato.", "El pájaro canta.", "El león es grande.", "La vaca come.", "Me gustan los animales.|Amo a los animales."] },
+      { w: ["uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"],
+        s: ["Tengo dos hermanos.", "Tengo tres gatos.", "¿Cuántos años tienes?|¿Cuántos años tiene?", "Tengo diez años.", "Cinco manzanas, por favor.", "¿Qué hora es?"] },
+      { w: ["rojo", "azul", "verde", "amarillo", "negro", "blanco", "casa", "coche|carro|auto"],
+        s: ["El coche es rojo.|El carro es rojo.|El auto es rojo.", "La casa es blanca.", "El cielo es azul.", "Mi gato es negro.", "El plátano es amarillo.|La banana es amarilla.", "Tengo un coche verde.|Tengo un carro verde."] },
+      { w: ["mercado", "escuela", "hospital", "hotel", "dinero", "billete|boleto", "autobús|bus", "carretera"],
+        s: ["¿Dónde está el mercado?", "Voy a la escuela.", "¿Dónde está el baño?|¿Dónde están los servicios?", "¿Cuánto cuesta?|¿Cuánto es?", "Busco el hotel.|Estoy buscando el hotel.", "Es demasiado caro.|Es muy caro."] },
+      { w: ["comer", "beber", "dormir", "ir", "venir", "hablar", "entender", "querer"],
+        s: ["No entiendo.", "¿Hablas francés?|¿Habla francés?", "Quiero dormir.", "¡Ven aquí!|¡Venga aquí!", "¿Adónde vas?|¿A dónde vas?|¿Dónde vas?", "Habla despacio, por favor.|Hable despacio, por favor."] },
+      { w: ["hoy", "mañana", "ayer", "mucho", "un poco", "bien", "aquí", "ahora"],
+        s: ["¿Cómo estás?|¿Qué tal?|¿Cómo está?", "Estoy bien, gracias.|Bien, gracias.", "¡Hasta mañana!", "Hablo un poco.", "¿Dónde vives?|¿Dónde vive?", "¡Bienvenido!|¡Bienvenida!|¡Bienvenidos!"] }
+    ] },
+
+  it: { name: "Italien", adj: "italien", flag: "🇮🇹", tts: "it-IT", sr: "it-IT",
+    tips: ["L'italien se lit presque comme il s'écrit : toutes les lettres se prononcent.", "<b>c</b> devant e/i se dit « tch » (<b>ciao</b>) ; <b>ch</b> se dit « k » (<b>che</b>).", "Les doubles consonnes s'appuient : <b>nonno</b> (grand-père) ≠ <b>nono</b> (neuvième).", "Articles : <b>il</b>/<b>la</b>/<b>l'</b> (le/la), <b>un</b>/<b>una</b>."],
+    units: [
+      { w: ["buongiorno|ciao", "arrivederci|ciao", "sì", "no", "grazie", "per favore", "scusa|scusi", "buonanotte"],
+        s: ["Buongiorno, Anna!|Ciao, Anna!", "Arrivederci, Tom!|Ciao, Tom!", "Grazie mille.|Molte grazie.", "Sì, per favore.", "No, grazie.", "Buonanotte, Anna."] },
+      { w: ["uomo", "donna", "ragazzo", "ragazza", "amico", "nome", "bambino", "professore"],
+        s: ["Mi chiamo Anna.|Il mio nome è Anna.", "Come ti chiami?|Come si chiama?", "Sono un uomo.", "Lei è professoressa.|Lei è una professoressa.", "È il mio amico.|Lui è il mio amico.", "Piacere.|Piacere di conoscerti."] },
+      { w: ["mela", "pane", "acqua", "latte", "caffè", "tè", "riso", "pesce"],
+        s: ["Mangio una mela.|Io mangio una mela.", "Lei beve acqua.|Lei beve dell'acqua.|Lui beve acqua.", "Bevo il caffè.|Bevo caffè.|Io bevo il caffè.", "Il pane è buono.", "Ho fame.", "Vorrei un tè, per favore."] },
+      { w: ["madre|mamma", "padre|papà", "sorella", "fratello", "bebè|neonato", "famiglia", "nonna", "nonno"],
+        s: ["È mia madre.|Questa è mia madre.|È mia mamma.", "Ho una sorella.", "Mio padre è alto.", "Amo la mia famiglia.|Voglio bene alla mia famiglia.", "Il bebè dorme.|Il neonato dorme.", "Hai figli?|Ha figli?|Hai dei figli?"] },
+      { w: ["cane", "gatto", "uccello", "cavallo", "mucca", "gallina", "leone", "elefante"],
+        s: ["Il cane è nero.", "Ho un gatto.", "L'uccello canta.", "Il leone è grande.", "La mucca mangia.", "Amo gli animali.|Mi piacciono gli animali."] },
+      { w: ["uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto", "nove", "dieci"],
+        s: ["Ho due fratelli.", "Ho tre gatti.", "Quanti anni hai?|Quanti anni ha?", "Ho dieci anni.", "Cinque mele, per favore.", "Che ore sono?|Che ora è?"] },
+      { w: ["rosso", "blu|azzurro", "verde", "giallo", "nero", "bianco", "casa", "macchina|auto"],
+        s: ["La macchina è rossa.|L'auto è rossa.", "La casa è bianca.", "Il cielo è blu.|Il cielo è azzurro.", "Il mio gatto è nero.", "La banana è gialla.", "Ho una macchina verde.|Ho un'auto verde."] },
+      { w: ["mercato", "scuola", "ospedale", "albergo|hotel", "soldi|denaro", "biglietto", "autobus", "strada"],
+        s: ["Dov'è il mercato?|Dove è il mercato?", "Vado a scuola.", "Dov'è il bagno?|Dove sono i bagni?", "Quanto costa?|Quant'è?", "Cerco l'albergo.|Cerco l'hotel.|Sto cercando l'albergo.", "È troppo caro."] },
+      { w: ["mangiare", "bere", "dormire", "andare", "venire", "parlare", "capire", "volere"],
+        s: ["Non capisco.", "Parli francese?|Parla francese?", "Voglio dormire.", "Vieni qui!|Venga qui!", "Dove vai?|Dove va?", "Parla piano, per favore.|Parla lentamente, per favore.|Parli piano, per favore."] },
+      { w: ["oggi", "domani", "ieri", "molto", "un po'|un poco", "bene", "qui", "adesso|ora"],
+        s: ["Come stai?|Come sta?|Come va?", "Sto bene, grazie.|Bene, grazie.", "A domani!", "Parlo un po'.|Parlo un poco.", "Dove abiti?|Dove vivi?|Dove abita?", "Benvenuto!|Benvenuta!|Benvenuti!"] }
+    ] },
+
+  de: { name: "Allemand", adj: "allemand", flag: "🇩🇪", tts: "de-DE", sr: "de-DE",
+    tips: ["Tous les noms prennent une majuscule : <b>der Hund</b>, <b>die Katze</b>.", "Trois genres : <b>der</b> (masculin), <b>die</b> (féminin), <b>das</b> (neutre). Apprends chaque nom avec son article.", "<b>ß</b> se prononce « ss ». <b>ei</b> se dit « aï », <b>ie</b> se dit « i », <b>eu</b> se dit « oï ».", "<b>w</b> se prononce « v », et <b>v</b> souvent « f ».", "Le verbe se place en 2e position : <b>Heute <u>gehe</u> ich</b>…"],
+    units: [
+      { w: ["hallo|guten Tag", "tschüss|auf Wiedersehen", "ja", "nein", "danke", "bitte", "Entschuldigung|Verzeihung", "gute Nacht"],
+        s: ["Hallo, Anna!|Guten Tag, Anna!", "Tschüss, Tom!|Auf Wiedersehen, Tom!", "Vielen Dank.|Danke schön.|Danke sehr.", "Ja, bitte.", "Nein, danke.", "Gute Nacht, Anna."] },
+      { w: ["Mann", "Frau", "Junge", "Mädchen", "Freund", "Name", "Kind", "Lehrer"],
+        s: ["Ich heiße Anna.|Mein Name ist Anna.", "Wie heißt du?|Wie heißen Sie?", "Ich bin ein Mann.", "Sie ist Lehrerin.", "Das ist mein Freund.|Er ist mein Freund.", "Freut mich.|Sehr erfreut."] },
+      { w: ["Apfel", "Brot", "Wasser", "Milch", "Kaffee", "Tee", "Reis", "Fisch"],
+        s: ["Ich esse einen Apfel.", "Sie trinkt Wasser.|Er trinkt Wasser.", "Ich trinke Kaffee.", "Das Brot ist gut.", "Ich habe Hunger.", "Ich hätte gern einen Tee, bitte.|Ich möchte einen Tee, bitte.|Einen Tee, bitte."] },
+      { w: ["Mutter", "Vater", "Schwester", "Bruder", "Baby", "Familie", "Großmutter|Oma", "Großvater|Opa"],
+        s: ["Das ist meine Mutter.", "Ich habe eine Schwester.", "Mein Vater ist groß.", "Ich liebe meine Familie.", "Das Baby schläft.", "Hast du Kinder?|Haben Sie Kinder?"] },
+      { w: ["Hund", "Katze", "Vogel", "Pferd", "Kuh", "Huhn", "Löwe", "Elefant"],
+        s: ["Der Hund ist schwarz.", "Ich habe eine Katze.", "Der Vogel singt.", "Der Löwe ist groß.", "Die Kuh frisst.|Die Kuh isst.", "Ich liebe Tiere.|Ich mag Tiere."] },
+      { w: ["eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn"],
+        s: ["Ich habe zwei Brüder.", "Ich habe drei Katzen.", "Wie alt bist du?|Wie alt sind Sie?", "Ich bin zehn Jahre alt.|Ich bin zehn.", "Fünf Äpfel, bitte.", "Wie spät ist es?|Wie viel Uhr ist es?"] },
+      { w: ["rot", "blau", "grün", "gelb", "schwarz", "weiß", "Haus", "Auto"],
+        s: ["Das Auto ist rot.", "Das Haus ist weiß.", "Der Himmel ist blau.", "Meine Katze ist schwarz.", "Die Banane ist gelb.", "Ich habe ein grünes Auto."] },
+      { w: ["Markt", "Schule", "Krankenhaus", "Hotel", "Geld", "Fahrkarte|Ticket", "Bus", "Straße"],
+        s: ["Wo ist der Markt?", "Ich gehe zur Schule.|Ich gehe in die Schule.", "Wo ist die Toilette?|Wo sind die Toiletten?", "Wie viel kostet das?|Was kostet das?", "Ich suche das Hotel.", "Das ist zu teuer."] },
+      { w: ["essen", "trinken", "schlafen", "gehen", "kommen", "sprechen", "verstehen", "wollen"],
+        s: ["Ich verstehe nicht.|Ich verstehe das nicht.", "Sprichst du Französisch?|Sprechen Sie Französisch?", "Ich will schlafen.|Ich möchte schlafen.", "Komm her!|Komm hierher!|Kommen Sie her!", "Wohin gehst du?|Wo gehst du hin?|Wohin gehen Sie?", "Sprich bitte langsam.|Bitte sprich langsam.|Sprechen Sie bitte langsam."] },
+      { w: ["heute", "morgen", "gestern", "viel", "ein bisschen|ein wenig", "gut", "hier", "jetzt"],
+        s: ["Wie geht es dir?|Wie geht's?|Wie geht es Ihnen?", "Mir geht es gut, danke.|Gut, danke.|Mir geht's gut, danke.", "Bis morgen!", "Ich spreche ein bisschen.|Ich spreche ein wenig.", "Wo wohnst du?|Wo wohnen Sie?", "Willkommen!|Herzlich willkommen!"] }
+    ] },
+
+  pt: { name: "Portugais", adj: "portugais", flag: "🇧🇷", tts: "pt-BR", sr: "pt-BR",
+    tips: ["Version brésilienne ; les variantes du Portugal sont aussi acceptées.", "Les sons nasaux (<b>ão</b>, <b>ã</b>, <b>em</b>) se prononcent un peu comme « an/on » en français.", "<b>lh</b> se dit comme « li » dans « lieu », <b>nh</b> comme « gn ».", "<b>Obrigado</b> se dit quand on est un homme, <b>obrigada</b> quand on est une femme."],
+    units: [
+      { w: ["olá|oi|bom dia", "tchau|adeus", "sim", "não", "obrigado|obrigada", "por favor", "desculpa|desculpe|perdão", "boa noite"],
+        s: ["Olá, Anna!|Oi, Anna!", "Tchau, Tom!|Adeus, Tom!", "Muito obrigado.|Muito obrigada.", "Sim, por favor.", "Não, obrigado.|Não, obrigada.", "Boa noite, Anna."] },
+      { w: ["homem", "mulher", "menino|rapaz", "menina|moça", "amigo", "nome", "criança", "professor"],
+        s: ["Eu me chamo Anna.|Meu nome é Anna.|Chamo-me Anna.", "Como você se chama?|Qual é o seu nome?|Como te chamas?", "Eu sou um homem.|Sou um homem.", "Ela é professora.", "Ele é meu amigo.|É o meu amigo.|É meu amigo.", "Prazer.|Muito prazer."] },
+      { w: ["maçã", "pão", "água", "leite", "café", "chá", "arroz", "peixe"],
+        s: ["Eu como uma maçã.|Como uma maçã.", "Ela bebe água.|Ele bebe água.", "Eu bebo café.|Bebo café.", "O pão é bom.|O pão está bom.", "Estou com fome.|Tenho fome.", "Eu queria um chá, por favor.|Queria um chá, por favor.|Quero um chá, por favor."] },
+      { w: ["mãe", "pai", "irmã", "irmão", "bebê|bebé", "família", "avó", "avô"],
+        s: ["É a minha mãe.|Esta é minha mãe.|Essa é minha mãe.|É minha mãe.", "Eu tenho uma irmã.|Tenho uma irmã.", "Meu pai é alto.|O meu pai é alto.", "Eu amo minha família.|Amo a minha família.", "O bebê está dormindo.|O bebé está a dormir.|O bebê dorme.", "Você tem filhos?|Tens filhos?"] },
+      { w: ["cachorro|cão", "gato", "pássaro", "cavalo", "vaca", "galinha", "leão", "elefante"],
+        s: ["O cachorro é preto.|O cão é preto.", "Eu tenho um gato.|Tenho um gato.", "O pássaro canta.", "O leão é grande.", "A vaca come.", "Eu amo os animais.|Gosto dos animais.|Eu gosto de animais."] },
+      { w: ["um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"],
+        s: ["Eu tenho dois irmãos.|Tenho dois irmãos.", "Eu tenho três gatos.|Tenho três gatos.", "Quantos anos você tem?|Quantos anos tens?", "Eu tenho dez anos.|Tenho dez anos.", "Cinco maçãs, por favor.", "Que horas são?"] },
+      { w: ["vermelho", "azul", "verde", "amarelo", "preto", "branco", "casa", "carro"],
+        s: ["O carro é vermelho.", "A casa é branca.", "O céu é azul.", "Meu gato é preto.|O meu gato é preto.", "A banana é amarela.", "Eu tenho um carro verde.|Tenho um carro verde."] },
+      { w: ["mercado", "escola", "hospital", "hotel", "dinheiro", "bilhete|passagem", "ônibus|autocarro", "estrada|rua"],
+        s: ["Onde fica o mercado?|Onde é o mercado?|Onde está o mercado?", "Eu vou para a escola.|Vou à escola.|Vou para a escola.", "Onde fica o banheiro?|Onde é o banheiro?|Onde é a casa de banho?", "Quanto custa?|Quanto é?", "Estou procurando o hotel.|Procuro o hotel.", "É caro demais.|É muito caro."] },
+      { w: ["comer", "beber", "dormir", "ir", "vir", "falar", "entender|compreender", "querer"],
+        s: ["Eu não entendo.|Não entendo.|Não percebo.", "Você fala francês?|Falas francês?", "Eu quero dormir.|Quero dormir.", "Vem aqui!|Venha aqui!", "Aonde você vai?|Onde você vai?|Aonde vais?", "Fale devagar, por favor.|Fala devagar, por favor."] },
+      { w: ["hoje", "amanhã", "ontem", "muito", "um pouco", "bem", "aqui", "agora"],
+        s: ["Como vai?|Tudo bem?|Como você está?|Como estás?", "Estou bem, obrigado.|Tudo bem, obrigado.|Estou bem, obrigada.", "Até amanhã!", "Eu falo um pouco.|Falo um pouco.", "Onde você mora?|Onde moras?|Onde vives?", "Bem-vindo!|Bem-vinda!|Bem-vindos!"] }
+    ] },
+
+  sw: { name: "Swahili", adj: "swahili", flag: "🇹🇿", tts: "sw-KE", sr: "sw-KE", africa: true,
+    tips: ["Le swahili (kiswahili) se parle au Kenya, en Tanzanie, en Ouganda, au Congo… Il se lit exactement comme il s'écrit.", "L'accent tonique tombe presque toujours sur l'avant-dernière syllabe : <b>ha-BA-ri</b>.", "Le verbe se construit avec des préfixes : <b>ni-</b> (je), <b>u-</b> (tu), <b>a-</b> (il/elle) + <b>-na-</b> (présent) + verbe : <b>ni-na-kula</b> = je mange.", "Les noms sont rangés en classes qui changent les adjectifs : <b>mtoto mzuri</b> (un bel enfant), <b>watoto wazuri</b> (de beaux enfants).", "<b>Karibu</b> = bienvenue, mais aussi « je t'en prie » et « entre ! »."],
+    units: [
+      { w: ["jambo|hujambo|habari", "kwaheri", "ndiyo", "hapana", "asante", "tafadhali", "samahani", "usiku mwema|lala salama"],
+        s: ["Jambo, Anna!|Habari, Anna!|Hujambo, Anna!", "Kwaheri, Tom!", "Asante sana.", "Ndiyo, tafadhali.", "Hapana, asante.", "Usiku mwema, Anna.|Lala salama, Anna."] },
+      { w: ["mwanamume|mwanaume", "mwanamke", "mvulana", "msichana", "rafiki", "jina", "mtoto", "mwalimu"],
+        s: ["Jina langu ni Anna.|Naitwa Anna.", "Jina lako ni nani?|Unaitwa nani?", "Mimi ni mwanamume.|Mimi ni mwanaume.", "Yeye ni mwalimu.", "Huyu ni rafiki yangu.|Ni rafiki yangu.", "Nimefurahi kukutana nawe.|Nafurahi kukutana nawe."] },
+      { w: ["tufaha", "mkate", "maji", "maziwa", "kahawa", "chai", "mchele|wali", "samaki"],
+        s: ["Ninakula tufaha.|Nakula tufaha.", "Anakunywa maji.", "Ninakunywa kahawa.|Nakunywa kahawa.", "Mkate ni mzuri.|Mkate ni mtamu.", "Nina njaa.", "Ningependa chai, tafadhali.|Naomba chai, tafadhali."] },
+      { w: ["mama", "baba", "dada", "kaka", "mtoto mchanga|kichanga", "familia", "bibi", "babu"],
+        s: ["Huyu ni mama yangu.|Ni mama yangu.", "Nina dada.|Nina dada mmoja.", "Baba yangu ni mrefu.", "Ninaipenda familia yangu.|Naipenda familia yangu.", "Mtoto analala.", "Una watoto?|Je, una watoto?"] },
+      { w: ["mbwa", "paka", "ndege", "farasi", "ng'ombe", "kuku", "simba", "tembo"],
+        s: ["Mbwa ni mweusi.", "Nina paka.", "Ndege anaimba.", "Simba ni mkubwa.", "Ng'ombe anakula.", "Ninapenda wanyama.|Napenda wanyama."] },
+      { w: ["moja", "mbili", "tatu", "nne", "tano", "sita", "saba", "nane", "tisa", "kumi"],
+        s: ["Nina kaka wawili.", "Nina paka watatu.", "Una miaka mingapi?", "Nina miaka kumi.", "Matufaha matano, tafadhali.", "Ni saa ngapi?|Saa ngapi?"] },
+      { w: ["nyekundu", "buluu|samawati", "kijani", "njano", "nyeusi", "nyeupe", "nyumba", "gari"],
+        s: ["Gari ni jekundu.|Gari ni la rangi nyekundu.", "Nyumba ni nyeupe.", "Anga ni la buluu.|Anga ni buluu.", "Paka wangu ni mweusi.", "Ndizi ni ya njano.", "Nina gari la kijani."] },
+      { w: ["soko", "shule", "hospitali", "hoteli", "pesa", "tiketi", "basi", "barabara"],
+        s: ["Soko liko wapi?", "Ninaenda shuleni.|Naenda shuleni.", "Choo kiko wapi?|Vyoo viko wapi?", "Ni bei gani?|Bei gani?|Ni kiasi gani?", "Ninatafuta hoteli.|Natafuta hoteli.", "Ni ghali sana."] },
+      { w: ["kula", "kunywa", "kulala", "kwenda", "kuja", "kuzungumza|kuongea|kusema", "kuelewa", "kutaka"],
+        s: ["Sielewi.", "Unazungumza Kifaransa?|Unaongea Kifaransa?|Je, unazungumza Kifaransa?", "Ninataka kulala.|Nataka kulala.", "Njoo hapa!", "Unaenda wapi?|Unakwenda wapi?", "Ongea polepole, tafadhali.|Sema polepole, tafadhali.|Zungumza polepole, tafadhali."] },
+      { w: ["leo", "kesho", "jana", "sana", "kidogo", "vizuri", "hapa", "sasa"],
+        s: ["Habari yako?|Hujambo?|Habari gani?", "Nzuri, asante.|Sijambo, asante.|Salama, asante.", "Tutaonana kesho!", "Ninazungumza kidogo.|Naongea kidogo.|Ninaongea kidogo.", "Unaishi wapi?|Unakaa wapi?", "Karibu!"] }
+    ] },
+
+  ln: { name: "Lingala", adj: "lingala", flag: "🇨🇩", tts: null, sr: null, africa: true, beta: true,
+    tips: ["Le lingala se parle à Kinshasa, à Brazzaville et dans tout le bassin du fleuve Congo. Il se lit comme il s'écrit.", "⚠️ Cours en version bêta : fais-le vérifier par un locuteur et envoie-moi les corrections, je mettrai l'appli à jour.", "Le verbe prend un préfixe : <b>na-</b> (je), <b>o-</b> (tu), <b>a-</b> (il/elle), <b>to-</b> (nous), <b>bo-</b> (vous), <b>ba-</b> (ils) : <b>nalingi</b> = j'aime.", "<b>Nazali</b> (je suis) sert aussi au présent en cours : <b>nazali kolia</b> = je suis en train de manger.", "Le pluriel des personnes se fait souvent avec <b>ba-</b> : <b>mwana</b> → <b>bana</b> (enfants)."],
+    units: [
+      { w: ["mbote", "kende malamu|tikala malamu", "ee|iyo", "te|ve", "matondi|melesi", "palado|nabondeli yo", "limbisa ngai|bolimbisi", "butu malamu"],
+        s: ["Mbote, Anna!", "Kende malamu, Tom!", "Matondi mingi.|Melesi mingi.", "Ee, palado.", "Te, matondi.", "Butu malamu, Anna."] },
+      { w: ["mobali", "mwasi", "mwana mobali", "mwana mwasi", "moninga", "nkombo", "mwana", "molakisi"],
+        s: ["Nkombo na ngai Anna.|Nkombo na ngai ezali Anna.", "Nkombo na yo nani?", "Nazali mobali.", "Azali molakisi.", "Azali moninga na ngai.", "Nasepeli koyeba yo."] },
+      { w: ["pome", "mampa", "mai", "miliki|mabele", "kafe", "ti", "loso", "mbisi"],
+        s: ["Nazali kolia pome.", "Azali komela mai.", "Nazali komela kafe.", "Mampa ezali malamu.", "Nazali na nzala.", "Nalingi ti, palado."] },
+      { w: ["mama", "tata", "ndeko mwasi", "ndeko mobali", "bebe|mwana moke", "libota", "nkoko mwasi", "nkoko mobali"],
+        s: ["Oyo mama na ngai.|Ezali mama na ngai.", "Nazali na ndeko mwasi.", "Tata na ngai azali molai.", "Nalingi libota na ngai.", "Bebe azali kolala.|Mwana moke azali kolala.", "Ozali na bana?"] },
+      { w: ["mbwa", "pusu|nyau", "ndeke", "mpunda", "ngombe", "nsoso", "nkosi", "nzoku"],
+        s: ["Mbwa ezali moindo.", "Nazali na pusu.", "Ndeke ezali koyemba.", "Nkosi ezali monene.", "Ngombe ezali kolia.", "Nalingi banyama."] },
+      { w: ["moko", "mibale", "misato", "minei", "mitano", "motoba", "nsambo", "mwambe", "libwa", "zomi"],
+        s: ["Nazali na bandeko mibale.", "Nazali na bapusu misato.", "Ozali na mbula boni?", "Nazali na mbula zomi.", "Bapome mitano, palado.", "Ngonga boni?|Ezali ngonga boni?"] },
+      null,
+      { w: ["zando", "eteyelo|kelasi", "lopitalo", "otele", "mbongo", "tike", "bisi", "nzela"],
+        s: ["Zando ezali wapi?", "Nazali kokende na eteyelo.|Nakei na kelasi.", "Kabine ezali wapi?", "Ezali boni?|Ntalo boni?", "Nazali koluka otele.", "Ntalo eleki."] },
+      { w: ["kolia", "komela", "kolala", "kokende", "koya", "koloba", "kososola", "kolinga"],
+        s: ["Nasosoli te.", "Olobaka lifalanse?|Oyebi lifalanse?", "Nalingi kolala.", "Yaka awa!", "Ozali kokende wapi?|Okei wapi?", "Loba malembe, palado."] },
+      { w: ["lelo", "lobi ekoya|lobi", "lobi eleki|lobi", "mingi", "moke", "malamu", "awa", "sikoyo|sikawa"],
+        s: ["Ozali malamu?|Sango nini?|Boni?", "Nazali malamu, matondi.", "Tokomonana lobi!", "Nalobaka moke.|Naloba moke.", "Ofandaka wapi?|Ovandaka wapi?", "Boyei malamu!|Yaka malamu!"] }
+    ] },
+
+  zdj: { name: "Shingazidja", adj: "shingazidja", flag: "🇰🇲", tts: null, sr: null, africa: true, beta: true,
+    tips: ["Le shingazidja est le comorien de la Grande Comore (Ngazidja, Moroni).", "⚠️ Aperçu bêta : seulement les salutations et les nombres pour l'instant. Fais vérifier ces mots par un locuteur et envoie-moi du vocabulaire et des phrases : je compléterai le cours.", "Le comorien est une langue bantoue, proche du swahili, avec beaucoup de mots venus de l'arabe (<b>marahaba</b> = merci)."],
+    units: [
+      { w: ["bariza", "kwaheri", "ewa", null, "marahaba", null, null, null], s: [] },
+      null, null, null, null,
+      { w: ["moja", "mbili", "traru", "nne", "tsano", "sita", "saba", "nane", "shenda", "kumi"], s: [] },
+      null, null, null, null
+    ] },
+
+  ar: { name: "Arabe", adj: "arabe", flag: "🇸🇦", tts: "ar-SA", sr: "ar-SA", rtl: true, africa: true,
+    tips: ["Arabe standard (fuṣḥā), compris dans tout le monde arabe, de l'Afrique du Nord au Golfe. Il s'écrit de droite à gauche.", "Sous chaque mot, la transcription en lettres latines t'aide à le lire. Pour écrire, tu peux taper en alphabet arabe <b>ou</b> en lettres latines.", "Les voyelles courtes ne sont généralement pas écrites : on les devine avec l'habitude.", "Sons nouveaux : <b>ع</b> (ʿ, serrement de la gorge), <b>ح</b> (ḥ, h soufflé fort), <b>خ</b> (kh, comme la jota espagnole), <b>ق</b> (q, k du fond de la gorge).", "<b>ال</b> (al-) est l'article « le/la » : <b>بيت</b> (bayt) = une maison, <b>البيت</b> (al-bayt) = la maison."],
+    units: [
+      { w: [["مرحبا|السلام عليكم", "marḥaban"], ["مع السلامة", "maʿa-s-salāma"], ["نعم", "naʿam"], ["لا", "lā"], ["شكرا", "shukran"], ["من فضلك", "min-faḍlik"], ["عذرا|آسف", "ʿudhran"], ["تصبح على خير", "tuṣbiḥ-ʿalā-khayr"]],
+        s: [["مرحبا يا آنا!", "marḥaban yā ānā!"], ["مع السلامة يا توم!", "maʿa as-salāma yā tūm!"], ["شكرا جزيلا.", "shukran jazīlan."], ["نعم، من فضلك.", "naʿam, min faḍlik."], ["لا، شكرا.", "lā, shukran."], ["تصبحين على خير يا آنا.", "tuṣbiḥīna ʿalā khayr yā ānā."]] },
+      { w: [["رجل", "rajul"], ["امرأة", "imraʾa"], ["ولد", "walad"], ["بنت", "bint"], ["صديق", "ṣadīq"], ["اسم", "ism"], ["طفل", "ṭifl"], ["معلم", "muʿallim"]],
+        s: [["اسمي آنا.", "ismī ānā."], ["ما اسمك؟", "mā ismuk?"], ["أنا رجل.", "anā rajul."], ["هي معلمة.", "hiya muʿallima."], ["هذا صديقي.", "hādhā ṣadīqī."], ["تشرفنا.|تشرفت بمعرفتك.", "tasharrafnā."]] },
+      { w: [["تفاحة", "tuffāḥa"], ["خبز", "khubz"], ["ماء", "māʾ"], ["حليب", "ḥalīb"], ["قهوة", "qahwa"], ["شاي", "shāy"], ["أرز", "aruzz"], ["سمك", "samak"]],
+        s: [["آكل تفاحة.|أنا آكل تفاحة.", "ākulu tuffāḥa."], ["هي تشرب الماء.|تشرب الماء.|هو يشرب الماء.", "hiya tashrabu l-māʾ."], ["أشرب القهوة.|أنا أشرب القهوة.", "ashrabu l-qahwa."], ["الخبز جيد.|الخبز لذيذ.", "al-khubzu jayyid."], ["أنا جائع.|أنا جائعة.", "anā jāʾiʿ."], ["أريد شايا من فضلك.|أريد شاي من فضلك.", "urīdu shāyan min faḍlik."]] },
+      { w: [["أم", "umm"], ["أب", "ab"], ["أخت", "ukht"], ["أخ", "akh"], ["رضيع", "raḍīʿ"], ["عائلة", "ʿāʾila"], ["جدة", "jadda"], ["جد", "jadd"]],
+        s: [["هذه أمي.", "hādhihi ummī."], ["عندي أخت.|لدي أخت.", "ʿindī ukht."], ["أبي طويل.", "abī ṭawīl."], ["أحب عائلتي.", "uḥibbu ʿāʾilatī."], ["الرضيع نائم.", "ar-raḍīʿ nāʾim."], ["هل عندك أطفال؟|هل لديك أطفال؟", "hal ʿindaka aṭfāl?"]] },
+      { w: [["كلب", "kalb"], ["قطة", "qiṭṭa"], ["طائر", "ṭāʾir"], ["حصان", "ḥiṣān"], ["بقرة", "baqara"], ["دجاجة", "dajāja"], ["أسد", "asad"], ["فيل", "fīl"]],
+        s: [["الكلب أسود.", "al-kalb aswad."], ["عندي قطة.|لدي قطة.", "ʿindī qiṭṭa."], ["الطائر يغني.", "aṭ-ṭāʾir yughannī."], ["الأسد كبير.", "al-asad kabīr."], ["البقرة تأكل.", "al-baqara taʾkul."], ["أحب الحيوانات.", "uḥibbu l-ḥayawānāt."]] },
+      { w: [["واحد", "wāḥid"], ["اثنان", "ithnān"], ["ثلاثة", "thalātha"], ["أربعة", "arbaʿa"], ["خمسة", "khamsa"], ["ستة", "sitta"], ["سبعة", "sabʿa"], ["ثمانية", "thamāniya"], ["تسعة", "tisʿa"], ["عشرة", "ʿashara"]],
+        s: [["عندي أخوان.|لدي أخوان.", "ʿindī akhawān."], ["عندي ثلاث قطط.", "ʿindī thalāth qiṭaṭ."], ["كم عمرك؟", "kam ʿumruk?"], ["عمري عشر سنوات.", "ʿumrī ʿashr sanawāt."], ["خمس تفاحات من فضلك.", "khams tuffāḥāt min faḍlik."], ["كم الساعة؟", "kam as-sāʿa?"]] },
+      { w: [["أحمر", "aḥmar"], ["أزرق", "azraq"], ["أخضر", "akhḍar"], ["أصفر", "aṣfar"], ["أسود", "aswad"], ["أبيض", "abyaḍ"], ["بيت|منزل", "bayt"], ["سيارة", "sayyāra"]],
+        s: [["السيارة حمراء.", "as-sayyāra ḥamrāʾ."], ["البيت أبيض.", "al-bayt abyaḍ."], ["السماء زرقاء.", "as-samāʾ zarqāʾ."], ["قطتي سوداء.", "qiṭṭatī sawdāʾ."], ["الموزة صفراء.", "al-mawza ṣafrāʾ."], ["عندي سيارة خضراء.|لدي سيارة خضراء.", "ʿindī sayyāra khaḍrāʾ."]] },
+      { w: [["سوق", "sūq"], ["مدرسة", "madrasa"], ["مستشفى", "mustashfā"], ["فندق", "funduq"], ["مال|نقود", "māl"], ["تذكرة", "tadhkira"], ["حافلة", "ḥāfila"], ["طريق", "ṭarīq"]],
+        s: [["أين السوق؟", "ayna s-sūq?"], ["أذهب إلى المدرسة.", "adhhabu ilā l-madrasa."], ["أين الحمام؟|أين دورة المياه؟", "ayna l-ḥammām?"], ["بكم هذا؟|كم الثمن؟", "bikam hādhā?"], ["أبحث عن الفندق.", "abḥathu ʿan al-funduq."], ["هذا غال جدا.", "hādhā ghālin jiddan."]] },
+      { w: [["أكل", "akala"], ["شرب", "shariba"], ["نام", "nāma"], ["ذهب", "dhahaba"], ["جاء", "jāʾa"], ["تكلم", "takallama"], ["فهم", "fahima"], ["أراد", "arāda"]],
+        s: [["لا أفهم.", "lā afham."], ["هل تتكلم الفرنسية؟|هل تتحدث الفرنسية؟", "hal tatakallamu l-faransiyya?"], ["أريد أن أنام.", "urīdu an anām."], ["تعال هنا!|تعالي هنا!", "taʿāla hunā!"], ["إلى أين تذهب؟", "ilā ayna tadhhab?"], ["تكلم ببطء من فضلك.", "takallam bi-buṭʾ min faḍlik."]] },
+      { w: [["اليوم", "al-yawm"], ["غدا", "ghadan"], ["أمس", "ams"], ["كثيرا", "kathīran"], ["قليلا", "qalīlan"], ["جيد|بخير", "jayyid"], ["هنا", "hunā"], ["الآن", "al-ān"]],
+        s: [["كيف حالك؟", "kayfa ḥāluk?"], ["بخير، شكرا.|أنا بخير، شكرا.", "bi-khayr, shukran."], ["إلى اللقاء غدا!|أراك غدا!", "ilā l-liqāʾ ghadan!"], ["أتكلم قليلا.", "atakallamu qalīlan."], ["أين تسكن؟", "ayna taskun?"], ["أهلا وسهلا!", "ahlan wa-sahlan!"]] }
+    ] },
+
+  zh: { name: "Chinois", adj: "chinois", flag: "🇨🇳", tts: "zh-CN", sr: "zh-CN",
+    tips: ["Le chinois mandarin a <b>4 tons</b> : mā (plat), má (montant), mǎ (descend puis monte), mà (descendant). Le même son change de sens selon le ton, écoute bien !", "Le <b>pinyin</b> au-dessus des caractères indique la prononciation.", "Pas de conjugaison ni de pluriel : <b>我吃</b> (je mange), <b>他吃</b> (il mange), <b>他们吃</b> (ils mangent).", "Pour écrire, tu peux taper les caractères <b>ou</b> le pinyin sans les tons (ex. « wo chi pingguo »).", "<b>吗</b> (ma) à la fin transforme une phrase en question : 你好 → 你好吗？"],
+    units: [
+      { w: [["你好", "nǐhǎo"], ["再见", "zàijiàn"], ["是|对", "shì"], ["不|不是", "bù"], ["谢谢", "xièxie"], ["请", "qǐng"], ["对不起", "duìbuqǐ"], ["晚安", "wǎn'ān"]],
+        s: [["你好， 安娜！", "nǐhǎo, ānnà!"], ["再见， 汤姆！", "zàijiàn, tāngmǔ!"], ["非常 感谢。|太 谢谢 了。|多谢。", "fēicháng gǎnxiè."], ["好的， 谢谢。|是的， 谢谢。", "hǎode, xièxie."], ["不， 谢谢。|不用， 谢谢。|不用 了， 谢谢。", "bù, xièxie."], ["晚安， 安娜。", "wǎn'ān, ānnà."]] },
+      { w: [["男人", "nánrén"], ["女人", "nǚrén"], ["男孩", "nánhái"], ["女孩", "nǚhái"], ["朋友", "péngyou"], ["名字", "míngzi"], ["孩子", "háizi"], ["老师", "lǎoshī"]],
+        s: [["我 叫 安娜。|我的 名字 是 安娜。", "wǒ jiào ānnà."], ["你 叫 什么 名字？|你 叫 什么？|您 叫 什么 名字？", "nǐ jiào shénme míngzi?"], ["我 是 男人。|我 是 一个 男人。", "wǒ shì nánrén."], ["她 是 老师。", "tā shì lǎoshī."], ["他 是 我的 朋友。|这 是 我的 朋友。", "tā shì wǒde péngyou."], ["很 高兴 认识 你。|认识 你 很 高兴。", "hěn gāoxìng rènshi nǐ."]] },
+      { w: [["苹果", "píngguǒ"], ["面包", "miànbāo"], ["水", "shuǐ"], ["牛奶", "niúnǎi"], ["咖啡", "kāfēi"], ["茶", "chá"], ["米饭|米", "mǐfàn"], ["鱼", "yú"]],
+        s: [["我 吃 苹果。|我 吃 一个 苹果。", "wǒ chī píngguǒ."], ["她 喝 水。|他 喝 水。", "tā hē shuǐ."], ["我 喝 咖啡。", "wǒ hē kāfēi."], ["面包 很 好吃。|面包 很 好。", "miànbāo hěn hǎochī."], ["我 饿 了。|我 很 饿。", "wǒ è le."], ["请 给 我 一杯 茶。|我 要 一杯 茶。", "qǐng gěi wǒ yìbēi chá."]] },
+      { w: [["妈妈|母亲", "māma"], ["爸爸|父亲", "bàba"], ["姐姐|妹妹", "jiějie"], ["哥哥|弟弟", "gēge"], ["宝宝|婴儿", "bǎobao"], ["家人|家庭", "jiārén"], ["奶奶|外婆", "nǎinai"], ["爷爷|外公", "yéye"]],
+        s: [["这 是 我 妈妈。|这 是 我的 妈妈。", "zhè shì wǒ māma."], ["我 有 一个 姐姐。|我 有 一个 妹妹。", "wǒ yǒu yíge jiějie."], ["我 爸爸 很 高。|我的 爸爸 很 高。", "wǒ bàba hěn gāo."], ["我 爱 我的 家人。|我 爱 我 家。", "wǒ ài wǒde jiārén."], ["宝宝 在 睡觉。|宝宝 睡觉 了。", "bǎobao zài shuìjiào."], ["你 有 孩子 吗？", "nǐ yǒu háizi ma?"]] },
+      { w: [["狗", "gǒu"], ["猫", "māo"], ["鸟", "niǎo"], ["马", "mǎ"], ["牛", "niú"], ["鸡", "jī"], ["狮子", "shīzi"], ["大象", "dàxiàng"]],
+        s: [["狗 是 黑色 的。|狗 是 黑 的。", "gǒu shì hēisè de."], ["我 有 一只 猫。", "wǒ yǒu yìzhī māo."], ["鸟 在 唱歌。|鸟 唱歌。", "niǎo zài chànggē."], ["狮子 很 大。", "shīzi hěn dà."], ["牛 在 吃 东西。|牛 在 吃。", "niú zài chī dōngxi."], ["我 喜欢 动物。", "wǒ xǐhuan dòngwù."]] },
+      { w: [["一", "yī"], ["二", "èr"], ["三", "sān"], ["四", "sì"], ["五", "wǔ"], ["六", "liù"], ["七", "qī"], ["八", "bā"], ["九", "jiǔ"], ["十", "shí"]],
+        s: [["我 有 两个 哥哥。|我 有 两个 弟弟。|我 有 两个 兄弟。", "wǒ yǒu liǎngge gēge."], ["我 有 三只 猫。", "wǒ yǒu sānzhī māo."], ["你 几 岁？|你 多大？|你 几 岁 了？", "nǐ jǐ suì?"], ["我 十 岁。|我 十 岁 了。", "wǒ shí suì."], ["请 给 我 五个 苹果。|五个 苹果， 谢谢。", "qǐng gěi wǒ wǔge píngguǒ."], ["现在 几点？|几点 了？", "xiànzài jǐdiǎn?"]] },
+      { w: [["红色|红", "hóngsè"], ["蓝色|蓝", "lánsè"], ["绿色|绿", "lǜsè"], ["黄色|黄", "huángsè"], ["黑色|黑", "hēisè"], ["白色|白", "báisè"], ["房子|家", "fángzi"], ["汽车|车", "qìchē"]],
+        s: [["汽车 是 红色 的。|车 是 红 的。", "qìchē shì hóngsè de."], ["房子 是 白色 的。", "fángzi shì báisè de."], ["天空 是 蓝色 的。|天 是 蓝 的。", "tiānkōng shì lánsè de."], ["我的 猫 是 黑色 的。", "wǒde māo shì hēisè de."], ["香蕉 是 黄色 的。", "xiāngjiāo shì huángsè de."], ["我 有 一辆 绿色 的 汽车。|我 有 一辆 绿色 汽车。", "wǒ yǒu yíliàng lǜsè de qìchē."]] },
+      { w: [["市场", "shìchǎng"], ["学校", "xuéxiào"], ["医院", "yīyuàn"], ["酒店|宾馆", "jiǔdiàn"], ["钱", "qián"], ["票", "piào"], ["公交车|公共汽车", "gōngjiāochē"], ["路", "lù"]],
+        s: [["市场 在 哪里？|市场 在 哪儿？", "shìchǎng zài nǎlǐ?"], ["我 去 学校。|我 去 上学。", "wǒ qù xuéxiào."], ["厕所 在 哪里？|洗手间 在 哪里？|厕所 在 哪儿？", "cèsuǒ zài nǎlǐ?"], ["多少 钱？|这个 多少 钱？", "duōshao qián?"], ["我 在 找 酒店。|我 找 酒店。", "wǒ zài zhǎo jiǔdiàn."], ["太 贵 了。", "tài guì le."]] },
+      { w: [["吃", "chī"], ["喝", "hē"], ["睡觉", "shuìjiào"], ["去", "qù"], ["来", "lái"], ["说|讲", "shuō"], ["懂|明白", "dǒng"], ["要|想要", "yào"]],
+        s: [["我 不 懂。|我 不 明白。|我 听 不 懂。", "wǒ bù dǒng."], ["你 会 说 法语 吗？|你 说 法语 吗？", "nǐ huì shuō fǎyǔ ma?"], ["我 想 睡觉。|我 要 睡觉。", "wǒ xiǎng shuìjiào."], ["过来！|来 这里！", "guòlai!"], ["你 去 哪里？|你 去 哪儿？", "nǐ qù nǎlǐ?"], ["请 说 慢 一点。|请 慢 一点 说。", "qǐng shuō màn yìdiǎn."]] },
+      { w: [["今天", "jīntiān"], ["明天", "míngtiān"], ["昨天", "zuótiān"], ["很多", "hěnduō"], ["一点|一点儿", "yìdiǎn"], ["好", "hǎo"], ["这里|这儿", "zhèlǐ"], ["现在", "xiànzài"]],
+        s: [["你 好 吗？|你 怎么样？|最近 好 吗？", "nǐ hǎo ma?"], ["我 很 好， 谢谢。|很 好， 谢谢。", "wǒ hěn hǎo, xièxie."], ["明天 见！", "míngtiān jiàn!"], ["我 会 说 一点。|我 说 一点。|我 会 说 一点儿。", "wǒ huì shuō yìdiǎn."], ["你 住 在 哪里？|你 住 哪儿？|你 住 在 哪儿？", "nǐ zhù zài nǎlǐ?"], ["欢迎！", "huānyíng!"]] }
+    ] }
+};
+</script>
 <script>'use strict';
 /* =====================================================================
    SpeakUp — moteur de l'application
@@ -990,24 +1251,43 @@ const weekFrac = () => { const d = new Date(); return (((todayNum() + 3) % 7) + 
 
 /* ---------- Données ---------- */
 const UNIT_COLORS = ['#6C4CF5', '#FF7A59', '#12B07A', '#2EA8FF', '#E8458B', '#E0A100', '#8B5CF6', '#0EA5A4', '#F0643C', '#3B82F6', '#C2410C', '#16A34A', '#DB2777', '#7C3AED', '#0891B2', '#D97706', '#4F46E5', '#BE123C'];
-const UNITS = RAW_UNITS.map((U, u) => ({
-  ...U, u, color: UNIT_COLORS[u % UNIT_COLORS.length],
-  words: U.words.map(([en, fr, e]) => ({ en, fr, e, u })),
-  sents: U.sents.map(([en, fr], i) => ({ en, fr, u, i, id: `${u}-${i}` }))
-}));
-const ALLW = UNITS.flatMap(U => U.words);
-const ALLS = UNITS.flatMap(U => U.sents);
-const SENT_BY_ID = Object.fromEntries(ALLS.map(s => [s.id, s]));
-const WORD_BY_EN = Object.fromEntries(ALLW.map(w => [w.en, w]));
-const GLOSS = { ...GLOSS_EXTRA };
-ALLW.forEach(w => { GLOSS[w.en.toLowerCase()] = w.fr; });
 const NAMES = new Set(['I', 'Anna', 'Tom', 'London', 'France', 'English', 'Monday', 'July', 'Paris', 'Londres', 'Max', 'Ben', 'Emma', 'Sam', 'TV', 'Internet']);
+/* Cours : l'anglais (contenu complet) + les autres langues bâties sur le programme commun CORE */
+const VOICE_CHAINS = { sw: ['sw', 'es', 'it'], ln: ['sw', 'es', 'it'], zdj: ['sw', 'es', 'it'] }; // voix approchées si pas de voix native
+const COURSE_LIST = [{ code: 'en', name: 'Anglais', adj: 'anglais', flag: '🇬🇧', tts: 'en-US', sr: 'en-US', tips: [],
+  units: RAW_UNITS.map(U => ({ ...U, words: U.words.map(([en, fr, e]) => ({ en, acc: en, fr, e })), sents: U.sents.map(([en, fr]) => ({ en, fr })) })) }];
+for (const [code, C] of Object.entries(COURSES)) {
+  const units = [];
+  C.units.forEach((cu, k) => {
+    if (!cu) return; const B = CORE[k], pair = t => Array.isArray(t) ? t : [t, null];
+    const words = [], sents = [];
+    cu.w.forEach((t, i) => { if (t == null) return; const [tg, rd] = pair(t); words.push({ en: first(tg), acc: tg, rd, fr: B.words[i][0], e: B.words[i][1] }); });
+    (cu.s || []).forEach((t, i) => { if (t == null) return; const [tg, rd] = pair(t); sents.push({ en: tg, rd, fr: B.sents[i] }); });
+    if (words.length >= 4) units.push({ title: B.title, emoji: B.emoji, desc: B.desc, tips: [], words, sents });
+  });
+  COURSE_LIST.push({ code, ...C, units });
+}
+let COURSE, UNITS, ALLW, ALLS, SENT_BY_ID, WORD_BY_EN, GLOSS, RDMAP, ORDER;
+function loadCourse(code) {
+  COURSE = COURSE_LIST.find(c => c.code === code) || COURSE_LIST[0];
+  UNITS = COURSE.units.map((U, u) => ({
+    ...U, u, color: UNIT_COLORS[u % UNIT_COLORS.length],
+    words: U.words.map(w => ({ ...w, u })), sents: U.sents.map((x, i) => ({ ...x, u, i, id: `${u}-${i}` }))
+  }));
+  ALLW = UNITS.flatMap(U => U.words); ALLS = UNITS.flatMap(U => U.sents);
+  SENT_BY_ID = Object.fromEntries(ALLS.map(x => [x.id, x])); WORD_BY_EN = Object.fromEntries(ALLW.map(w => [w.en, w]));
+  GLOSS = COURSE.code === 'en' ? { ...GLOSS_EXTRA } : {}; RDMAP = {};
+  ALLW.forEach(w => { GLOSS[w.en.toLowerCase()] = w.fr; if (w.rd) RDMAP[w.en] = w.rd; });
+  ALLS.forEach(x => { if (!x.rd) return; const t = tokens(first(x.en)), rr = tokens(x.rd); if (t.length === rr.length) t.forEach((tk, i) => { RDMAP[tk] = RDMAP[tk] || rr[i]; }); });
+  ORDER = UNITS.flatMap(U => NODE_TYPES.map(n => `${U.u}-${n.k}`));
+}
+const disp = t => COURSE.code === 'zh' ? t.replace(/ /g, '') : t;
+const PUNCT = /[.,!?;:"“”«»()¿¡…。，！？、；：؟،]/g;
 
 const NODE_TYPES = [
   { k: '0', t: 'lesson', l: 0 }, { k: '1', t: 'lesson', l: 1 }, { k: 'c', t: 'chest' },
   { k: '2', t: 'lesson', l: 2 }, { k: '3', t: 'lesson', l: 3 }, { k: '4', t: 'review', l: 4 }, { k: 't', t: 'trophy', l: 5 }
 ];
-const ORDER = UNITS.flatMap(U => NODE_TYPES.map(n => `${U.u}-${n.k}`));
 
 /* ---------- État ---------- */
 const KEY = 'speakup-v1';
@@ -1015,7 +1295,7 @@ const MAXH = 5, REGEN = 30 * 60 * 1000;
 const DEFAULT = () => ({
   name: '', onboarded: false, created: dayStr(), xp: 0, gems: 500, hearts: MAXH, heartTs: Date.now(),
   streak: 0, bestStreak: 0, lastDay: null, freezes: 1, goal: 20, xpDays: {}, done: {}, words: {}, mistakes: [],
-  stories: {}, sounds: {}, ach: {}, quests: null, league: { week: weekId(), tier: 0, last: null },
+  course: 'en', cdata: {}, stories: {}, sounds: {}, ach: {}, quests: null, league: { week: weekId(), tier: 0, last: null },
   settings: { rate: 1, accent: 'en-US', sfx: true, mic: true, unlimited: false, autoplay: true, theme: 'auto' },
   stats: { lessons: 0, perfect: 0, speaks: 0, listens: 0, correct: 0, total: 0, stories: 0, maxCombo: 0, seconds: 0 },
   doubleUntil: 0, micOffUntil: 0, pip: 'blue', owned: { blue: true }
@@ -1043,7 +1323,7 @@ async function initCloud() {
     const snap = await ref.get(), d = snap.exists ? snap.data() : null;
     CLOUD = ref;
     if (d && d.json && (d.xp > S.xp || (d.xp === S.xp && d.updated > (S.updated || 0)))) {
-      S = hydrate(JSON.parse(d.json));
+      S = hydrate(JSON.parse(d.json)); loadCourse(S.course || 'en');
       try { localStorage.setItem(KEY, d.json); } catch (e) { }
       if (S.onboarded && $('#onb-name')) closeModal();
       checkStreak(); settleLeague(); ensureQuests();
@@ -1099,7 +1379,7 @@ function strength(en) {
   return clamp(0.2 + w.b / 6 - overdue * 0.06, 0.05, 1);
 }
 function wordsInSentence(s) {
-  const txt = ' ' + first(s.en).toLowerCase().replace(/[.,!?]/g, ' ') + ' ';
+  const txt = ' ' + first(s.en).toLowerCase().replace(PUNCT, ' ') + ' ';
   return ALLW.filter(w => w.u <= s.u && txt.includes(' ' + w.en.toLowerCase() + ' ')).map(w => w.en);
 }
 function learnedWords() { return ALLW.filter(w => S.words[w.en]); }
@@ -1109,8 +1389,13 @@ function dueWords() { const t = todayNum(); return learnedWords().filter(w => S.
 const CONTR = { "i'm": "i am", "you're": "you are", "he's": "he is", "she's": "she is", "it's": "it is", "we're": "we are", "they're": "they are", "that's": "that is", "what's": "what is", "where's": "where is", "here's": "here is", "there's": "there is", "let's": "let us", "don't": "do not", "doesn't": "does not", "didn't": "did not", "isn't": "is not", "aren't": "are not", "wasn't": "was not", "weren't": "were not", "can't": "cannot", "won't": "will not", "i'll": "i will", "you'll": "you will", "we'll": "we will", "they'll": "they will", "he'll": "he will", "she'll": "she will", "it'll": "it will", "i've": "i have", "you've": "you have", "we've": "we have", "i'd": "i would", "you'd": "you would", "couldn't": "could not", "wouldn't": "would not", "haven't": "have not", "hasn't": "has not" };
 const DIGITS = { '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten' };
 function norm(s, lang = 'en') {
-  s = s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[.,!?;:"“”«»()¿¡…]/g, ' ');
-  if (lang === 'en') {
+  s = s.toLowerCase().replace(/[’‘`´]/g, "'").replace(PUNCT, ' ');
+  const c = COURSE.code;
+  if (lang === 'en' && c === 'zh') return s.replace(/\s+/g, '');
+  if (lang === 'en' && c === 'ar') s = s.replace(/[\u064B-\u0652\u0670\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه');
+  if (lang === 'en' && c === 'de') s = s.replace(/ß/g, 'ss');
+  if (lang === 'en' && c !== 'en') s = s.replace(/-/g, ' ');
+  else if (lang === 'en') {
     s = s.replace(/\s+/g, ' ').trim().split(' ').map(w => DIGITS[w] || CONTR[w] || w).join(' ');
     s = s.replace(/\bcan not\b/g, 'cannot').replace(/\bok\b/g, 'okay').replace(/\be-mail\b/g, 'email').replace(/\btelevision\b/g, 'tv');
   } else s = s.replace(/-/g, ' ').replace(/\s+/g, ' ').replace(/\be mail\b/g, 'email');
@@ -1123,32 +1408,54 @@ function lev(a, b) {
   return p[n];
 }
 /* renvoie {ok, typo} */
-function accepts(input, answers, lang = 'en', allowTypo = true) {
+const latin = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function accepts(input, answers, lang = 'en', allowTypo = true, reading = null) {
   const n = norm(input, lang); if (!n) return { ok: false };
   const alts = answers.split('|');
   for (const a of alts) if (norm(a, lang) === n) return { ok: true };
-  if (allowTypo) for (const a of alts) { const na = norm(a, lang); const tol = na.length >= 14 ? 2 : na.length > 3 ? 1 : 0; if (lev(n, na) <= tol) return { ok: true, typo: true }; }
+  for (const a of alts) if (latin(norm(a, lang)) && latin(norm(a, lang)) === latin(n)) return { ok: true, typo: true }; // accents oubliés
+  if (reading && latin(reading) && latin(input) === latin(reading)) return { ok: true }; // pinyin / transcription
+  if (allowTypo) {
+    for (const a of alts) { const na = norm(a, lang); const tol = na.length >= 14 ? 2 : na.length > 3 ? 1 : 0; if (lev(n, na) <= tol) return { ok: true, typo: true }; }
+    if (reading) { const lr = latin(reading), li = latin(input); if (lr.length > 3 && lev(li, lr) <= (lr.length >= 12 ? 2 : 1)) return { ok: true, typo: true }; }
+  }
   return { ok: false };
 }
-const tokens = s => s.replace(/[.,!?;:"“”«»¿¡…]/g, ' ').split(/\s+/).filter(Boolean);
-function tileTokens(s) { return tokens(s).map((t, i) => (i === 0 && !NAMES.has(t) && !NAMES.has(t.replace(/'.*/, ''))) ? t.charAt(0).toLowerCase() + t.slice(1) : t); }
+function tokens(t) { return t.replace(PUNCT, ' ').split(/\s+/).filter(Boolean); }
+function tileTokens(t, lang = 'en') {
+  const keep = lang === 'en' && ['de', 'zh', 'ar'].includes(COURSE.code);
+  return tokens(t).map((x, i) => (!keep && i === 0 && !NAMES.has(x) && !NAMES.has(x.replace(/'.*/, ''))) ? x.charAt(0).toLowerCase() + x.slice(1) : x);
+}
 
 /* ---------- Audio : synthèse vocale, effets, reconnaissance ---------- */
 let VOICES = [];
 function loadVoices() { try { VOICES = speechSynthesis.getVoices(); } catch (e) { } }
 if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+const ttsLang = () => COURSE.code === 'en' ? S.settings.accent : COURSE.tts || (VOICE_CHAINS[COURSE.code] || ['fr'])[0];
+function voicesFor(prefix) { return VOICES.filter(v => v.lang && v.lang.replace('_', '-').toLowerCase().startsWith(prefix)); }
 function pickVoice() {
-  const acc = S.settings.accent;
-  const en = VOICES.filter(v => v.lang && v.lang.replace('_', '-').toLowerCase().startsWith('en'));
-  const same = en.filter(v => v.lang.replace('_', '-').toLowerCase() === acc.toLowerCase());
-  const pool = same.length ? same : en;
-  return pool.find(v => /natural|neural|google|samantha|daniel|aria|jenny|libby|sonia|serena/i.test(v.name)) || pool[0] || null;
+  const want = ttsLang().toLowerCase(), chain = [want.slice(0, 2), ...(VOICE_CHAINS[COURSE.code] || [])];
+  for (const pre of chain) {
+    const all = voicesFor(pre); if (!all.length) continue;
+    const same = all.filter(v => v.lang.replace('_', '-').toLowerCase() === want);
+    const pool = same.length ? same : all;
+    return pool.find(v => /natural|neural|google|samantha|daniel|aria|jenny|libby|sonia|serena|premium|enhanced/i.test(v.name)) || pool[0];
+  }
+  return null;
 }
+/* voix native, approchée (autre langue) ou aucune */
+function voiceKind() {
+  if (!('speechSynthesis' in window)) return 'none';
+  if (!VOICES.length) return COURSE.tts ? 'native' : 'approx';
+  const v = pickVoice(); if (!v) return 'none';
+  return v.lang.toLowerCase().startsWith((COURSE.tts || '--').slice(0, 2).toLowerCase()) ? 'native' : 'approx';
+}
+const canListen = () => voiceKind() !== 'none';
 function say(text, slow = false, pitch = 1) {
   if (!('speechSynthesis' in window)) return;
   try {
-    const u = new SpeechSynthesisUtterance(first(text));
-    u.lang = S.settings.accent; const v = pickVoice(); if (v) u.voice = v;
+    const u = new SpeechSynthesisUtterance(disp(first(text)));
+    const v = pickVoice(); u.lang = v ? v.lang : ttsLang(); if (v) u.voice = v;
     u.rate = (slow ? 0.6 : 0.95) * S.settings.rate; u.pitch = pitch;
     if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(() => speechSynthesis.speak(u), 80); } // Safari iOS perd la phrase sinon
     else speechSynthesis.speak(u);
@@ -1182,13 +1489,15 @@ const sfx = {
   pair: () => tone([880], .08, 'sine', 0, .08)
 };
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-function speakMode() { if (!S.settings.mic || Date.now() < S.micOffUntil) return 'off'; return SR && !EMBED ? 'mic' : 'shadow'; }
+function speakMode() { if (!S.settings.mic || Date.now() < S.micOffUntil) return 'off'; if (SR && !EMBED && COURSE.sr) return 'mic'; return canListen() ? 'shadow' : 'off'; }
+const srLang = () => COURSE.code === 'en' ? S.settings.accent : COURSE.sr;
+const speechUnits = t => COURSE.code === 'zh' ? [...norm(t)] : norm(t).split(' ');
 const canSpeak = () => speakMode() === 'mic';
 function scoreSpeech(target, heardAlts) {
-  const tw = norm(first(target)).split(' ');
+  const tw = speechUnits(first(target));
   let best = { score: 0, marks: tw.map(() => false), heard: heardAlts[0] || '' };
   for (const h of heardAlts) {
-    const hw = norm(h).split(' ');
+    const hw = speechUnits(h);
     const pool = hw.slice();
     const marks = tw.map(w => {
       let idx = pool.indexOf(w);
@@ -1256,13 +1565,18 @@ function confetti() {
     document.body.appendChild(c); setTimeout(() => c.remove(), 4500);
   }
 }
-function tappable(en) {
-  return first(en).split(' ').map(w => {
-    const clean = w.replace(/[.,!?;:"]/g, '');
-    const g = GLOSS[clean.toLowerCase()] || GLOSS[clean.toLowerCase().replace(/s$/, '')];
-    return g ? `<span class="tw" data-act="hint" data-w="${esc(clean)}">${esc(w)}</span>` : esc(w);
-  }).join(' ');
+function tappable(en, rd) {
+  const toks = first(en).split(' '), rds = rd ? rd.split(' ') : null;
+  const html = toks.map((w, i) => {
+    const clean = w.replace(PUNCT, '');
+    const g = GLOSS[clean.toLowerCase()] || (COURSE.code === 'en' && GLOSS[clean.toLowerCase().replace(/s$/, '')]);
+    const inner = rds && rds.length === toks.length ? `<ruby>${esc(w)}<rt>${esc(rds[i].replace(PUNCT, ''))}</rt></ruby>` : esc(w);
+    return g ? `<span class="tw" data-act="hint" data-w="${esc(clean)}">${inner}</span>` : inner;
+  }).join(COURSE.code === 'zh' ? '' : ' ');
+  return `<span class="tgt"${COURSE.rtl ? ' dir="rtl"' : ''}>${html}</span>`;
 }
+const tileLabel = (t, lang) => esc(t) + (lang === 'en' && RDMAP[t] ? `<small class="rd">${esc(RDMAP[t])}</small>` : '');
+const wordLabel = w => `${esc(w.en)}${w.rd ? `<small class="rd">${esc(w.rd)}</small>` : ''}`;
 function showHint(el) {
   $$('.hint-pop').forEach(p => p.remove());
   const w = el.dataset.w, lw = w.toLowerCase();
@@ -1272,7 +1586,7 @@ function showHint(el) {
   if (next && GLOSS[(lw + ' ' + next.toLowerCase())]) { g = GLOSS[lw + ' ' + next.toLowerCase()]; said = w + ' ' + next; }
   g = g || GLOSS[lw] || GLOSS[lw.replace(/s$/, '')];
   say(said);
-  const p = document.createElement('div'); p.className = 'hint-pop'; p.innerHTML = `<span class="muted">${esc(said)}</span> → ${esc(g)}`;
+  const p = document.createElement('div'); p.className = 'hint-pop'; p.innerHTML = `<span class="muted">${esc(said)}${RDMAP[said] ? ' · ' + esc(RDMAP[said]) : ''}</span> → ${esc(g)}`;
   document.body.appendChild(p);
   const r = el.getBoundingClientRect();
   p.style.left = clamp(r.left, 8, window.innerWidth - p.offsetWidth - 8) + 'px'; p.style.top = (r.bottom + 8) + 'px';
@@ -1300,7 +1614,7 @@ function render() {
 function topbar() {
   const h = unlimited() ? '∞' : S.hearts;
   return `<div class="topbar">
-    <span class="stat flag emoji" title="Anglais">${S.settings.accent === 'en-GB' ? '🇬🇧' : '🇺🇸'}</span>
+    <button class="stat flag" data-act="courses" title="Changer de langue"><span class="emoji">${COURSE.code === 'en' ? (S.settings.accent === 'en-GB' ? '🇬🇧' : '🇺🇸') : COURSE.flag}</span><span class="cname">${esc(COURSE.name)}</span> ▾</button>
     <button class="stat fire ${streakAlive() && S.lastDay === dayStr() ? '' : 'dim'}" data-act="streakInfo" title="Série"><span class="emoji">🔥</span>${S.streak}</button>
     <button class="stat gem" data-act="nav" data-v="shop" title="Gemmes"><span class="emoji">💎</span>${S.gems}</button>
     <button class="stat heart" data-act="heartsInfo" title="Cœurs"><span class="emoji">❤️</span>${h}</button>
@@ -1383,14 +1697,18 @@ function openChest(k) {
 function guideHTML(u) {
   const U = UNITS[u];
   return `<h2><span class="emoji">${U.emoji}</span> Guide — ${esc(U.title)}</h2>
-    <h3 class="section-h" style="margin-top:12px">💡 À retenir</h3><ul class="tips">${U.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    <h3 class="section-h" style="margin-top:12px">💡 À retenir</h3><ul class="tips">${(U.tips.length ? U.tips : COURSE.tips).map(t => `<li>${t}</li>`).join('')}</ul>${voiceNote()}
     <h3 class="section-h">🖼️ Vocabulaire</h3><p class="muted">Touche un dessin pour l'entendre.</p>
-    <div class="guide-words">${U.words.map(w => `<div class="gw" data-act="say" data-t="${esc(w.en)}"><div class="e emoji">${w.e}</div><b>${esc(w.en)}</b><div class="muted">${esc(w.fr)}</div></div>`).join('')}</div>
-    <h3 class="section-h">🗣️ Phrases clés</h3>${U.sents.map(s => `<div class="phr"><button class="spk" data-act="say" data-t="${esc(first(s.en))}">🔊</button><div><b>${esc(first(s.en))}</b><div class="muted">${esc(first(s.fr))}</div></div></div>`).join('')}`;
+    <div class="guide-words">${U.words.map(w => `<div class="gw" data-act="say" data-t="${esc(w.en)}"><div class="e emoji">${w.e}</div><b>${wordLabel(w)}</b><div class="muted">${esc(w.fr)}</div></div>`).join('')}</div>
+    <h3 class="section-h">🗣️ Phrases clés</h3>${U.sents.map(s => `<div class="phr"><button class="spk" data-act="say" data-t="${esc(first(s.en))}">🔊</button><div><b>${tappable(s.en, s.rd)}</b><div class="muted">${esc(first(s.fr))}</div></div></div>`).join('')}`;
 }
 
 /* ---------- Vue : histoires ---------- */
+function notEnglish(what) {
+  return `<div class="card" style="text-align:center;max-width:560px;margin:20px auto">${pip('normal', 100)}<h3>${what} disponibles en anglais</h3><p class="muted">Pour l'instant, cette partie existe pour le cours d'anglais. Ton cours de ${esc(COURSE.adj)} a le parcours, la pratique, les quêtes et les ligues.</p><button class="btn pri" data-act="pickCourse" data-c="en">Passer à l'anglais</button></div>`;
+}
 function viewStories() {
+  if (COURSE.code !== 'en') return `<div class="page-title"><h1>Histoires</h1></div>` + notEnglish('Histoires');
   const list = STORIES.slice().sort((a, b) => a.req - b.req);
   return `<div class="page-title">${pip('talk', 70)}<div><h1>Histoires</h1><p class="muted">De vraies conversations pour entraîner ta compréhension et ta prononciation.</p></div></div>
   <div class="grid2">${list.map(s => {
@@ -1403,6 +1721,7 @@ function viewStories() {
 
 /* ---------- Vue : sons ---------- */
 function viewSounds() {
+  if (COURSE.code !== 'en') return `<div class="page-title"><h1>Laboratoire des sons</h1></div>` + notEnglish('Sons');
   return `<div class="page-title">${pip('wow', 70)}<div><h1>Laboratoire des sons</h1><p class="muted">Les sons anglais les plus difficiles pour les francophones, travaillés avec des paires minimales.</p></div></div>
   <div class="grid2">${SOUNDS.map(s => `<div class="card story-card" data-act="sound" data-id="${s.id}">
     <div class="cover emoji">${s.e}</div><h3>${esc(s.title)}</h3><p class="pill">${s.ipa}</p>
@@ -1427,13 +1746,13 @@ function viewPractice() {
   <div class="grid2">
     <div class="card story-card" data-act="practice" data-m="srs"><div class="cover emoji">🧠</div><h3>Révision intelligente</h3><p class="muted">${due.length} mot${due.length > 1 ? 's' : ''} à revoir aujourd'hui</p></div>
     <div class="card story-card" data-act="practice" data-m="mistakes"><div class="cover emoji">🩹</div><h3>Mes erreurs</h3><p class="muted">${S.mistakes.length} phrase${S.mistakes.length > 1 ? 's' : ''} à corriger</p></div>
-    <div class="card story-card" data-act="practice" data-m="listen"><div class="cover emoji">🎧</div><h3>Écoute</h3><p class="muted">Entraîne ton oreille</p></div>
+    <div class="card story-card" data-act="practice" data-m="listen"><div class="cover emoji">🎧</div><h3>Écoute</h3><p class="muted">${canListen() ? 'Entraîne ton oreille' : 'Pas de voix sur cet appareil'}</p></div>
     <div class="card story-card" data-act="practice" data-m="speak"><div class="cover emoji">🎙️</div><h3>Expression orale</h3><p class="muted">${SR && !EMBED ? 'Parle et sois corrigé' : 'Écoute et répète'}</p></div>
   </div>
   <h2 class="section-h">📒 Mes mots (${lw.length})</h2>
   ${lw.length ? byUnit.map(U => `<div class="card" style="margin-bottom:14px"><h3>${U.emoji} ${esc(U.title)}</h3>${U.words.filter(w => S.words[w.en]).map(w => {
     const st = strength(w.en);
-    return `<div class="word-row"><span class="e emoji">${w.e}</span><div class="t"><b>${esc(w.en)}</b><span class="muted">${esc(w.fr)}</span></div>
+    return `<div class="word-row"><span class="e emoji">${w.e}</span><div class="t"><b>${wordLabel(w)}</b><span class="muted">${esc(w.fr)}</span></div>
       <div class="bar ${st > .6 ? 'ok' : st > .3 ? '' : 'pri'} str" title="Force du mot"><i style="width:${st * 100}%"></i></div><button class="spk" data-act="say" data-t="${esc(w.en)}">🔊</button></div>`;
   }).join('')}</div>`).join('') : `<div class="card"><p class="muted">Termine ta première leçon pour voir tes mots ici.</p></div>`}`;
 }
@@ -1561,7 +1880,7 @@ function viewProfile() {
   const max = Math.max(S.goal, ...days.map(d => S.xpDays[d.k] || 0));
   const st = S.settings, sw = (k, on) => `<button class="switch ${on ? 'on' : ''}" data-act="toggle" data-k="${k}" role="switch" aria-checked="${on}"></button>`;
   const acc = S.stats.total ? Math.round(S.stats.correct / S.stats.total * 100) : 0;
-  return `<div class="page-title">${pip('happy', 90)}<div><h1>${esc(S.name || 'Apprenant')}</h1><p class="muted">Apprend l'anglais depuis le ${new Date(S.created).toLocaleDateString('fr-FR')}</p></div></div>
+  return `<div class="page-title">${pip('happy', 90)}<div><h1>${esc(S.name || 'Apprenant')}</h1><p class="muted">${COURSE.flag} Apprend le ${esc(COURSE.adj)} · inscrit le ${new Date(S.created).toLocaleDateString('fr-FR')}</p></div></div>
   <div class="stats-grid">
     <div class="stat-box"><span class="se emoji">🔥</span><div><b>${S.streak}</b><span class="muted">Série (record ${S.bestStreak})</span></div></div>
     <div class="stat-box"><span class="se emoji">⚡</span><div><b>${S.xp}</b><span class="muted">XP au total</span></div></div>
@@ -1576,7 +1895,8 @@ function viewProfile() {
   <div class="card" style="margin-top:16px"><h2>⚙️ Réglages</h2>
     <div class="set-row"><span>Ton prénom</span><input type="text" id="set-name" value="${esc(S.name)}" maxlength="20" placeholder="Prénom"></div>
     <div class="set-row"><span>Objectif quotidien</span><select data-set="goal">${[[10, 'Tranquille'], [20, 'Normal'], [30, 'Sérieux'], [50, 'Intense']].map(([v, l]) => `<option value="${v}" ${S.goal === v ? 'selected' : ''}>${l} — ${v} XP/jour</option>`).join('')}</select></div>
-    <div class="set-row"><span>Accent</span><select data-set="accent"><option value="en-US" ${st.accent === 'en-US' ? 'selected' : ''}>🇺🇸 Américain</option><option value="en-GB" ${st.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 Britannique</option></select></div>
+    <div class="set-row"><span>Langue apprise</span><button class="btn sm" data-act="courses">${COURSE.flag} ${esc(COURSE.name)} ▾</button></div>
+    <div class="set-row" ${COURSE.code !== 'en' ? 'hidden' : ''}><span>Accent</span><select data-set="accent"><option value="en-US" ${st.accent === 'en-US' ? 'selected' : ''}>🇺🇸 Américain</option><option value="en-GB" ${st.accent === 'en-GB' ? 'selected' : ''}>🇬🇧 Britannique</option></select></div>
     <div class="set-row"><span>Vitesse de la voix</span><select data-set="rate">${[[.8, 'Lente'], [1, 'Normale'], [1.15, 'Rapide']].map(([v, l]) => `<option value="${v}" ${st.rate === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="set-row"><span>Thème</span><select data-set="theme">${[['auto', 'Automatique'], ['light', 'Clair'], ['dark', 'Sombre']].map(([v, l]) => `<option value="${v}" ${st.theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="set-row"><span>Effets sonores</span>${sw('sfx', st.sfx)}</div>
@@ -1608,9 +1928,14 @@ function methodHTML() {
    ===================================================================== */
 const SPEAKY = new Set(['speak', 'speak_word', 'shadow']);
 const LISTENY = new Set(['listen_tiles', 'listen_type', 'minimal', 'listen_pick']);
-function sentEx(s, t) { if (t === 'speak') { const m = speakMode(); t = m === 'mic' ? 'speak' : m === 'shadow' ? 'shadow' : 'listen_tiles'; } return { t, s }; }
+function fixType(t) {
+  if (!canListen()) t = { listen_tiles: 'tr_en', listen_type: 'tr_en', listen_pick: 'what' }[t] || t;
+  if (t === 'speak') { const m = speakMode(); t = m === 'mic' ? 'speak' : m === 'shadow' ? 'shadow' : canListen() ? 'listen_tiles' : 'tr_fr'; }
+  return t;
+}
+function sentEx(s, t) { return { t: fixType(t), s }; }
 function chunk(arr, k, parts) { const size = Math.ceil(arr.length / parts); return arr.slice(k * size, (k + 1) * size); }
-function wordExercises(ws, n, types) { return shuffle(ws).slice(0, n).map((w, i) => ({ t: types[i % types.length], w })); }
+function wordExercises(ws, n, types) { return shuffle(ws).slice(0, n).map((w, i) => ({ t: fixType(types[i % types.length]), w })); }
 function pairsEx(ws) {
   const seen = new Set(), pick = [];
   for (const w of shuffle(ws)) { if (seen.has(w.fr) || seen.has(w.en)) continue; seen.add(w.fr); seen.add(w.en); pick.push(w); if (pick.length === 5) break; }
@@ -1661,8 +1986,8 @@ function buildPractice(m) {
     const ss = S.mistakes.map(id => SENT_BY_ID[id]).filter(Boolean).slice(-10); if (!ss.length) return null;
     return shuffle(ss.flatMap(s => [sentEx(s, rand(['tr_en', 'listen_tiles', 'fill'])), sentEx(s, rand(['tr_fr', 'speak', 'listen_type']))])).slice(0, 14);
   }
-  if (m === 'listen') return shuffle(sents).slice(0, 10).map((s, i) => sentEx(s, i % 2 ? 'listen_type' : 'listen_tiles'));
-  if (m === 'speak') { const sm = speakMode(); return sm === 'off' ? null : shuffle(sents).slice(0, 8).map(s => ({ t: sm === 'mic' ? 'speak' : 'shadow', s })); }
+  if (m === 'listen') return !canListen() || !sents.length ? null : shuffle(sents).slice(0, 10).map((s, i) => sentEx(s, i % 2 ? 'listen_type' : 'listen_tiles'));
+  if (m === 'speak') { const sm = speakMode(); return sm === 'off' || !sents.length ? null : shuffle(sents).slice(0, 8).map(s => ({ t: sm === 'mic' ? 'speak' : 'shadow', s })); }
 }
 function buildJump(u) {
   const ss = UNITS.slice(curUnit(), u).flatMap(U => U.sents);
@@ -1709,6 +2034,7 @@ function exHeader(title, ex) {
   return `${tag}<div class="ex-title">${title}</div>`;
 }
 function spkButtons(text, big) {
+  if (!canListen()) return '';
   return big ? `<div class="big-spk"><button class="spk" data-act="say" data-t="${esc(text)}" aria-label="Écouter">🔊</button><button class="spk slow" data-act="say" data-t="${esc(text)}" data-slow="1" aria-label="Écouter lentement">🐢</button></div>`
     : `<button class="spk" data-act="say" data-t="${esc(text)}" aria-label="Écouter">🔊</button>`;
 }
@@ -1738,14 +2064,14 @@ const RENDER = {
   img(ex) { // choisir l'image correspondant au mot français
     const w = ex.w, opts = shuffle([w, ...distractWords(w, 3)]);
     lessonShell(exHeader(`Lequel de ces dessins veut dire « ${esc(w.fr)} » ?`, ex) +
-      `<div class="pics">${opts.map((o, i) => `<button class="pic" data-opt="${i}" data-act="pick" data-v="${esc(o.en)}"><span class="big emoji">${o.e}</span><span class="w">${esc(o.en)}</span><span class="k">${i + 1}</span></button>`).join('')}</div>`, footAnswer());
+      `<div class="pics">${opts.map((o, i) => `<button class="pic" data-opt="${i}" data-act="pick" data-v="${esc(o.en)}"><span class="big emoji">${o.e}</span><span class="w">${wordLabel(o)}</span><span class="k">${i + 1}</span></button>`).join('')}</div>`, footAnswer());
     L.onPick = v => say(v);
     L.check = () => ({ ok: L.sel === w.en, ans: `${w.en} = ${w.fr}`, words: [[w.en, L.sel === w.en]] });
   },
   what(ex) { // grand dessin → mot anglais
     const w = ex.w, opts = shuffle([w, ...distractWords(w, 3)]);
     lessonShell(exHeader('Qu\'est-ce que c\'est ?', ex) + `<div class="drawing emoji">${w.e}</div>
-      <div class="opts">${opts.map((o, i) => `<button class="opt" data-opt="${i}" data-act="pick" data-v="${esc(o.en)}"><span class="k">${i + 1}</span>${esc(o.en)}</button>`).join('')}</div>`, footAnswer());
+      <div class="opts">${opts.map((o, i) => `<button class="opt" data-opt="${i}" data-act="pick" data-v="${esc(o.en)}"><span class="k">${i + 1}</span>${wordLabel(o)}</button>`).join('')}</div>`, footAnswer());
     L.onPick = v => say(v);
     L.check = () => ({ ok: L.sel === w.en, ans: `${w.en} — ${w.fr}`, words: [[w.en, L.sel === w.en]] });
   },
@@ -1758,36 +2084,38 @@ const RENDER = {
   },
   type_tr(ex) {
     const w = ex.w;
-    lessonShell(exHeader(`Écris « ${esc(w.fr)} » en anglais`, ex) + `<div class="drawing emoji">${w.e}</div>
-      <input class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Écris en anglais">`, footAnswer());
+    lessonShell(exHeader(`Écris « ${esc(w.fr)} » en ${esc(COURSE.adj)}`, ex) + `<div class="drawing emoji">${w.e}</div>
+      <input class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto" placeholder="Écris en ${esc(COURSE.adj)}">`, footAnswer());
     const inp = $('#typed'); inp.focus(); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
     L.check = () => {
-      const v = inp.value.replace(/^\s*(the|a|an|to)\s+/i, '');
-      const r = accepts(v, w.en); if (r.ok) say(w.en);
-      return { ...r, ans: w.en, words: [[w.en, r.ok]] };
+      const ART = { en: 'the|a|an|to', es: 'el|la|los|las|un|una', it: 'il|lo|la|i|gli|le|un|una|uno', de: 'der|die|das|ein|eine|zu', pt: 'o|a|os|as|um|uma' }[COURSE.code];
+      let r = accepts(inp.value, w.acc, 'en', true, w.rd);
+      if (!r.ok && ART) r = accepts(inp.value.replace(new RegExp(`^\\s*(${ART})\\s+`, 'i'), '').replace(/^\s*l'/i, ''), w.acc, 'en', true, w.rd);
+      if (r.ok) say(w.en);
+      return { ...r, ans: w.en + (w.rd ? ` (${w.rd})` : ''), words: [[w.en, r.ok]] };
     };
   },
   pairs(ex) {
     const en = shuffle(ex.ws), fr = shuffle(ex.ws);
-    lessonShell(exHeader('Associe les paires', ex) + `<div class="pairs"><div class="col">${en.map(w => `<button class="pair" data-act="pair" data-side="en" data-v="${esc(w.en)}">${esc(w.en)}</button>`).join('')}</div>
+    lessonShell(exHeader('Associe les paires', ex) + `<div class="pairs"><div class="col">${en.map(w => `<button class="pair" data-act="pair" data-side="en" data-v="${esc(w.en)}">${wordLabel(w)}</button>`).join('')}</div>
       <div class="col">${fr.map(w => `<button class="pair" data-act="pair" data-side="fr" data-v="${esc(w.en)}">${esc(w.fr)}</button>`).join('')}</div></div>`,
       `<div class="l-foot-in"><span></span><button class="btn pri" id="checkBtn" disabled>Vérifier</button></div>`);
     L.pairSel = null; L.pairLeft = ex.ws.length; L.pairErr = false;
   },
-  tr_en(ex) { tilesEx(ex, 'fr', 'Écris ceci en anglais'); },
+  tr_en(ex) { tilesEx(ex, 'fr', `Écris ceci en ${esc(COURSE.adj)}`); },
   tr_fr(ex) { tilesEx(ex, 'en', 'Traduis cette phrase'); },
   listen_tiles(ex) { tilesEx(ex, 'listen', 'Tape ce que tu entends'); },
   listen_type(ex) {
     const s = ex.s;
     lessonShell(exHeader('Écris ce que tu entends', ex) + spkButtons(first(s.en), true) +
-      `<textarea class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Écris en anglais"></textarea>`, footAnswer('Je ne peux pas écouter'));
+      `<textarea class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto" placeholder="Écris en ${esc(COURSE.adj)}"></textarea>`, footAnswer('Je ne peux pas écouter'));
     autoplay(s.en); L.listen = true;
     const inp = $('#typed'); inp.focus(); inp.addEventListener('input', () => setReady(!!inp.value.trim()));
-    L.check = () => ({ ...accepts(inp.value, s.en), ans: first(s.en), sub: first(s.fr) });
+    L.check = () => ({ ...accepts(inp.value, s.en, 'en', true, s.rd), ans: disp(first(s.en)), sub: (s.rd ? s.rd + ' · ' : '') + first(s.fr) });
   },
   choose_tr(ex) {
     const s = ex.s, opts = shuffle([s, ...otherSents(s, 2)]);
-    lessonShell(exHeader('Que signifie cette phrase ?', ex) + `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span>${tappable(s.en)}</span></div></div>
+    lessonShell(exHeader('Que signifie cette phrase ?', ex) + `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span>${tappable(s.en, s.rd)}</span></div></div>
       <div class="opts">${opts.map((o, i) => `<button class="opt" data-opt="${i}" data-act="pick" data-v="${esc(o.id)}"><span class="k">${i + 1}</span>${esc(first(o.fr))}</button>`).join('')}</div>`, footAnswer());
     autoplay(s.en);
     L.check = () => ({ ok: L.sel === s.id, ans: first(s.fr) });
@@ -1798,24 +2126,25 @@ const RENDER = {
     let idx = toks.findIndex((t, i) => i > 0 && unitW.has(t.toLowerCase()));
     if (idx < 0 || Math.random() < .3) { const cand = toks.map((t, i) => [t, i]).filter(([t, i]) => i > 0 && t.length > 2 && !NAMES.has(t)); idx = cand.length ? rand(cand)[1] : 0; }
     const answer = toks[idx];
-    const pool = uniq(shuffle(UNITS[s.u].words.filter(w => !w.en.includes(' ')).map(w => w.en).concat(ALLS.filter(x => x.u === s.u).flatMap(x => tileTokens(first(x.en))))))
+    const pool = uniq(shuffle(UNITS[s.u].words.filter(w => !w.en.includes(' ')).map(w => w.en).concat(ALLS.filter(x => x.u === s.u).flatMap(x => tileTokens(first(x.en), 'en')))))
       .filter(t => t.toLowerCase() !== answer.toLowerCase() && !NAMES.has(t) && t.length > 1);
     const opts = shuffle([answer, ...pool.slice(0, 2)]);
-    const sent = toks.map((t, i) => i === idx ? '<span class="blank" id="blank">&nbsp;</span>' : esc(t)).join(' ') + (/[?!]$/.test(first(s.en)) ? first(s.en).slice(-1) : '.');
+    const tail = (first(s.en).match(/[.!?。！？؟]$/) || ['.'])[0];
+    const sent = `<span${COURSE.rtl ? ' dir="rtl"' : ''}>` + toks.map((t, i) => i === idx ? '<span class="blank" id="blank">&nbsp;</span>' : esc(t)).join(COURSE.code === 'zh' ? '' : ' ') + tail + '</span>';
     lessonShell(exHeader('Complète la phrase', ex) + `<div class="fill-sent">${sent}</div><p class="muted" style="font-size:17px">${esc(first(s.fr))}</p>
-      <div class="chips">${opts.map((o, i) => `<button class="tile" data-opt="${i}" data-act="pick" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`, footAnswer());
+      <div class="chips">${opts.map((o, i) => `<button class="tile" data-opt="${i}" data-act="pick" data-v="${esc(o)}">${tileLabel(o, 'en')}</button>`).join('')}</div>`, footAnswer());
     L.onPick = v => { $('#blank').textContent = v; };
-    L.check = () => { const ok = (L.sel || '').toLowerCase() === answer.toLowerCase(); if (ok) say(s.en); return { ok, ans: first(s.en) }; };
+    L.check = () => { const ok = (L.sel || '').toLowerCase() === answer.toLowerCase(); if (ok) say(s.en); return { ok, ans: disp(first(s.en)) + (s.rd ? ` (${s.rd})` : '') }; };
   },
   speak(ex) {
     const s = ex.s;
     lessonShell(exHeader('Lis cette phrase à voix haute', ex) +
-      `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span class="speak-sent">${tappable(s.en)}</span></div></div>
+      `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span class="speak-sent">${tappable(s.en, s.rd)}</span></div></div>
       <p class="muted" style="text-align:center">${esc(first(s.fr))}</p>
       <button class="mic" id="mic" data-act="mic">🎙️ Appuie pour parler</button><div class="heard" id="heard"></div>
       <button class="btn ghost cant" data-act="cantSpeak">Je ne peux pas parler maintenant</button>`,
       `<div class="l-foot-in"><button class="btn" data-act="skip">Passer</button><button class="btn pri" id="checkBtn" disabled>Vérifier</button></div>`);
-    autoplay(s.en); L.speakTarget = first(s.en); L.speakTries = 0;
+    autoplay(s.en); L.speakTarget = disp(first(s.en)); L.speakTries = 0;
   },
   speak_word(ex) {
     lessonShell(exHeader('Prononce ce mot', ex) + `<div class="drawing" style="font-size:44px;font-weight:900;width:auto">${esc(ex.word)}</div>${spkButtons(ex.word, true)}
@@ -1825,9 +2154,9 @@ const RENDER = {
     autoplay(ex.word); L.speakTarget = ex.word; L.speakTries = 0;
   },
   shadow(ex) { // écoute et répète (quand le micro n'est pas accessible)
-    const text = ex.s ? first(ex.s.en) : ex.word;
+    const text = ex.s ? disp(first(ex.s.en)) : ex.word;
     lessonShell(exHeader('Écoute, puis répète à voix haute', ex) +
-      (ex.s ? `<div class="speaker-row">${pip('talk', 90)}<div class="bubble"><span class="speak-sent">${tappable(ex.s.en)}</span></div></div><p class="muted" style="text-align:center">${esc(first(ex.s.fr))}</p>`
+      (ex.s ? `<div class="speaker-row">${pip('talk', 90)}<div class="bubble"><span class="speak-sent">${tappable(ex.s.en, ex.s.rd)}</span></div></div><p class="muted" style="text-align:center">${esc(first(ex.s.fr))}</p>`
         : `<div class="drawing" style="font-size:44px;font-weight:900;width:auto">${esc(text)}</div>`) +
       spkButtons(text, true) + `<p class="muted" style="text-align:center">Imite le rythme et la mélodie de la voix. Utilise 🐢 pour décomposer, puis dis la phrase 2 ou 3 fois à voix haute.</p>
       <button class="btn ghost cant" data-act="cantSpeak">Je ne peux pas parler maintenant</button>`,
@@ -1845,30 +2174,30 @@ const RENDER = {
 /* exercices à étiquettes (mode = 'fr' : FR→EN, 'en' : EN→FR, 'listen' : audio→EN) */
 function tilesEx(ex, mode, title) {
   const s = ex.s, target = mode === 'en' ? s.fr : s.en, lang = mode === 'en' ? 'fr' : 'en';
-  const answerToks = tileTokens(first(target));
+  const answerToks = tileTokens(first(target), lang);
   const ansLow = new Set(answerToks.map(t => t.toLowerCase()));
-  const sameLang = ALLS.filter(x => x.id !== s.id && Math.abs(x.u - s.u) <= 2).flatMap(x => tileTokens(first(mode === 'en' ? x.fr : x.en)).slice(1));
+  const sameLang = ALLS.filter(x => x.id !== s.id && Math.abs(x.u - s.u) <= 2).flatMap(x => tileTokens(first(mode === 'en' ? x.fr : x.en), lang).slice(1));
   const distract = uniq(shuffle(sameLang)).filter(t => !ansLow.has(t.toLowerCase())).slice(0, clamp(Math.round(answerToks.length * .6), 2, 5));
   const bank = shuffle(answerToks.concat(distract));
   let prompt;
   if (mode === 'fr') prompt = `<div class="speaker-row">${pip('normal', 90)}<div class="bubble">${esc(first(s.fr))}</div></div>`;
-  else if (mode === 'en') prompt = `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span>${tappable(s.en)}</span></div></div>`;
+  else if (mode === 'en') prompt = `<div class="speaker-row">${pip('talk', 90)}<div class="bubble">${spkButtons(first(s.en))}<span>${tappable(s.en, s.rd)}</span></div></div>`;
   else prompt = spkButtons(first(s.en), true);
-  lessonShell(exHeader(title, ex) + prompt + `<div id="tilesArea"><div class="answer-line" id="ansLine"></div><div class="bank" id="bank">${bank.map((t, i) => `<button class="tile" data-act="tile" data-i="${i}">${esc(t)}</button>`).join('')}</div></div>
+  lessonShell(exHeader(title, ex) + prompt + `<div id="tilesArea"><div class="answer-line" id="ansLine"${lang === 'en' && COURSE.rtl ? ' dir="rtl"' : ''}></div><div class="bank" id="bank"${lang === 'en' && COURSE.rtl ? ' dir="rtl"' : ''}>${bank.map((t, i) => `<button class="tile" data-act="tile" data-i="${i}">${tileLabel(t, lang)}</button>`).join('')}</div></div>
     ${lang === 'en' ? `<button class="btn ghost sm kb-toggle" data-act="kbToggle">⌨️ Utiliser le clavier</button>` : ''}`, footAnswer(mode === 'listen' ? 'Je ne peux pas écouter' : 'Passer'));
   if (mode !== 'fr') autoplay(s.en);
   if (mode === 'listen') L.listen = true;
   L.bank = bank; L.picked = []; L.tileLang = lang; L.kb = false;
   L.check = () => {
     let r;
-    if (L.kb) r = accepts($('#typed').value, target, lang);
+    if (L.kb) r = accepts($('#typed').value, target, lang, true, lang === 'en' ? s.rd : null);
     else r = accepts(L.picked.map(i => bank[i]).join(' '), target, lang, false);
     if (r.ok && lang === 'en') say(s.en);
-    return { ...r, ans: first(target), sub: mode === 'listen' ? first(s.fr) : null };
+    return { ...r, ans: lang === 'en' ? disp(first(target)) : first(target), sub: [lang === 'en' ? s.rd : null, mode === 'listen' ? first(s.fr) : null].filter(Boolean).join(' · ') || null };
   };
 }
 function renderTiles() {
-  $('#ansLine').innerHTML = L.picked.map((bi, pos) => `<button class="tile" data-act="untile" data-p="${pos}">${esc(L.bank[bi])}</button>`).join('');
+  $('#ansLine').innerHTML = L.picked.map((bi, pos) => `<button class="tile" data-act="untile" data-p="${pos}">${tileLabel(L.bank[bi], L.tileLang)}</button>`).join('');
   $$('#bank .tile').forEach(b => b.classList.toggle('used', L.picked.includes(+b.dataset.i)));
   setReady(L.picked.length > 0);
 }
@@ -1900,7 +2229,7 @@ function micClick() {
   if (REC) { try { REC.stop(); } catch (e) { } return; }
   try { speechSynthesis.cancel(); } catch (e) { }
   const r = new SR(); REC = r;
-  r.lang = S.settings.accent; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
+  r.lang = srLang(); r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
   let finalAlts = null;
   btn.classList.add('rec'); btn.innerHTML = '🔴 Je t\'écoute… (touche pour arrêter)';
   r.onresult = e => {
@@ -2123,14 +2452,49 @@ function storyEnd() {
    ===================================================================== */
 function onboarding() {
   openModal(`<div class="onb">${pip('happy', 130, 'pip-bounce')}<h2>Hello ! Moi c'est Pip 🦜</h2>
-    <p class="muted">Je vais t'aider à <b>parler anglais</b>, quelques minutes par jour.</p>
+    <p class="muted">Je vais t'aider à <b>parler une nouvelle langue</b>, quelques minutes par jour.</p>
+    <h3 style="margin-top:16px">Quelle langue veux-tu apprendre ?</h3>
+    <div class="course-grid">${COURSE_LIST.map(c => `<button class="opt ${c.code === S.course ? 'sel' : ''}" data-act="onbCourse" data-c="${c.code}"><span class="emoji" style="font-size:26px">${c.flag}</span><b>${esc(c.name)}</b></button>`).join('')}</div>
     <input type="text" id="onb-name" class="typed" style="margin:16px 0 4px;text-align:center" placeholder="Ton prénom" maxlength="20">
     <h3 style="margin-top:16px">Ton objectif quotidien</h3>
     <div class="goal-opts">${[[10, 'Tranquille', '5 min/jour'], [20, 'Normal', '10 min/jour'], [30, 'Sérieux', '15 min/jour'], [50, 'Intense', '20 min/jour']].map(([v, l, d]) => `<button class="opt ${v === 20 ? 'sel' : ''}" data-act="onbGoal" data-v="${v}"><b style="flex:1">${l}</b><span class="muted">${d}</span></button>`).join('')}</div>
-    <h3>Quel accent préfères-tu ?</h3>
+    <h3>Accent (pour l'anglais)</h3>
     <div class="goal-opts" style="grid-template-columns:1fr 1fr"><button class="opt sel" data-act="onbAcc" data-v="en-US">🇺🇸 Américain</button><button class="opt" data-act="onbAcc" data-v="en-GB">🇬🇧 Britannique</button></div>
     <button class="btn pri wide" data-act="onbDone">C'est parti !</button></div>`);
   S.goal = 20;
+}
+
+/* =====================================================================
+   CHANGEMENT DE LANGUE
+   ===================================================================== */
+function switchCourse(code) {
+  if (code === S.course) { closeModal(); return; }
+  S.cdata[S.course] = { done: S.done, words: S.words, mistakes: S.mistakes, stories: S.stories, sounds: S.sounds };
+  const d = S.cdata[code] || {};
+  S.done = d.done || {}; S.words = d.words || {}; S.mistakes = d.mistakes || []; S.stories = d.stories || {}; S.sounds = d.sounds || {};
+  S.course = code; loadCourse(code); save(); closeModal();
+  VIEW = 'learn'; render._scrolled = false; render(); window.scrollTo(0, 0);
+  toast(`<span class="emoji">${COURSE.flag}</span> Cours de ${esc(COURSE.adj)} activé`);
+}
+function courseProgress(code) {
+  const d = code === S.course ? { done: S.done } : (S.cdata[code] || {}), c = COURSE_LIST.find(x => x.code === code);
+  return { units: c.units.length, done: c.units.filter((_, u) => d.done && d.done[`${u}-t`]).length };
+}
+function voiceNote() {
+  const k = voiceKind();
+  if (k === 'native' || COURSE.code === 'en') return '';
+  if (k === 'approx') return `<p class="muted">🔊 Ton appareil n'a pas de voix ${esc(COURSE.adj)} : j'utilise une <b>voix approchée</b>${pickVoice() ? ` (${esc(pickVoice().lang)})` : ''}. Elle prononce bien les sons, mais sans l'accent ni les tons natifs.</p>`;
+  return `<p class="muted">🔇 Aucune voix disponible pour cette langue sur cet appareil : les exercices sont écrits et en images.</p>`;
+}
+function coursesHTML() {
+  const pick = codes => codes.map(c => COURSE_LIST.find(x => x.code === c)).filter(Boolean);
+  const group = (title, list) => `<h3 class="section-h" style="margin-top:14px">${title}</h3><div class="course-grid">${list.map(c => {
+    const p = courseProgress(c.code);
+    return `<button class="opt ${c.code === S.course ? 'sel' : ''}" data-act="pickCourse" data-c="${c.code}"><span class="emoji" style="font-size:30px">${c.flag}</span>
+      <span style="flex:1"><b>${esc(c.name)}</b>${c.beta ? ' <span class="pill">bêta</span>' : ''}<br><span class="muted" style="font-size:13px">${p.done}/${p.units} unités</span></span></button>`;
+  }).join('')}</div>`;
+  return `<h2>🌍 Choisis ta langue</h2><p class="muted">Ta série, tes XP, tes gemmes et ta ligue sont communs à toutes les langues. Chaque langue garde sa propre progression.</p>
+    ${group('Europe', pick(['en', 'es', 'it', 'de', 'pt']))}${group('Afrique', pick(['sw', 'ln', 'zdj', 'ar']))}${group('Asie', pick(['zh']))}`;
 }
 
 /* =====================================================================
@@ -2190,9 +2554,12 @@ const ACT = {
   },
   import: () => $('#import-file').click(),
   reset: () => openModal(`<div class="onb">${pip('sad', 110)}<h2>Tout effacer ?</h2><p class="muted">Ta progression, ta série et tes gemmes seront perdues définitivement.</p><button class="btn bad wide" data-act="resetYes">Oui, tout effacer</button></div>`),
-  resetYes: () => { localStorage.removeItem(KEY); S = DEFAULT(); save(); closeModal(); VIEW = 'learn'; render(); onboarding(); },
+  resetYes: () => { localStorage.removeItem(KEY); S = DEFAULT(); loadCourse('en'); save(); closeModal(); VIEW = 'learn'; render(); onboarding(); },
   onbGoal: el => { $$('[data-act=onbGoal]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.goal = +el.dataset.v; },
   onbAcc: el => { $$('[data-act=onbAcc]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.settings.accent = el.dataset.v; say('Hello!'); },
+  onbCourse: el => { $$('[data-act=onbCourse]').forEach(b => b.classList.remove('sel')); el.classList.add('sel'); S.course = el.dataset.c; loadCourse(S.course); say(COURSE.code === 'en' ? 'Hello!' : UNITS[0].words[0].en); },
+  courses: () => openModal(coursesHTML()),
+  pickCourse: el => switchCourse(el.dataset.c),
   onbDone: () => { S.name = ($('#onb-name').value || '').trim(); S.onboarded = true; save(); closeModal(); render(); },
   // leçon
   quitLesson: () => {
@@ -2208,15 +2575,15 @@ const ACT = {
   untile: el => { if (L.phase !== 'answer') return; L.picked.splice(+el.dataset.p, 1); renderTiles(); },
   kbToggle: el => {
     L.kb = !L.kb;
-    if (L.kb) { $('#tilesArea').innerHTML = `<textarea class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Écris en anglais"></textarea>`; const t = $('#typed'); t.focus(); t.addEventListener('input', () => setReady(!!t.value.trim())); el.textContent = '🧩 Utiliser les étiquettes'; setReady(false); }
-    else { $('#tilesArea').innerHTML = `<div class="answer-line" id="ansLine"></div><div class="bank" id="bank">${L.bank.map((t, i) => `<button class="tile" data-act="tile" data-i="${i}">${esc(t)}</button>`).join('')}</div>`; L.picked = []; renderTiles(); el.textContent = '⌨️ Utiliser le clavier'; }
+    if (L.kb) { $('#tilesArea').innerHTML = `<textarea class="typed" id="typed" autocomplete="off" autocapitalize="off" spellcheck="false" dir="auto" placeholder="Écris en ${esc(COURSE.adj)}"></textarea>`; const t = $('#typed'); t.focus(); t.addEventListener('input', () => setReady(!!t.value.trim())); el.textContent = '🧩 Utiliser les étiquettes'; setReady(false); }
+    else { $('#tilesArea').innerHTML = `<div class="answer-line" id="ansLine"></div><div class="bank" id="bank"${COURSE.rtl ? ' dir="rtl"' : ''}>${L.bank.map((t, i) => `<button class="tile" data-act="tile" data-i="${i}">${tileLabel(t, L.tileLang)}</button>`).join('')}</div>`; L.picked = []; renderTiles(); el.textContent = '⌨️ Utiliser le clavier'; }
   },
   check: () => doCheck(),
   skip: () => {
     if (!L || L.phase !== 'answer') return;
     const ex = L.ex[L.i];
     if (L.listen && (LISTENY.has(ex.t) || ex.t === 'listen_pick')) return cantListen();
-    const ans = ex.s ? first(ex.t === 'tr_fr' || ex.t === 'choose_tr' ? ex.s.fr : ex.s.en) : ex.w ? `${ex.w.en} = ${ex.w.fr}` : ex.ans || ex.word || '';
+    const ans = ex.s ? (ex.t === 'tr_fr' || ex.t === 'choose_tr' ? first(ex.s.fr) : disp(first(ex.s.en))) : ex.w ? `${ex.w.en} = ${ex.w.fr}` : ex.ans || ex.word || '';
     grade({ ok: false, ans }, { noHeart: SPEAKY.has(ex.t) });
   },
   continue: () => continueLesson(),
@@ -2245,7 +2612,7 @@ document.addEventListener('change', e => {
   const el = e.target;
   if (el.id === 'import-file' && el.files[0]) {
     const fr = new FileReader();
-    fr.onload = () => { try { const d = JSON.parse(fr.result); if (!d || typeof d !== 'object' || !('xp' in d)) throw 0; localStorage.setItem(KEY, JSON.stringify(d)); S = load(); render(); toast('✅ Progression importée'); } catch (err) { toast('❌ Fichier invalide'); } };
+    fr.onload = () => { try { const d = JSON.parse(fr.result); if (!d || typeof d !== 'object' || !('xp' in d)) throw 0; localStorage.setItem(KEY, JSON.stringify(d)); S = load(); loadCourse(S.course || 'en'); render(); toast('✅ Progression importée'); } catch (err) { toast('❌ Fichier invalide'); } };
     fr.readAsText(el.files[0]); return;
   }
   if (el.id === 'set-name') { S.name = el.value.trim(); save(); render(); return; }
@@ -2268,6 +2635,7 @@ document.addEventListener('keydown', e => {
 setInterval(() => { if (!L && !ST && !$('#modal').classList.contains('on') && VIEW !== 'profile') { const before = S.hearts; syncHearts(); if (S.hearts !== before) { save(); render(); } } }, 60000);
 
 /* ---------- Démarrage ---------- */
+loadCourse(S.course || 'en');
 checkStreak(); settleLeague(); ensureQuests(); render();
 if (!S.onboarded) onboarding();
 initCloud();
