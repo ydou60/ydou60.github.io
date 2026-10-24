@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SpeakUp — Apprends les langues</title>
-<meta name="theme-color" content="#6C4CF5">
+<meta name="theme-color" content="#E7E1D9">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="SpeakUp">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦜</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>:root{
   --bg:#F5F3FF; --card:#FFFFFF; --card2:#FAF9FF; --ink:#1E1B3A; --muted:#6B6890; --line:#E5E1F5;
   --pri:#6C4CF5; --pri-d:#4F31D6; --pri-l:#EDE8FF;
@@ -329,6 +329,131 @@ ruby rt{font-size:.5em;font-weight:700;color:var(--muted)}
 .prof-big{display:flex;justify-content:center;margin:0 0 12px}
 .prof-intro{max-width:600px;margin:8px auto;display:flex;gap:14px;align-items:center;padding:12px;border:2px solid var(--line);background:var(--card);border-radius:16px}
 .prof-intro video{width:120px;aspect-ratio:9/16;border-radius:12px;background:#000;flex:none;max-width:40%}
+
+/* =====================================================================
+   THÈME CHAMPAGNE — verre transparent, liserés dorés (maquette validée)
+   ===================================================================== */
+:root{
+  --bg:#ECE6DE; --card:rgba(255,255,255,.3); --card2:rgba(255,255,255,.2); --ink:#2F2A25; --muted:#4F4842; --line:rgba(160,130,95,.3);
+  --pri:#86663D; --pri-d:#6E5434; --pri-l:rgba(201,169,122,.24);
+  --ok:#4E7F57; --ok-d:#3B6644; --ok-bg:rgba(120,170,125,.22); --bad:#A4483F; --bad-d:#80352E; --bad-bg:rgba(210,120,110,.2);
+  --gold:#C9A97A; --gold-d:#A8875C; --coral:#A9693A; --sky:#86663D; --fire:#A9693A;
+  --glass:rgba(255,255,255,.3); --glass-b:rgba(255,255,255,.65); --solid:rgba(248,244,238,.96);
+  --sky-grad:linear-gradient(168deg,#F1EDE8 0%,#E7E1D9 55%,#DDD5CA 100%);
+  --glow:rgba(255,255,255,.9); --blob:rgba(196,168,132,.5);
+  --shadow:0 10px 26px rgba(90,70,50,.12);
+  --serif:'Cormorant Garamond',Georgia,serif;
+}
+:root[data-theme="dark"]{
+  --bg:#615A53; --card:rgba(255,255,255,.12); --card2:rgba(255,255,255,.08); --ink:#F7F2EA; --muted:#EEE7DD; --line:rgba(255,255,255,.22);
+  --pri:#E7D3B4; --pri-d:#C9A97A; --pri-l:rgba(231,211,180,.18); --ok-bg:rgba(120,170,125,.25); --bad-bg:rgba(210,120,110,.25);
+  --sky:#E7D3B4; --glass:rgba(255,255,255,.12); --glass-b:rgba(255,255,255,.35); --solid:rgba(92,85,78,.97);
+  --sky-grad:linear-gradient(180deg,#736C65 0%,#67615A 45%,#575149 100%); --glow:rgba(255,248,236,.45); --blob:rgba(226,204,170,.3);
+  --shadow:0 10px 26px rgba(0,0,0,.25); color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#615A53; --card:rgba(255,255,255,.12); --card2:rgba(255,255,255,.08); --ink:#F7F2EA; --muted:#EEE7DD; --line:rgba(255,255,255,.22);
+    --pri:#E7D3B4; --pri-d:#C9A97A; --pri-l:rgba(231,211,180,.18); --ok-bg:rgba(120,170,125,.25); --bad-bg:rgba(210,120,110,.25);
+    --sky:#E7D3B4; --glass:rgba(255,255,255,.12); --glass-b:rgba(255,255,255,.35); --solid:rgba(92,85,78,.97);
+    --sky-grad:linear-gradient(180deg,#736C65 0%,#67615A 45%,#575149 100%); --glow:rgba(255,248,236,.45); --blob:rgba(226,204,170,.3);
+    --shadow:0 10px 26px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+html{background:var(--bg)}
+body{background:transparent;font-family:'Jost',"Segoe UI",system-ui,sans-serif}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(55% 38% at 88% 0%,var(--glow),transparent 72%),radial-gradient(50% 40% at 0% 100%,var(--blob),transparent 72%),
+  linear-gradient(118deg,transparent 40%,rgba(255,255,255,.28) 50%,transparent 60%),var(--sky-grad)}
+body::before{background:transparent}
+h1,h2,h3,.ex-title,.logo,.fb h3,.end h1{font-family:var(--serif);font-weight:500;letter-spacing:0}
+.page-title h1{font-size:34px}
+.ex-title{font-size:29px}
+.logo{color:var(--ink);font-size:30px}
+
+/* surfaces en verre */
+.card,.unit-head,.pic,.opt,.pair,.bubble,.mic,.stat-box,.ach,.drawing,.st-b,.install-banner,.prof-intro,.shop-item .ie{background:var(--glass);border:1px solid var(--glass-b);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.pic,.opt,.pair,.mic{border-bottom-width:1px}
+.tile{background:var(--glass);border:1px solid var(--glass-b);border-bottom-width:1px;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px rgba(90,70,50,.08)}
+.tile.used{background:rgba(160,130,95,.12);border-color:transparent;box-shadow:none}
+.side{border-right:1px solid var(--line)}
+.nav-btn{text-transform:none;letter-spacing:.02em;font-weight:500;border-width:1px}
+.nav-btn.on{background:var(--pri-l);color:var(--pri);border-color:rgba(201,169,122,.6)}
+.topbar{background:color-mix(in srgb,var(--bg) 72%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);margin:0 -24px;padding-left:24px;padding-right:24px}
+@media (max-width:700px){.topbar{margin:0 -16px;padding-left:16px;padding-right:16px}}
+.unit-head{top:calc(70px + env(safe-area-inset-top, 0px))}
+.stat.fire{color:var(--fire)} .stat.gem{color:var(--pri)}
+@media (max-width:700px){.side{background:var(--solid);border-top:1px solid var(--line)}}
+#overlay{background:var(--bg)}
+#overlay::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(55% 38% at 88% 0%,var(--glow),transparent 72%),var(--sky-grad)}
+#overlay{isolation:isolate}
+.l-foot{background:var(--glass);border-top:1px solid var(--line);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.l-foot.good{background:var(--ok-bg)} .l-foot.badf{background:var(--bad-bg)}
+.fb .fb-ico{background:var(--glass);border:1px solid var(--glass-b)}
+.modal-box{background:var(--solid);border:1px solid var(--glass-b);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+#modal{background:rgba(60,50,40,.35)}
+.toast{background:rgba(60,54,48,.9);color:#F7F2EA;border-radius:999px}
+.hint-pop{background:var(--solid)}
+
+/* boutons */
+.btn{border-radius:999px;border:1px solid var(--glass-b);border-bottom-width:1px;background:var(--glass);text-transform:none;letter-spacing:.04em;font-weight:500;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 6px 16px rgba(90,70,50,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.btn:active:not(:disabled){transform:translateY(1px);border-bottom-width:1px}
+.btn.pri,.btn.gold{background:linear-gradient(180deg,rgba(242,232,217,.92),rgba(208,186,152,.85));border-color:rgba(255,255,255,.85);color:#2F2A25;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 22px rgba(120,92,56,.22)}
+.btn.ok{background:linear-gradient(180deg,#6E9C74,#4E7F57);border-color:rgba(255,255,255,.5);color:#fff}
+.btn.bad{background:linear-gradient(180deg,#BE645A,#A4483F);border-color:rgba(255,255,255,.5);color:#fff}
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted)}
+.btn.ghost-w{background:var(--glass);border-color:var(--glass-b);color:var(--ink)}
+.spk{background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9),rgba(255,255,255,.3) 55%,rgba(214,198,178,.45));border:1px solid var(--glass-b);box-shadow:0 6px 14px rgba(90,70,50,.16);border-radius:50%}
+.spk:active{box-shadow:0 2px 6px rgba(90,70,50,.16)}
+.spk.slow{background:var(--glass);box-shadow:0 6px 14px rgba(90,70,50,.12)}
+.big-spk .spk,.big-spk .spk.slow{box-shadow:0 10px 22px rgba(90,70,50,.18)}
+.switch.on{background:var(--gold-d)}
+.sel{border-color:var(--gold-d)!important;background:rgba(201,169,122,.26)!important;color:var(--pri)}
+.pill{background:var(--pri-l);color:var(--pri)}
+.bar{background:rgba(160,130,95,.18)} .bar>i,.bar.pri>i{background:linear-gradient(90deg,#C9A97A,#A8875C)} .bar.ok>i{background:#6E9C74}
+.l-top .bar>i{background:linear-gradient(90deg,#C9A97A,#A8875C);box-shadow:none}
+.answer-line{border-color:var(--line);background:repeating-linear-gradient(transparent 0 58px,var(--line) 58px 59px)}
+.combo-banner{background:linear-gradient(180deg,#C9A97A,#A8875C);color:#2F2A25}
+
+/* parcours : bandeaux de verre et perles champagne */
+.unit-head{color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),var(--shadow);border-radius:24px}
+.unit-head p{color:var(--muted)} .unit-kicker{color:var(--pri);opacity:1}
+.unit.locked .unit-head{filter:none;opacity:.75}
+.node{background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95),rgba(236,220,196,.9) 50%,rgba(196,166,124,.95));color:#6E5434;border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 7px 0 rgba(150,120,85,.35),0 12px 24px rgba(90,70,50,.18)}
+.node.done{background:radial-gradient(circle at 32% 26%,#F6E7C9,#D2AF77 55%,#A8875C);color:#fff;box-shadow:0 7px 0 #8E6E46,0 12px 24px rgba(90,70,50,.2)}
+.node.lock{background:var(--glass);color:var(--muted);box-shadow:0 7px 0 rgba(150,120,85,.15)}
+.node.chest,.node.trophy{background:transparent;border:0;box-shadow:none}
+.node.cur{outline-color:rgba(201,169,122,.45)}
+.start-tag{background:var(--solid);color:var(--pri);border:1px solid var(--glass-b);text-transform:none;letter-spacing:.04em}
+.pop{background:var(--solid);color:var(--ink);border:1px solid var(--glass-b)}
+.pop:before{border-bottom-color:var(--solid)}
+.pop .btn{background:linear-gradient(180deg,rgba(242,232,217,.95),rgba(208,186,152,.9));color:#2F2A25}
+
+/* accueil : ta prof en grand */
+.hero{max-width:600px;margin:6px auto 26px;display:flex;flex-direction:column;gap:18px}
+.hero-photo{position:relative;display:block;width:100%;height:min(440px,62vh);padding:6px;border-radius:28px;overflow:hidden;background:var(--glass);border:1px solid var(--glass-b);box-shadow:0 18px 40px rgba(90,70,50,.16)}
+.hero-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;border-radius:22px;display:block}
+.hero-badge,.hero-play{position:absolute;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.62);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.8);font-size:12px;letter-spacing:.06em;color:#3B342E}
+.hero-badge{left:16px;top:16px;text-transform:uppercase}.hero-badge i{width:7px;height:7px;border-radius:50%;background:#6E9C74}
+.hero-play{right:16px;bottom:16px;font-weight:500}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:0 4px}
+.hero-name{margin:0;font-family:var(--serif);font-weight:300;font-size:48px;line-height:.96}
+.hero-row p{margin:8px 0 0;font-size:14px}
+.hero-actions{display:grid;justify-items:center;gap:4px}
+.hero-actions small{font-size:12px;color:var(--muted);margin-bottom:6px}
+.pearl{width:58px;height:58px;border-radius:50%;font-size:24px;display:flex;align-items:center;justify-content:center;border:1px solid var(--glass-b);
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85),rgba(255,255,255,.18) 55%,rgba(214,198,178,.3));box-shadow:0 8px 18px rgba(90,70,50,.16);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.pearl.sm{width:42px;height:42px;font-size:18px;flex:none}
+.hero-streak{display:flex;align-items:center;gap:12px;padding:0 4px;margin-top:-30px}
+.hero-streak b{display:block;font-weight:500}.hero-streak small{color:var(--muted);font-size:12px}
+.hero-line{height:1px;background:linear-gradient(90deg,transparent,rgba(184,149,106,.7),transparent)}
+.hero-cta{height:60px;font-size:16px}
 </style>
 </head>
 <body>
@@ -1268,7 +1393,8 @@ const weekId = (n = todayNum()) => Math.floor((n + 3) / 7); // semaines commenç
 const weekFrac = () => { const d = new Date(); return (((todayNum() + 3) % 7) + (d.getHours() * 60 + d.getMinutes()) / 1440) / 7; };
 
 /* ---------- Données ---------- */
-const UNIT_COLORS = ['#6C4CF5', '#FF7A59', '#12B07A', '#2EA8FF', '#E8458B', '#E0A100', '#8B5CF6', '#0EA5A4', '#F0643C', '#3B82F6', '#C2410C', '#16A34A', '#DB2777', '#7C3AED', '#0891B2', '#D97706', '#4F46E5', '#BE123C'];
+const UNIT_COLORS = ['#A8875C', '#9C7A4E', '#B0925F', '#8E6E46', '#A9693A', '#9A8058', '#B39467', '#8C7350', '#A47E52', '#97764B', '#AE8A5A', '#8F7048', '#A3835A', '#9B7D52', '#B08D60', '#94744A', '#A68657', '#8D6F4A'];
+const UNIT_COLORS_OLD = ['#6C4CF5', '#FF7A59', '#12B07A', '#2EA8FF', '#E8458B', '#E0A100', '#8B5CF6', '#0EA5A4', '#F0643C', '#3B82F6', '#C2410C', '#16A34A', '#DB2777', '#7C3AED', '#0891B2', '#D97706', '#4F46E5', '#BE123C'];
 const NAMES = new Set(['I', 'Anna', 'Tom', 'London', 'France', 'English', 'Monday', 'July', 'Paris', 'Londres', 'Max', 'Ben', 'Emma', 'Sam', 'TV', 'Internet']);
 /* Cours : l'anglais (contenu complet) + les autres langues bâties sur le programme commun CORE */
 const VOICE_CHAINS = { sw: ['sw', 'es', 'it'], ln: ['sw', 'es', 'it'], zdj: ['sw', 'es', 'it'] }; // voix approchées si pas de voix native
@@ -1748,7 +1874,7 @@ function installHTML() {
 
 function viewLearn() {
   const ck = currentKey();
-  let html = installBanner() + profIntro() + '<div class="path">';
+  let html = installBanner() + (profOn() ? profHero() : '') + '<div class="path">';
   UNITS.forEach(U => {
     const u = U.u, locked = !isUnlocked(`${u}-0`);
     const dc = NODE_TYPES.filter(n => S.done[`${u}-${n.k}`]).length;
@@ -2164,6 +2290,19 @@ function profTalk(on) {
       const pr = v.play(); if (pr && pr.catch) pr.catch(() => { });
     } else { p.classList.remove('talking'); v.pause(); }
   });
+}
+/* Accueil : ta prof en grand, comme sur la maquette Champagne */
+function profHero() {
+  const ck = currentKey(), U = UNITS[curUnit()];
+  const cta = !ck ? '' : ck.endsWith('-c') ? `<button class="btn pri wide hero-cta" data-act="openChest" data-k="${ck}">Ouvrir le coffre</button>`
+    : `<button class="btn pri wide hero-cta" data-act="startNode" data-k="${ck}">▶&nbsp; Commencer la leçon</button>`;
+  return `<section class="hero">
+    <button class="hero-photo" data-act="profVideo" aria-label="Écouter le message d'Amara"><img src="prof/full.jpg" alt="Amara, ta prof, debout en tailleur beige"><span class="hero-badge"><i></i>En ligne</span><span class="hero-play">▶ Son message</span></button>
+    <div class="hero-row"><div><h1 class="hero-name">Amara<br>Diallo</h1><p class="muted">Ta prof de ${esc(COURSE.adj)} · ${esc(U ? U.title : '')}</p></div>
+      <div class="hero-actions"><button class="pearl emoji" data-act="profVideo" aria-label="Écouter Amara">🔊</button><small>Écouter</small>
+      <button class="pearl emoji" data-act="practice" data-m="speak" aria-label="Parler">🎙️</button><small>Parler</small></div></div>
+    <div class="hero-streak"><span class="pearl sm emoji">🔥</span><div><b>${S.streak} jour${S.streak > 1 ? 's' : ''} de suite</b><small>Objectif du jour : ${todayXP()} / ${S.goal} XP</small></div></div>
+    <div class="hero-line"></div>${cta}</section>`;
 }
 function profIntro() {
   if (!profOn() || S.hideProfIntro) return '';
@@ -2700,6 +2839,7 @@ const ACT = {
   courses: () => openModal(coursesHTML()),
   install: () => openModal(installHTML()),
   installNow: async () => { if (!INSTALL_PROMPT) return; INSTALL_PROMPT.prompt(); try { await INSTALL_PROMPT.userChoice; } catch (e) { } INSTALL_PROMPT = null; closeModal(); render(); },
+  profVideo: () => openModal(`<div class="onb"><video src="prof/intro.mp4" poster="prof/intro.jpg" controls autoplay playsinline style="width:100%;max-height:70vh;border-radius:18px;background:#000"></video><h2 style="margin-top:12px">Amara, ta prof</h2><p class="muted">Elle t'accompagne dans chaque leçon.</p></div>`),
   hideProfIntro: () => { S.hideProfIntro = true; save(); render(); },
   hideInstall: () => { S.hideInstall = true; save(); render(); },
   pickCourse: el => switchCourse(el.dataset.c),
