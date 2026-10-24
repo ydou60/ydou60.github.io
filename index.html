@@ -465,7 +465,8 @@ body.stage-on.in-lesson{--stage-h:38dvh}
 body.stage-on #stage{display:block;position:fixed;top:0;left:0;right:0;max-width:600px;margin:0 auto;height:var(--stage-h);overflow:hidden;z-index:1;transition:height .35s ease;background:#CFC4B6}
 #stage .st-img,#stage .st-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
 #stage .st-idle{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
-#stage .st-idle,#stage .st-vid{opacity:0;transition:opacity .3s ease-in-out}
+#stage .st-lip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 6%}
+#stage .st-idle,#stage .st-vid,#stage .st-lip{opacity:0;transition:opacity .3s ease-in-out}
 #stage video.show{opacity:1}
 #stage .st-fade{position:absolute;inset:auto 0 0 0;height:48%;background:linear-gradient(rgba(40,32,26,0),rgba(40,32,26,.6));pointer-events:none}
 #stage .st-top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 0}
@@ -2691,7 +2692,7 @@ function clipFor(text, group, code) {
 }
 const PLAYER = typeof Audio !== 'undefined' ? new Audio() : null;
 if (PLAYER) {
-  PLAYER.addEventListener('playing', () => { if (!PLAYER.src.startsWith('data:')) profTalk(true); });
+  PLAYER.addEventListener('playing', () => { if (PLAYER.src.startsWith('data:')) return; const lip = LIP_PENDING; LIP_PENDING = null; if (lip && stageOn()) speechStart(lip); else profTalk(true); });
   ['pause', 'ended', 'error'].forEach(ev => PLAYER.addEventListener(ev, () => profTalk(false)));
 }
 function playClip(url, slow, fallback, done) {
@@ -2729,7 +2730,9 @@ function pumpSpeech() {
   caption(t);
   let fell = false;
   const fallback = () => { if (fell || finished) return; fell = true; speakTTS(t, it.slow, it.pitch, it.code, done); };
-  if (url && PLAYER) playClip(url, it.slow, fallback, done); else speakTTS(t, it.slow, it.pitch, it.code, done);
+  const lipUrl = url && PLAYER && !it.slow ? lipFor(url) : null;
+  if (lipUrl) { clearTimeout(TALK_OFF_T); prepareLip(lipUrl, v => { if (SPK !== it || finished) return; LIP_PENDING = v; playClip(url, it.slow, fallback, done); }); }
+  else if (url && PLAYER) playClip(url, it.slow, fallback, done); else speakTTS(t, it.slow, it.pitch, it.code, done);
 }
 function speakTTS(text, slow = false, pitch, code, done) {
   if (pitch == null) pitch = S.settings.voiceGender === 'm' ? 1 : 1.08; // un peu plus aiguë et posée = plus douce
@@ -3380,21 +3383,57 @@ let TALK_OFF_T = null, TALKING = false;
 function profTalk(on) {
   clearTimeout(TALK_OFF_T);
   if (!on) { TALK_OFF_T = setTimeout(() => setTalking(false), 900); return; }
-  setTalking(true);
+  if ($('#stage .st-vid')) speechStart(null); else setTalking(true); // repasse sur la vidéo de parole si la phrase d'avant était synchronisée
 }
 function setTalking(on) {
-  if (on === TALKING) return; TALKING = on;
-  const seq = ++TALK_SEQ, st = $('#stage'), idle = st && st.querySelector('.st-idle'), talk = st && st.querySelector('.st-vid');
+  if (on === TALKING) return;
+  const st = $('#stage'), idle = st && st.querySelector('.st-idle'), talk = st && st.querySelector('.st-vid');
   if (idle && talk) { // raccord au moment où la posture d'Amara est la plus proche dans l'autre vidéo
-    st.classList.toggle('talking', on);
-    if (on) cutTo(talk, idle, matchTime('idle', 'talk', idle.currentTime), seq);
-    else { cutTo(idle, talk, matchTime('talk', 'idle', talk.currentTime), seq); setTimeout(() => { if (!TALKING) talk.pause(); }, 700); }
-  }
+    if (on) speechStart(null);
+    else {
+      TALKING = false; const seq = ++TALK_SEQ, cur = shownVideo(); st.classList.remove('talking');
+      cutTo(idle, null, matchTime('talk', 'idle', talkTimeOf(cur)), seq);
+      setTimeout(() => { if (!TALKING) $$('#stage .st-vid, #stage .st-lip').forEach(v => v.pause()); }, 700);
+    }
+  } else TALKING = on;
   document.querySelectorAll('.prof').forEach(p => {
     const v = p.querySelector('video'); if (!v) return;
     if (on) { p.classList.add('talking'); const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); }
     else { p.classList.remove('talking'); v.pause(); }
   });
+}
+/* Amara commence une phrase : vidéo aux lèvres synchronisées si elle existe, sinon vidéo de parole */
+function speechStart(lip) {
+  clearTimeout(TALK_OFF_T);
+  const st = $('#stage'), talk = st && st.querySelector('.st-vid'); if (!talk) { setTalking(true); return; }
+  const cur = shownVideo(), seq = ++TALK_SEQ; TALKING = true; st.classList.add('talking');
+  if (lip) { try { lip.currentTime = 0; } catch (e) { } cutTo(lip, null, null, seq); return; }
+  if (cur === talk) return; // elle parlait déjà : on continue sans coupure
+  cutTo(talk, null, cur && cur.classList.contains('st-lip') ? talkTimeOf(cur) : matchTime('idle', 'talk', cur ? cur.currentTime : 0), seq);
+}
+const shownVideo = () => $('#stage video.show');
+/* les vidéos synchronisées partent de l'image 0 de la vidéo de parole, lue à l'endroit puis à l'envers (14,6 s) */
+function talkTimeOf(v) {
+  if (!v) return 0; if (!v.classList.contains('st-lip')) return v.currentTime;
+  const D = 7.3, t = v.currentTime % (2 * D); return t <= D ? t : 2 * D - t;
+}
+/* ---------- Lèvres synchronisées (phrases principales, voix de Bella) ---------- */
+const LIPS = new Set(typeof LIPS_INDEX !== 'undefined' ? LIPS_INDEX.split(',') : []);
+let LIP_PENDING = null, LIP_TURN = 0;
+function lipFor(url) {
+  if (!LIPS.size || !stageOn()) return null;
+  const m = /audio\/fr-sub\/af_bella\/([0-9a-f]{8})\.mp3$/.exec(url);
+  return m && LIPS.has(m[1]) ? `prof/lips/${m[1]}.mp4` : null;
+}
+function prepareLip(src, ready) {
+  const els = $$('#stage .st-lip'); if (!els.length) return ready(null);
+  const v = els.find(e => !e.classList.contains('show')) || els[LIP_TURN++ % els.length]; // jamais celle qui est affichée : fondu entre deux phrases
+  let done = false; const go = ok => { if (done) return; done = true; ready(ok ? v : null); };
+  if (v.dataset.src === src && v.readyState >= 2) { try { v.currentTime = 0; } catch (e) { } return go(true); }
+  v.dataset.src = src; v.preload = 'auto'; v.src = src;
+  v.addEventListener('loadeddata', () => go(true), { once: true }); v.addEventListener('error', () => go(false), { once: true });
+  setTimeout(() => go(v.readyState >= 2), 900); // jamais plus d'une seconde d'attente : sinon la vidéo de parole habituelle
+  try { v.load(); } catch (e) { go(false); }
 }
 let TALK_SEQ = 0;
 function matchTime(from, to, t) {
@@ -3407,7 +3446,7 @@ function cutTo(show, hide, t, seq) {
   const go = () => {
     if (done || seq !== TALK_SEQ) return; done = true;
     const pr = show.play(); if (pr && pr.catch) pr.catch(() => { });
-    show.classList.add('show'); hide.classList.remove('show');
+    show.classList.add('show'); $$('#stage video').forEach(o => { if (o !== show) o.classList.remove('show'); }); if (hide && hide !== show) hide.classList.remove('show');
   };
   if (t == null) return go();
   const seek = () => { show.addEventListener('seeked', go, { once: true }); try { show.currentTime = t; } catch (e) { go(); } };
@@ -3416,7 +3455,7 @@ function cutTo(show, hide, t, seq) {
 }
 /* Safari (iPhone) ne précharge pas les vidéos : au premier toucher, on les prépare en silence */
 function warmVideos() {
-  $$('#stage video').forEach(v => { if (v.readyState) return; const pr = v.play(); if (pr && pr.then) pr.then(() => { if (!v.classList.contains('show')) v.pause(); }).catch(() => { }); });
+  $$('#stage video:not(.st-lip)').forEach(v => { if (v.readyState) return; const pr = v.play(); if (pr && pr.then) pr.then(() => { if (!v.classList.contains('show')) v.pause(); }).catch(() => { }); });
 }
 document.addEventListener('touchstart', warmVideos, { passive: true, once: true });
 document.addEventListener('click', warmVideos, { once: true });
@@ -3434,7 +3473,8 @@ function renderStage() {
     st.innerHTML = `<div class="st-tap">
       <img class="st-img" src="prof/full.jpg" alt="Amara, ta prof, qui te regarde">
       <video class="st-idle show" muted playsinline loop autoplay preload="auto" poster="prof/idle.jpg" aria-hidden="true"><source src="prof/idle.mp4" type="video/mp4"><source src="prof/idle.webm" type="video/webm"></video>
-      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video></div>`;
+      <video class="st-vid" muted playsinline loop preload="auto"><source src="prof/talk.mp4" type="video/mp4"><source src="prof/talk.webm" type="video/webm"></video>
+      <video class="st-lip" muted playsinline preload="none"></video><video class="st-lip" muted playsinline preload="none"></video></div>`;
   }
 }
 /* en-tête du panneau : nom de la prof + drapeau, série, gemmes, cœurs (déplacés hors de son image) */
