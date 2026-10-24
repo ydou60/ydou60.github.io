@@ -3408,7 +3408,7 @@ function speechStart(lip) {
   clearTimeout(TALK_OFF_T);
   const st = $('#stage'), talk = st && st.querySelector('.st-vid'); if (!talk) { setTalking(true); return; }
   const cur = shownVideo(), seq = ++TALK_SEQ; TALKING = true; st.classList.add('talking');
-  if (lip) { try { lip.currentTime = 0; } catch (e) { } cutTo(lip, null, null, seq); return; }
+  if (lip) { try { lip.currentTime = PLAYER ? PLAYER.currentTime : 0; } catch (e) { } cutTo(lip, null, null, seq); lipSync(lip); prefetchNextLip(); return; }
   if (cur === talk) return; // elle parlait déjà : on continue sans coupure
   cutTo(talk, null, cur && cur.classList.contains('st-lip') ? talkTimeOf(cur) : matchTime('idle', 'talk', cur ? cur.currentTime : 0), seq);
 }
@@ -3428,13 +3428,40 @@ function lipFor(url) {
 }
 function prepareLip(src, ready) {
   const els = $$('#stage .st-lip'); if (!els.length) return ready(null);
-  const v = els.find(e => !e.classList.contains('show')) || els[LIP_TURN++ % els.length]; // jamais celle qui est affichée : fondu entre deux phrases
+  let v = els.find(e => e.dataset.src === src && !e.classList.contains('show')) || els.find(e => !e.classList.contains('show')) || els[LIP_TURN++ % els.length];
   let done = false; const go = ok => { if (done) return; done = true; ready(ok ? v : null); };
-  if (v.dataset.src === src && v.readyState >= 2) { try { v.currentTime = 0; } catch (e) { } return go(true); }
-  v.dataset.src = src; v.preload = 'auto'; v.src = src;
-  v.addEventListener('loadeddata', () => go(true), { once: true }); v.addEventListener('error', () => go(false), { once: true });
-  setTimeout(() => go(v.readyState >= 2), 900); // jamais plus d'une seconde d'attente : sinon la vidéo de parole habituelle
-  try { v.load(); } catch (e) { go(false); }
+  if (v.dataset.src === src && v.dataset.ok) { try { v.currentTime = 0; } catch (e) { } return go(true); }
+  loadLip(v, src, ok => go(ok));
+  setTimeout(() => go(!!v.dataset.ok), 1500); // au-delà, on garde la vidéo de parole habituelle
+}
+/* Safari (iPhone) ne charge une vidéo que si on la lit : on la lance en silence, puis on la remet au début */
+function loadLip(v, src, cb) {
+  if (v.dataset.src !== src) { v.dataset.src = src; delete v.dataset.ok; v.preload = 'auto'; v.src = src; try { v.load(); } catch (e) { } }
+  const ok = () => { if (v.dataset.src !== src) return; v.dataset.ok = '1'; if (!v.classList.contains('show')) { v.pause(); try { v.currentTime = 0; } catch (e) { } } if (cb) { const c = cb; cb = null; c(true); } };
+  v.addEventListener('playing', ok, { once: true }); v.addEventListener('error', () => { if (cb) { const c = cb; cb = null; c(false); } }, { once: true });
+  const pr = v.play(); if (pr && pr.catch) pr.catch(() => { v.addEventListener('loadeddata', ok, { once: true }); });
+}
+/* pendant qu'Amara parle, on prépare déjà la vidéo de la phrase suivante */
+function prefetchNextLip() {
+  const nx = SPQ.find(q => !q.when || q.when()); if (!nx) return;
+  const t = (nx.code ? first(String(nx.text)) : disp(first(String(nx.text)))).trim(), url = clipFor(t, nx.group, nx.code), src = url && !nx.slow ? lipFor(url) : null;
+  const v = src && $$('#stage .st-lip').find(e => !e.classList.contains('show'));
+  if (v && v.dataset.src !== src) loadLip(v, src, null);
+}
+/* la voix donne le tempo : la vidéo est recalée en continu sur le son */
+let LIP_RAF = null;
+function lipSync(v) {
+  cancelAnimationFrame(LIP_RAF); let lastSeek = 0;
+  const tick = () => {
+    if (!v.classList.contains('show') || !PLAYER || PLAYER.paused || PLAYER.ended) return;
+    if (v.ended || PLAYER.currentTime >= (v.duration || 99) - 0.06) return; // fin de phrase : on garde la dernière image, jamais de redémarrage
+    if (v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => { }); }
+    const d = v.currentTime - PLAYER.currentTime, now = performance.now();
+    if (Math.abs(d) > 0.05 && now - lastSeek > 600) { lastSeek = now; try { v.currentTime = PLAYER.currentTime; } catch (e) { } }
+    LIP_RAF = requestAnimationFrame(tick);
+  };
+  const pr = v.play(); if (pr && pr.catch) pr.catch(() => { });
+  LIP_RAF = requestAnimationFrame(tick);
 }
 let TALK_SEQ = 0;
 function matchTime(from, to, t) {
