@@ -1,0 +1,128 @@
+35624c9e	audio/fr-sub/amara/35624c9e.mp3	519 plus 85 égale 604
+53b91a52	audio/fr-sub/amara/53b91a52.mp3	561 moins 60 égale 501
+00ceca56	audio/fr-sub/amara/00ceca56.mp3	303 moins 79 égale 224
+aa4541d3	audio/fr-sub/amara/aa4541d3.mp3	328 moins 83 égale 245
+2a8ab3cd	audio/fr-sub/amara/2a8ab3cd.mp3	837 moins 81 égale 756
+587c83b9	audio/fr-sub/amara/587c83b9.mp3	Combien font 10 fois 6 ?
+460219ae	audio/fr-sub/amara/460219ae.mp3	Combien font 10 fois 7 ?
+a6ddd66c	audio/fr-sub/amara/a6ddd66c.mp3	Combien font 10 plus 4 ?
+d55c9eb3	audio/fr-sub/amara/d55c9eb3.mp3	Quel est le double de 19?
+44894d08	audio/fr-sub/amara/44894d08.mp3	Combien font 13 moins 9 ?
+b97e78ac	audio/fr-sub/amara/b97e78ac.mp3	Combien font 574 plus 63 ?
+84b561ab	audio/fr-sub/amara/84b561ab.mp3	23 moins 15 égale 8 euros.
+ca6678be	audio/fr-sub/amara/ca6678be.mp3	La bonne réponse est : 65.
+a19eb79b	audio/fr-sub/amara/a19eb79b.mp3	21 moins 4 égale 17 euros.
+3eca8b16	audio/fr-sub/amara/3eca8b16.mp3	La bonne réponse est : 90.
+ba31365d	audio/fr-sub/amara/ba31365d.mp3	La bonne réponse est : 17.
+069b57b7	audio/fr-sub/amara/069b57b7.mp3	La bonne réponse est : 51.
+7dbe1828	audio/fr-sub/amara/7dbe1828.mp3	La bonne réponse est : 74.
+be2e4782	audio/fr-sub/amara/be2e4782.mp3	Combien font 837 moins 81 ?
+8fa2f7f5	audio/fr-sub/amara/8fa2f7f5.mp3	Quelle est la moitié de 14?
+23272af7	audio/fr-sub/amara/23272af7.mp3	Combien font 303 moins 79 ?
+48b36dae	audio/fr-sub/amara/48b36dae.mp3	Quelle est la moitié de 44?
+8993e633	audio/fr-sub/amara/8993e633.mp3	31 moins 14 égale 17 euros.
+5f5ed61a	audio/fr-sub/amara/5f5ed61a.mp3	Calculons 30 pour cent de 80
+1f549a7a	audio/fr-sub/amara/1f549a7a.mp3	Combien font 5 puissance 3 ?
+03e1c63a	audio/fr-sub/amara/03e1c63a.mp3	Combien font 2 fois moins 4 ?
+5782db4d	audio/fr-sub/amara/5782db4d.mp3	Pars de 7 et avance de 2 : 9.
+c42e4893	audio/fr-sub/amara/c42e4893.mp3	moins 3 plus moins 4 égale -7
+c48b9ed1	audio/fr-sub/amara/c48b9ed1.mp3	Combien font moins 1 moins 7 ?
+f2e48615	audio/fr-sub/amara/f2e48615.mp3	moins 7 plus moins 12 égale -19
+64be042a	audio/fr-sub/amara/64be042a.mp3	moins 11 plus moins 9 égale -20
+2af2e8df	audio/fr-sub/amara/2af2e8df.mp3	moins 10 plus moins 12 égale -22
+4e41f1a8	audio/fr-sub/amara/4e41f1a8.mp3	8 plus 3 plus 8 plus 3 égale 22.
+11911f1c	audio/fr-sub/amara/11911f1c.mp3	Factorise : x au carré moins 81.
+55f02c8f	audio/fr-sub/amara/55f02c8f.mp3	Combien font 30 pour cent de 20 ?
+1c5f8595	audio/fr-sub/amara/1c5f8595.mp3	Combien font 25 pour cent de 20 ?
+7b8ed39d	audio/fr-sub/amara/7b8ed39d.mp3	Combien font 20 pour cent de 500 ?
+6da50604	audio/fr-sub/amara/6da50604.mp3	La bonne réponse est : 12 virgule 6.
+43a1265f	audio/fr-sub/amara/43a1265f.mp3	La bonne réponse est : 84 virgule 8.
+7a50ce03	audio/fr-sub/amara/7a50ce03.mp3	Combien font moins 12 fois moins 6 ?
+0ca82773	audio/fr-sub/amara/0ca82773.mp3	La bonne réponse est : 78 virgule 5.
+29cb33d7	audio/fr-sub/amara/29cb33d7.mp3	Combien vaut la racine carrée de 81 ?
+e59612b5	audio/fr-sub/amara/e59612b5.mp3	Combien vaut la racine carrée de 100 ?
+43c986d0	audio/fr-sub/amara/43c986d0.mp3	Soustraire, c'est ajouter l'opposé : -1.
+45b840d5	audio/fr-sub/amara/45b840d5.mp3	Soustraire, c'est ajouter l'opposé : -8.
+e6de324e	audio/fr-sub/amara/e6de324e.mp3	Pars du plus grand nombre, 2, et avance de 2.
+26f699c0	audio/fr-sub/amara/26f699c0.mp3	7 moins 1 égale 6. Vérifie : 6 plus 1 égale 7.
+161716f3	audio/fr-sub/amara/161716f3.mp3	1939-1945 : Seconde Guerre mondiale et la Shoah.
+ca54eb4a	audio/fr-sub/amara/ca54eb4a.mp3	Commence par 10 pour cent de 60 : divise par 10.
+52bbf21e	audio/fr-sub/amara/52bbf21e.mp3	Combien font, entre parenthèses 5 plus 2, fois 6 ?
+8bfa39fd	audio/fr-sub/amara/8bfa39fd.mp3	Cet angle mesure 90 degrés : c'est un angle droit.
+ef803ffb	audio/fr-sub/amara/ef803ffb.mp3	Règle des signes : même signe, résultat positif. 1.
+18742aff	audio/fr-sub/amara/18742aff.mp3	9 fois 9 égale 81, donc racine carrée de 81 égale 9.
+ff585d54	audio/fr-sub/amara/ff585d54.mp3	Règle des signes : même signe, résultat positif. 77.
+4bb2ae1f	audio/fr-sub/amara/4bb2ae1f.mp3	4x au carré ' égale 8x et 1x ' égale 1, donc 8x plus 1.
+a9a1f066	audio/fr-sub/amara/a9a1f066.mp3	3x au carré ' égale 6x et 9x ' égale 9, donc 6x plus 9.
+dba1e2a8	audio/fr-sub/amara/dba1e2a8.mp3	2x au carré ' égale 4x et 2x ' égale 2, donc 4x plus 2.
+92cb637e	audio/fr-sub/amara/92cb637e.mp3	7x au carré ' égale 14x et 5x ' égale 5, donc 14x plus 5.
+c67cc4e3	audio/fr-sub/amara/c67cc4e3.mp3	8x au carré ' égale 16x et 1x ' égale 1, donc 16x plus 1.
+4476e98d	audio/fr-sub/amara/4476e98d.mp3	8x au carré ' égale 16x et 3x ' égale 3, donc 16x plus 3.
+0552752a	audio/fr-sub/amara/0552752a.mp3	8x au carré ' égale 16x et 2x ' égale 2, donc 16x plus 2.
+57f389ac	audio/fr-sub/amara/57f389ac.mp3	9x au carré ' égale 18x et 1x ' égale 1, donc 18x plus 1.
+0dbfd89f	audio/fr-sub/amara/0dbfd89f.mp3	7x au carré ' égale 14x et 2x ' égale 2, donc 14x plus 2.
+492ec059	audio/fr-sub/amara/492ec059.mp3	5x au carré ' égale 10x et 2x ' égale 2, donc 10x plus 2.
+12436f24	audio/fr-sub/amara/12436f24.mp3	Résous l'équation : 9 x plus 15 égale 78. Combien vaut x ?
+bf70c66b	audio/fr-sub/amara/bf70c66b.mp3	Règle des signes : signes différents, résultat négatif. -4.
+3f537ad7	audio/fr-sub/amara/3f537ad7.mp3	Règle des signes : signes différents, résultat négatif. -8.
+3cf4a1ac	audio/fr-sub/amara/3cf4a1ac.mp3	Récite la table de 9 : quel nombre multiplié par 9 donne 63?
+33f4f383	audio/fr-sub/amara/33f4f383.mp3	Récite la table de 4 : quel nombre multiplié par 4 donne 28?
+1cffbe80	audio/fr-sub/amara/1cffbe80.mp3	Récite la table de 7 : quel nombre multiplié par 7 donne 63?
+0830f129	audio/fr-sub/amara/0830f129.mp3	Quelle est la dérivée de f de x égale 2 x au carré plus 2 x ?
+9f56aaca	audio/fr-sub/amara/9f56aaca.mp3	Quelle est la dérivée de f de x égale 7 x au carré plus 2 x ?
+fe4387b3	audio/fr-sub/amara/fe4387b3.mp3	Quelle est la dérivée de f de x égale 8 x au carré plus 2 x ?
+f7c4ce6e	audio/fr-sub/amara/f7c4ce6e.mp3	Périmètre égale 2 fois pi fois r égale 2 fois 3,14 fois 7 ≈ 44 cm.
+1c91b09c	audio/fr-sub/amara/1c91b09c.mp3	2x égale 17 moins 11 égale 6, donc x égale 6 divisé par 2 égale 3.
+73f2e638	audio/fr-sub/amara/73f2e638.mp3	8x égale 19 moins 11 égale 8, donc x égale 8 divisé par 8 égale 1.
+62c83f25	audio/fr-sub/amara/62c83f25.mp3	Aire égale pi fois r au carré égale 3,14 fois 4 ≈ 12,6 cm au carré.
+080175a9	audio/fr-sub/amara/080175a9.mp3	2x égale 16 moins 2 égale 14, donc x égale 14 divisé par 2 égale 7.
+113c0bdc	audio/fr-sub/amara/113c0bdc.mp3	120 degrés est plus ouvert que 90 degrés mais moins que 180 degrés.
+08dd1f70	audio/fr-sub/amara/08dd1f70.mp3	Périmètre égale 2 fois pi fois r égale 2 fois 3,14 fois 9 ≈ 56,5 cm.
+7f9ef526	audio/fr-sub/amara/7f9ef526.mp3	Aire égale pi fois r au carré égale 3,14 fois 16 ≈ 50,2 cm au carré.
+fbebf23b	audio/fr-sub/amara/fbebf23b.mp3	9x égale 78 moins 15 égale 63, donc x égale 63 divisé par 9 égale 7.
+de60d159	audio/fr-sub/amara/de60d159.mp3	6x égale 53 moins 17 égale 36, donc x égale 36 divisé par 6 égale 6.
+43b29e5e	audio/fr-sub/amara/43b29e5e.mp3	8x égale 82 moins 18 égale 64, donc x égale 64 divisé par 8 égale 8.
+fcab9aa6	audio/fr-sub/amara/fcab9aa6.mp3	Périmètre égale 2 fois pi fois r égale 2 fois 3,14 fois 8 ≈ 50,2 cm.
+57c18707	audio/fr-sub/amara/57c18707.mp3	4x égale -2 moins 6 égale -8, donc x égale -8 divisé par 4 égale -2.
+251130b9	audio/fr-sub/amara/251130b9.mp3	Aire égale pi fois r au carré égale 3,14 fois 25 ≈ 78,5 cm au carré.
+1ae0d4e2	audio/fr-sub/amara/1ae0d4e2.mp3	6x égale 66 moins 6 égale 60, donc x égale 60 divisé par 6 égale 10.
+3e62886d	audio/fr-sub/amara/3e62886d.mp3	5x égale -2 moins 8 égale -10, donc x égale -10 divisé par 5 égale -2.
+b853a07f	audio/fr-sub/amara/b853a07f.mp3	6x égale 0 moins 12 égale -12, donc x égale -12 divisé par 6 égale -2.
+4774b075	audio/fr-sub/amara/4774b075.mp3	3x égale 2 moins 17 égale -15, donc x égale -15 divisé par 3 égale -5.
+f86150ab	audio/fr-sub/amara/f86150ab.mp3	2x égale -5 moins 7 égale -12, donc x égale -12 divisé par 2 égale -6.
+3cdc2b96	audio/fr-sub/amara/3cdc2b96.mp3	2x égale -2 moins 10 égale -12, donc x égale -12 divisé par 2 égale -6.
+e94c18a9	audio/fr-sub/amara/e94c18a9.mp3	La division d'abord : 8 divisé par 4 égale 2, puis 22 moins 2 égale 20.
+a1fcc0e8	audio/fr-sub/amara/a1fcc0e8.mp3	5x égale -14 moins 6 égale -20, donc x égale -20 divisé par 5 égale -4.
+8dc014b6	audio/fr-sub/amara/8dc014b6.mp3	9x égale -53 moins 1 égale -54, donc x égale -54 divisé par 9 égale -6.
+67b17455	audio/fr-sub/amara/67b17455.mp3	9x égale -32 moins 13 égale -45, donc x égale -45 divisé par 9 égale -5.
+6a0d628b	audio/fr-sub/amara/6a0d628b.mp3	La division d'abord : 24 divisé par 4 égale 6, puis 16 moins 6 égale 10.
+114d39c4	audio/fr-sub/amara/114d39c4.mp3	Un paquet contient 3 gâteaux. Combien de gâteaux y a-t-il dans 7 paquets?
+32fc9aaf	audio/fr-sub/amara/32fc9aaf.mp3	Un paquet contient 4 gâteaux. Combien de gâteaux y a-t-il dans 7 paquets?
+c05bb596	audio/fr-sub/amara/c05bb596.mp3	10 pour cent de 300, c'est 30. Donc 25 pour cent égale 30 fois 2,5 égale 75.
+9d666b7b	audio/fr-sub/amara/9d666b7b.mp3	Périmètre égale 2 fois longueur plus largeur égale 2 fois 11 plus 2 égale 26 cm.
+c44b0d55	audio/fr-sub/amara/c44b0d55.mp3	x plus 3 au carré ne fait pas x carré plus 9 : n'oublie jamais le double produit, 2 a b.
+2608cec7	audio/fr-sub/amara/2608cec7.mp3	La somme des angles d'un triangle fait 180 degrés. 180 moins 78 moins 60 égale 42 degrés.
+6a20a021	audio/fr-sub/amara/6a20a021.mp3	La somme des angles d'un triangle fait 180 degrés. 180 moins 43 moins 60 égale 77 degrés.
+7a346a19	audio/fr-sub/amara/7a346a19.mp3	La somme des angles d'un triangle fait 180 degrés. 180 moins 63 moins 42 égale 75 degrés.
+cc3a96e7	audio/fr-sub/amara/cc3a96e7.mp3	La somme des angles d'un triangle fait 180 degrés. 180 moins 72 moins 68 égale 40 degrés.
+75302e68	audio/fr-sub/amara/75302e68.mp3	Pour un angle de 90 degrés, le côté opposé se confond avec l'hypoténuse : le sinus vaut 1.
+e93221a6	audio/fr-sub/amara/e93221a6.mp3	Dans un triangle, deux angles mesurent 78 degrés et 60 degrés. Combien mesure le troisième ?
+fc5740bb	audio/fr-sub/amara/fc5740bb.mp3	Aire égale base fois hauteur divisé par 2 égale 6 fois 12 divisé par 2 égale 36 cm au carré.
+0096c3c7	audio/fr-sub/amara/0096c3c7.mp3	Dans un triangle, deux angles mesurent 63 degrés et 78 degrés. Combien mesure le troisième ?
+b305b7b5	audio/fr-sub/amara/b305b7b5.mp3	a plus b au carré égale a au carré plus 2ab plus b au carré, donc x au carré plus 4x plus 4.
+048200f2	audio/fr-sub/amara/048200f2.mp3	a plus b au carré égale a au carré plus 2ab plus b au carré, donc x au carré plus 6x plus 9.
+7da2ec72	audio/fr-sub/amara/7da2ec72.mp3	a plus b au carré égale a au carré plus 2ab plus b au carré, donc x au carré plus 8x plus 16.
+0e505621	audio/fr-sub/amara/0e505621.mp3	a plus b au carré égale a au carré plus 2ab plus b au carré, donc x au carré plus 18x plus 81.
+3888ba51	audio/fr-sub/amara/3888ba51.mp3	a plus b au carré égale a au carré plus 2ab plus b au carré, donc x au carré plus 14x plus 49.
+1acc72e2	audio/fr-sub/amara/1acc72e2.mp3	a moins b au carré égale a au carré moins 2ab plus b au carré, donc x au carré moins 6x plus 9.
+173cece5	audio/fr-sub/amara/173cece5.mp3	a moins b au carré égale a au carré moins 2ab plus b au carré, donc x au carré moins 4x plus 4.
+b97537e2	audio/fr-sub/amara/b97537e2.mp3	a moins b au carré égale a au carré moins 2ab plus b au carré, donc x au carré moins 8x plus 16.
+e523a3b3	audio/fr-sub/amara/e523a3b3.mp3	a moins b au carré égale a au carré moins 2ab plus b au carré, donc x au carré moins 10x plus 25.
+f1858245	audio/fr-sub/amara/f1858245.mp3	a moins b au carré égale a au carré moins 2ab plus b au carré, donc x au carré moins 12x plus 36.
+d9b15409	audio/fr-sub/amara/d9b15409.mp3	On ne peut jamais diviser par zéro. Et l'ordre compte : 56 divisé par 8 n'est pas 8 divisé par 56.
+ded75b71	audio/fr-sub/amara/ded75b71.mp3	Les droites M N et B C sont parallèles. A M égale 1, A B égale 4 et A C égale 24. Combien vaut A N ?
+57101872	audio/fr-sub/amara/57101872.mp3	Pythagore : 17 au carré moins 8 au carré égale 289 moins 64 égale 225, et racine carrée de 225 égale 15 cm.
+b1ff4fd5	audio/fr-sub/amara/b1ff4fd5.mp3	Thalès : AM sur AB égale AN sur AC, donc AN égale AC fois AM divisé par AB égale 24 fois 1 divisé par 4 égale 6.
+2314d331	audio/fr-sub/amara/2314d331.mp3	Avant Jésus-Christ, les années se comptent à l'envers : l'an 500 avant J.-C. est plus ancien que l'an 100 avant J.-C.
+48834d33	audio/fr-sub/amara/48834d33.mp3	La dérivée mesure la vitesse de variation d'une fonction. La dérivée de x puissance n est n fois x puissance n moins 1.
+556e0ef4	audio/fr-sub/amara/556e0ef4.mp3	Quelques dates à retenir : 496 baptême de Clovis, 800 couronnement de Charlemagne, 1492 arrivée de Colomb en Amérique, 1515 Marignan, 1789 Révolution française, 1914 à 1918 et 1939 à 1945 les deux guerres mondiales.
