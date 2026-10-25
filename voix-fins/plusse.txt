@@ -25,3 +25,28 @@ plusse/audio/fr-sub/amara/e85e07d1.mp3 | 1 | True | 0.938 | Quelle est la dériv
 plusse/audio/fr-sub/amara/0f246660.mp3 | 1 | True | 0.938 | Quelle est la dérivée de f de x égale huit x au carré plusse trois x ?
 plusse/audio/fr-sub/amara/d61bac9a.mp3 | 1 | True | 1.0 | Passe par dix : neuf plusse un égale dix, puis dix plusse huit égale dix-huit.
 plusse/audio/fr-sub/amara/59d76e15.mp3 | 1 | True | 0.867 | Résous l'équation : huit x plusse dix-huit égale quatre-vingt-deux. Combien vaut x ?
+plusse/audio/fr-sub/amara/fe217d0f.mp3 | 2 | True | 1.0 | Résous l'équation : trois x plusse dix-sept égale deux. Combien vaut x ?
+plusse/audio/fr-sub/amara/17563806.mp3 | 1 | True | 1.0 | seize moins trois égale treize. Vérifie : treize plusse trois égale seize.
+plusse/audio/fr-sub/amara/87a21469.mp3 | 1 | True | 0.889 | Combien font, entre parenthèses trois plusse neuf, fois deux ?
+plusse/audio/fr-sub/amara/739ec504.mp3 | 1 | True | 1.0 | dix moins sept égale trois. Vérifie : trois plusse sept égale dix.
+plusse/audio/fr-sub/amara/35892e6a.mp3 | 1 | True | 1.0 | dix moins quatre égale six. Vérifie : six plusse quatre égale dix.
+plusse/audio/fr-sub/amara/4f051708.mp3 | 1 | True | 1.0 | sept moins cinq égale deux. Vérifie : deux plusse cinq égale sept.
+plusse/audio/fr-sub/amara/dac72db9.mp3 | 1 | True | 1.0 | Le double de onze, c'est onze plusse onze égale vingt-deux.
+plusse/audio/fr-sub/amara/d056c0a8.mp3 | 1 | True | 1.0 | Le double de huit, c'est huit plusse huit égale seize.
+plusse/audio/fr-sub/amara/e232ad28.mp3 | 1 | True | 1.0 | Développe : x plusse six, le tout au carré.
+plusse/audio/fr-sub/amara/f944bc66.mp3 | 1 | True | 1.0 | Combien font deux sur dix plusse trois sur dix ?
+plusse/audio/fr-sub/amara/1e64cb9d.mp3 | 1 | True | 1.0 | Combien font un sur quatre plusse un sur quatre ?
+plusse/audio/fr-sub/amara/52959534.mp3 | 1 | True | 1.0 | Combien font deux plusse huit fois six ?
+plusse/audio/fr-sub/amara/808546de.mp3 | 1 | True | 1.0 | Combien font huit cent quarante plusse trente-six ?
+plusse/audio/fr-sub/amara/e2074497.mp3 | 3 | True | 1.0 | Combien font six cent trente plusse cinquante ?
+plusse/audio/fr-sub/amara/b297ad84.mp3 | 1 | True | 1.0 | huit plusse douze égale vingt billes.
+plusse/audio/fr-sub/amara/1f7d707f.mp3 | 2 | True | 1.0 | Combien font douze plusse douze ?
+plusse/audio/fr-sub/amara/054fffe8.mp3 | 1 | True | 1.0 | Combien font deux plusse trois ?
+plusse/audio/fr-sub/amara/ca3dca58.mp3 | 1 | True | 1.0 | Combien font un plusse six ?
+plusse/audio/fr-sub/amara/e9585dfd.mp3 | 1 | True | 1.0 | Combien font un plusse neuf ?
+plusse/audio/fr-sub/amara/77a49c4e.mp3 | 15 | False | 0.952 | huit cent quarante plusse trente-six égale huit cent soixante-seize
+plusse/audio/fr-sub/amara/2a3df236.mp3 | 2 | True | 1.0 | cent cinquante et un plusse quarante égale cent quatre-vingt-onze
+plusse/audio/fr-sub/amara/59e7fd2f.mp3 | 1 | True | 1.0 | Passe par dix! huit plusse cinq, c'est huit plusse deux pour arriver à dix, puis encore trois : treize. Et l'ordre ne compte pas : cinq plusse huit égale huit plusse cinq.
+plusse/audio/fr-sub/amara/47eee739.mp3 | 1 | True | 0.905 | Pour vérifier, fais l'addition à l'envers : huit plusse six égale quatorze. Si ça tombe juste, ta soustraction est bonne!
+plusse/audio/fr-sub/amara/57a07018.mp3 | 1 | True | 0.923 | Unités : sept plusse huit égale quinze. J'écris cinq et je retiens un.
+plusse/audio/fr-sub/amara/e8960055.mp3 | 1 | True | 1.0 | Centaines : quatre plusse un de retenue égale cinq.
