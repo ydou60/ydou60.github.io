@@ -102,3 +102,9 @@ plusse/audio/fr-sub/amara/904e68f3.mp3 | 1 | True | 0.958 | Pythagore : trois au
 plusse/audio/fr-sub/amara/ef32b043.mp3 | 2 | True | 1.0 | quatre fois neuf, ce sont quatre paquets de neuf. trois fois neuf égale vingt-sept, et un paquet de plusse : vingt-sept plusse neuf égale trente-six.
 plusse/audio/fr-sub/amara/59891f91.mp3 | 1 | True | 1.0 | sept fois quatre, ce sont sept paquets de quatre. six fois quatre égale vingt-quatre, et un paquet de plusse : vingt-quatre plusse quatre égale vingt-huit.
 plusse/audio/fr-sub/amara/93633dc8.mp3 | 1 | True | 1.0 | Même dénominateur : on additionne les numérateurs. quatre plusse deux égale six, donc six sur dix.
+plusse/audio/fr-sub/amara/b98969f5.mp3 | 1 | True | 0.933 | Même dénominateur : on additionne les numérateurs. trois plusse un égale quatre, donc quatre sur six.
+plusse/audio/fr-sub/amara/6fa30881.mp3 | 1 | True | 0.8 | Même dénominateur : on additionne les numérateurs. deux plusse un égale trois, donc trois sur cinq.
+plusse/audio/fr-sub/amara/92fe266c.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois dix plusse neuf égale trente-huit centimètres.
+plusse/audio/fr-sub/amara/a1cc9bcf.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois quatre plusse trois égale quatorze centimètres.
+plusse/audio/fr-sub/amara/72888fed.mp3 | 1 | True | 0.952 | a au carré moins b au carré égale a moins b a plusse b, donc x moins cinq x plusse cinq.
+plusse/audio/fr-sub/amara/704fd7e1.mp3 | 1 | True | 0.875 | La multiplication passe d'abord : six fois deux égale douze, puis trois plusse douze égale quinze.
