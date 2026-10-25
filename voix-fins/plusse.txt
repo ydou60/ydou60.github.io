@@ -44,7 +44,7 @@ plusse/audio/fr-sub/amara/1f7d707f.mp3 | 2 | True | 1.0 | Combien font douze plu
 plusse/audio/fr-sub/amara/054fffe8.mp3 | 1 | True | 1.0 | Combien font deux plusse trois ?
 plusse/audio/fr-sub/amara/ca3dca58.mp3 | 1 | True | 1.0 | Combien font un plusse six ?
 plusse/audio/fr-sub/amara/e9585dfd.mp3 | 1 | True | 1.0 | Combien font un plusse neuf ?
-plusse/audio/fr-sub/amara/77a49c4e.mp3 | 15 | False | 0.952 | huit cent quarante plusse trente-six égale huit cent soixante-seize
+plusse/audio/fr-sub/amara/77a49c4e.mp3 | 15 | False | 0.952 | huit cent quarante plusse trente-six égale huit cent soixante-seize | RETIRÉ : nombre final mal lu (876 → 860/867) sur les 15 graines ; l original de main est meilleur, à garder
 plusse/audio/fr-sub/amara/2a3df236.mp3 | 2 | True | 1.0 | cent cinquante et un plusse quarante égale cent quatre-vingt-onze
 plusse/audio/fr-sub/amara/59e7fd2f.mp3 | 1 | True | 1.0 | Passe par dix! huit plusse cinq, c'est huit plusse deux pour arriver à dix, puis encore trois : treize. Et l'ordre ne compte pas : cinq plusse huit égale huit plusse cinq.
 plusse/audio/fr-sub/amara/47eee739.mp3 | 1 | True | 0.905 | Pour vérifier, fais l'addition à l'envers : huit plusse six égale quatorze. Si ça tombe juste, ta soustraction est bonne!
