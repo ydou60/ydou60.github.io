@@ -1,0 +1,27 @@
+# chemin | graine | contrôle ok | similarité Whisper | texte donné au modèle
+plusse/audio/fr-sub/amara/979fe73e.mp3 | 1 | True | 1.0 | Ne calcule pas simplement de gauche à droite : trois plusse quatre fois cinq ne fait pas trente-cinq!
+plusse/audio/fr-sub/amara/3fc0ab71.mp3 | 1 | True | 0.941 | Dizaines : cinq plusse six plusse un de retenue égale douze. J'écris deux et je retiens un.
+plusse/audio/fr-sub/amara/32f4e877.mp3 | 1 | True | 1.0 | Le double de six, c'est six plusse six égale douze, et la moitié de douze, c'est six.
+plusse/audio/fr-sub/amara/dc4e5c05.mp3 | 1 | True | 1.0 | Le tour, c'est longueur plusse largeur plusse longueur plusse largeur.
+plusse/audio/fr-sub/amara/550f6645.mp3 | 1 | True | 1.0 | Ou plus vite : deux fois huit plusse trois égale deux fois onze égale vingt-deux centimètres.
+plusse/audio/fr-sub/amara/2687adaa.mp3 | 1 | True | 0.923 | Je vérifie : trois fois cinq plusse quatre égale dix-neuf. C'est juste!
+plusse/audio/fr-sub/amara/d753b98c.mp3 | 1 | True | 0.889 | Puis l'addition : trois plusse vingt égale vingt-trois.
+plusse/audio/fr-sub/amara/0adf2d5f.mp3 | 1 | True | 1.0 | Le périmètre, c'est la longueur du tour d'une figure. Pour un rectangle : deux fois, longueur plusse largeur. Pour un carré : quatre fois le côté.
+plusse/audio/fr-sub/amara/fd4240d7.mp3 | 1 | True | 0.966 | Pythagore : douze au carré plusse seize au carré égale cent quarante-quatre plusse deux cent cinquante-six égale quatre cents, et racine carrée de quatre cents égale vingt centimètres.
+plusse/audio/fr-sub/amara/4ebf8246.mp3 | 1 | True | 0.971 | Pythagore : huit au carré plusse quinze au carré égale soixante-quatre plusse deux cent vingt-cinq égale deux cent quatre-vingt-neuf, et racine carrée de deux cent quatre-vingt-neuf égale dix-sept centimètres.
+plusse/audio/fr-sub/amara/f1e55127.mp3 | 1 | True | 0.917 | huit fois deux, ce sont huit paquets de deux. sept fois deux égale quatorze, et un paquet de plusse : quatorze plusse deux égale seize.
+plusse/audio/fr-sub/amara/755133aa.mp3 | 2 | True | 0.926 | sept fois huit, ce sont sept paquets de huit. six fois huit égale quarante-huit, et un paquet de plusse : quarante-huit plusse huit égale cinquante-six.
+plusse/audio/fr-sub/amara/deee12aa.mp3 | 2 | True | 0.955 | Passe par dix : dix-neuf moins neuf égale dix, puis dix moins quatre égale six. Vérifie : six plusse treize égale dix-neuf.
+plusse/audio/fr-sub/amara/2b4d41a9.mp3 | 3 | True | 0.9 | Passe par dix : treize moins trois égale dix, puis dix moins six égale quatre. Vérifie : quatre plusse neuf égale treize.
+plusse/audio/fr-sub/amara/18585785.mp3 | 1 | True | 1.0 | Même dénominateur : on additionne les numérateurs. deux plusse trois égale cinq, donc cinq sur dix.
+plusse/audio/fr-sub/amara/5677b28c.mp3 | 1 | True | 0.867 | Même dénominateur : on additionne les numérateurs. six plusse un égale sept, donc sept sur huit.
+plusse/audio/fr-sub/amara/4e75231f.mp3 | 2 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois onze plusse sept égale trente-six centimètres.
+plusse/audio/fr-sub/amara/b86518a0.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois treize plusse quatre égale trente-quatre centimètres.
+plusse/audio/fr-sub/amara/de222814.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois sept plusse quatre égale vingt-deux centimètres.
+plusse/audio/fr-sub/amara/88d578f3.mp3 | 1 | True | 0.952 | a au carré moins b au carré égale a moins b a plusse b, donc x moins huit x plusse huit.
+plusse/audio/fr-sub/amara/ab8a3bdf.mp3 | 1 | True | 0.927 | a au carré moins b au carré égale a moins b a plusse b, donc x moins six x plusse six.
+plusse/audio/fr-sub/amara/a6854c9d.mp3 | 1 | True | 0.875 | Quelle est la dérivée de f de x égale sept x au carré plusse trois x ?
+plusse/audio/fr-sub/amara/e85e07d1.mp3 | 1 | True | 0.938 | Quelle est la dérivée de f de x égale sept x au carré plusse sept x ?
+plusse/audio/fr-sub/amara/0f246660.mp3 | 1 | True | 0.938 | Quelle est la dérivée de f de x égale huit x au carré plusse trois x ?
+plusse/audio/fr-sub/amara/d61bac9a.mp3 | 1 | True | 1.0 | Passe par dix : neuf plusse un égale dix, puis dix plusse huit égale dix-huit.
+plusse/audio/fr-sub/amara/59d76e15.mp3 | 1 | True | 0.867 | Résous l'équation : huit x plusse dix-huit égale quatre-vingt-deux. Combien vaut x ?
