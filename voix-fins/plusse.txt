@@ -50,3 +50,29 @@ plusse/audio/fr-sub/amara/59e7fd2f.mp3 | 1 | True | 1.0 | Passe par dix! huit pl
 plusse/audio/fr-sub/amara/47eee739.mp3 | 1 | True | 0.905 | Pour vérifier, fais l'addition à l'envers : huit plusse six égale quatorze. Si ça tombe juste, ta soustraction est bonne!
 plusse/audio/fr-sub/amara/57a07018.mp3 | 1 | True | 0.923 | Unités : sept plusse huit égale quinze. J'écris cinq et je retiens un.
 plusse/audio/fr-sub/amara/e8960055.mp3 | 1 | True | 1.0 | Centaines : quatre plusse un de retenue égale cinq.
+plusse/audio/fr-sub/amara/426c1c92.mp3 | 1 | True | 0.936 | Trois formules à connaître : a plusse b au carré égale a carré plusse deux a b plusse b carré ; a moins b au carré égale a carré moins deux a b plusse b carré ; a carré moins b carré égale a moins b fois a plusse b.
+plusse/audio/fr-sub/amara/117463c3.mp3 | 1 | True | 1.0 | sept fois cinq, ce sont sept paquets de cinq. six fois cinq égale trente, et un paquet de plusse : trente plusse cinq égale trente-cinq.
+plusse/audio/fr-sub/amara/d83990a8.mp3 | 1 | True | 0.852 | cinq fois cinq, ce sont cinq paquets de cinq. quatre fois cinq égale vingt, et un paquet de plusse : vingt plusse cinq égale vingt-cinq.
+plusse/audio/fr-sub/amara/88968f90.mp3 | 1 | True | 0.917 | trois fois trois, ce sont trois paquets de trois. deux fois trois égale six, et un paquet de plusse : six plusse trois égale neuf.
+plusse/audio/fr-sub/amara/b49c5cc5.mp3 | 1 | True | 1.0 | Passe par dix : quatorze moins quatre égale dix, puis dix moins un égale neuf. Vérifie : neuf plusse cinq égale quatorze.
+plusse/audio/fr-sub/amara/9fe222ea.mp3 | 1 | True | 0.821 | Soustraire, c'est enlever. neuf moins quatre, c'est cinq. Tu peux vérifier : cinq plusse quatre font bien neuf.
+plusse/audio/fr-sub/amara/18fb00d9.mp3 | 1 | True | 0.933 | Même dénominateur : on additionne les numérateurs. huit plusse un égale neuf, donc neuf sur dix.
+plusse/audio/fr-sub/amara/9b5a8db4.mp3 | 1 | True | 1.0 | Même dénominateur : on additionne les numérateurs. quatre plusse un égale cinq, donc cinq sur six.
+plusse/audio/fr-sub/amara/978278aa.mp3 | 1 | True | 1.0 | Même dénominateur : on additionne les numérateurs. trois plusse un égale quatre, donc quatre sur cinq.
+plusse/audio/fr-sub/amara/488378ff.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois treize plusse onze égale quarante-huit centimètres.
+plusse/audio/fr-sub/amara/4add4e82.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois treize plusse deux égale trente centimètres.
+plusse/audio/fr-sub/amara/5e681fc0.mp3 | 1 | True | 1.0 | Périmètre égale deux fois longueur plusse largeur égale deux fois quinze plusse neuf égale quarante-huit centimètres.
+plusse/audio/fr-sub/amara/9a5d0da8.mp3 | 1 | True | 0.941 | Périmètre égale deux fois longueur plusse largeur égale deux fois neuf plusse sept égale trente-deux centimètres.
+plusse/audio/fr-sub/amara/79bf0b55.mp3 | 1 | True | 0.952 | a au carré moins b au carré égale a moins b a plusse b, donc x moins neuf x plusse neuf.
+plusse/audio/fr-sub/amara/7cae5ce3.mp3 | 1 | True | 0.952 | a au carré moins b au carré égale a moins b a plusse b, donc x moins quatre x plusse quatre.
+plusse/audio/fr-sub/amara/0a942ffc.mp3 | 1 | True | 0.9 | La multiplication passe d'abord : sept fois six égale quarante-deux, puis neuf plusse quarante-deux égale cinquante et un.
+plusse/audio/fr-sub/amara/3fe8c239.mp3 | 1 | True | 0.944 | La multiplication passe d'abord : huit fois six égale quarante-huit, puis deux plusse quarante-huit égale cinquante.
+plusse/audio/fr-sub/amara/7195e778.mp3 | 1 | True | 0.923 | Résous l'équation : cinq x plusse six égale moins quatorze. Combien vaut x ?
+plusse/audio/fr-sub/amara/ae6143d7.mp3 | 1 | True | 0.923 | Résous l'équation : cinq x plusse huit égale moins deux. Combien vaut x ?
+plusse/audio/fr-sub/amara/4b03e641.mp3 | 2 | True | 0.938 | Quelle est la dérivée de f de x égale six x au carré plusse six x ?
+plusse/audio/fr-sub/amara/f397f089.mp3 | 1 | True | 0.875 | Quelle est la dérivée de f de x égale neuf x au carré plusse un x ?
+plusse/audio/fr-sub/amara/ec489f30.mp3 | 1 | True | 0.923 | Résous l'équation : six x plusse six égale soixante-six. Combien vaut x ?
+plusse/audio/fr-sub/amara/a555229e.mp3 | 1 | True | 1.0 | Combien font, entre parenthèses cinq plusse sept, fois trois ?
+plusse/audio/fr-sub/amara/9896fff8.mp3 | 1 | True | 1.0 | six moins deux égale quatre. Vérifie : quatre plusse deux égale six.
+plusse/audio/fr-sub/amara/e767b820.mp3 | 1 | True | 1.0 | Le double de dix-neuf, c'est dix-neuf plusse dix-neuf égale trente-huit.
+plusse/audio/fr-sub/amara/52f53de7.mp3 | 1 | True | 1.0 | Le double de neuf, c'est neuf plusse neuf égale dix-huit.
