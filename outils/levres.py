@@ -2,7 +2,7 @@
 # Prérequis : /tmp/Wav2Lip (dépôt Rudrabha/Wav2Lip, audio.py corrigé pour librosa récent : filters.mel(sr=..., n_fft=...)),
 # /tmp/w2l_w/wav2lip_gan.pth (Hugging Face Nekochu/Wav2Lip), /tmp/w2l/frames.npy et rects.npy produits par levres_visage.py.
 # Usage : python levres.py liste.jsonl resultats.jsonl  (une entrée de levres.json par ligne)
-# Réglage actuel ≈36 Ko/s (lot levres3a). Ancien réglage ≈61 Ko/s (lot levres-a, 672 premières vidéos) : addroi bouche −0,3 et visage −0,1, crf 36, preset slow, sans -x264-params, AAC 64k.
+# Réglage actuel ≈40 Ko/s (lot levres3a). Ancien réglage ≈61 Ko/s (lot levres-a, 672 premières vidéos) : addroi bouche −0,3 et visage −0,1, crf 36, preset slow, sans -x264-params, AAC 64k.
 import shutil, sys, os, json, time, math, hashlib, subprocess, traceback
 import numpy as np, cv2, torch
 sys.path.insert(0, '/tmp/Wav2Lip')
@@ -15,9 +15,9 @@ PAD_BOTTOM = 15
 BATCH = 64
 ENC = (['-crf', '0', '-preset', 'ultrafast'] if os.environ.get('LOSSLESS') else
        # débit concentré sur la bouche/menton puis le visage (zones fixes couvrant tous les cadres), reste plus compressé
-       # réglage ≈35 Ko/s (lot levres3a) : bouche −0,5 puis visage −0,3 (≈ qoffset×25 en QP), corps et décor à crf 46
-       ['-vf', 'addroi=x=290:y=120:w=170:h=175:qoffset=-0.5,addroi=x=270:y=10:w=210:h=300:qoffset=-0.3',
-        '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-crf', '46', '-preset', 'slow',
+       # réglage ≈40 Ko/s (lot levres3a) : bouche −0,55, visage −0,35, buste et mains −0,15 (≈ qoffset×25 en QP), décor à crf 47
+       ['-vf', 'addroi=x=290:y=120:w=170:h=175:qoffset=-0.55,addroi=x=270:y=10:w=210:h=300:qoffset=-0.35,addroi=x=150:y=300:w=420:h=500:qoffset=-0.15',
+        '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-crf', '47', '-preset', 'slow',
         '-x264-params', 'keyint=600:bframes=8:aq-mode=3'])
 AUDIO_KBPS = '48k'
 
