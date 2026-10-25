@@ -76,3 +76,29 @@ plusse/audio/fr-sub/amara/a555229e.mp3 | 1 | True | 1.0 | Combien font, entre pa
 plusse/audio/fr-sub/amara/9896fff8.mp3 | 1 | True | 1.0 | six moins deux égale quatre. Vérifie : quatre plusse deux égale six.
 plusse/audio/fr-sub/amara/e767b820.mp3 | 1 | True | 1.0 | Le double de dix-neuf, c'est dix-neuf plusse dix-neuf égale trente-huit.
 plusse/audio/fr-sub/amara/52f53de7.mp3 | 1 | True | 1.0 | Le double de neuf, c'est neuf plusse neuf égale dix-huit.
+plusse/audio/fr-sub/amara/809aadc9.mp3 | 1 | True | 1.0 | Développe : x plusse sept, le tout au carré.
+plusse/audio/fr-sub/amara/50fe6470.mp3 | 1 | True | 1.0 | Combien font quatre sur six plusse un sur six ?
+plusse/audio/fr-sub/amara/6b15e633.mp3 | 1 | True | 1.0 | Combien font trois sur six plusse un sur six ?
+plusse/audio/fr-sub/amara/1e944f42.mp3 | 1 | True | 1.0 | Combien font neuf plusse sept fois six ?
+plusse/audio/fr-sub/amara/9fa7fd6c.mp3 | 1 | True | 0.857 | Combien font six plusse trois fois trois ?
+plusse/audio/fr-sub/amara/a3056d69.mp3 | 1 | True | 0.9 | Combien font cinq cent dix-neuf plusse quatre-vingt-cinq ?
+plusse/audio/fr-sub/amara/c3b63028.mp3 | 1 | True | 1.0 | vingt-neuf plusse trois égale trente-deux billes.
+plusse/audio/fr-sub/amara/f49a98cc.mp3 | 1 | True | 1.0 | Combien font six plusse trois ?
+plusse/audio/fr-sub/amara/fac3dcbd.mp3 | 1 | True | 1.0 | Combien font trois plusse sept ?
+plusse/audio/fr-sub/amara/e8343d35.mp3 | 1 | True | 1.0 | Combien font neuf plusse neuf ?
+plusse/audio/fr-sub/amara/1e8dadef.mp3 | 3 | True | 1.0 | moins un plusse dix égale neuf
+plusse/audio/fr-sub/amara/94925f08.mp3 | 1 | True | 1.0 | six cent quarante-sept plusse soixante-six égale sept cent treize
+plusse/audio/fr-sub/amara/a552011e.mp3 | 1 | True | 0.922 | Trois formules font gagner beaucoup de temps : a plusse b au carré égale a carré plusse deux a b plusse b carré. a moins b au carré égale a carré moins deux a b plusse b carré. Et a moins b, fois a plusse b, égale a carré moins b carré.
+plusse/audio/fr-sub/amara/ac491db8.mp3 | 1 | True | 1.0 | Imagine un grand carré de côté a plusse b découpé en quatre morceaux : un carré a au carré, un carré b au carré, et deux rectangles a fois b. Voilà d'où vient le deux a b!
+plusse/audio/fr-sub/amara/8262a1bc.mp3 | 1 | True | 1.0 | J'ajoute un paquet de sept de plusse : trente-cinq plusse sept égale quarante-deux.
+plusse/audio/fr-sub/amara/14a1c752.mp3 | 1 | True | 0.889 | Donc x plusse trois au carré égale x carré plusse six x plusse neuf.
+plusse/audio/fr-sub/amara/7febc847.mp3 | 1 | True | 0.929 | trois au carré plusse quatre au carré égale neuf plusse seize, soit vingt-cinq.
+plusse/audio/fr-sub/amara/c7c234d2.mp3 | 1 | True | 0.917 | deux plusse trois égale cinq parts, toujours sur huit : cinq sur huit.
+plusse/audio/fr-sub/amara/b66ab744.mp3 | 1 | True | 1.0 | Résolvons trois x plusse quatre égale dix-neuf
+plusse/audio/fr-sub/amara/33bbb3e1.mp3 | 1 | True | 1.0 | Calculons trois plusse quatre fois cinq
+plusse/audio/fr-sub/amara/cc6bdd4f.mp3 | 1 | True | 1.0 | Calculons huit plusse cinq
+plusse/audio/fr-sub/amara/ba7906f3.mp3 | 2 | True | 0.969 | Pythagore : neuf au carré plusse douze au carré égale quatre-vingt-un plusse cent quarante-quatre égale deux cent vingt-cinq, et racine carrée de deux cent vingt-cinq égale quinze centimètres.
+plusse/audio/fr-sub/amara/904e68f3.mp3 | 1 | True | 0.958 | Pythagore : trois au carré plusse quatre au carré égale neuf plusse seize égale vingt-cinq, et racine carrée de vingt-cinq égale cinq centimètres.
+plusse/audio/fr-sub/amara/ef32b043.mp3 | 2 | True | 1.0 | quatre fois neuf, ce sont quatre paquets de neuf. trois fois neuf égale vingt-sept, et un paquet de plusse : vingt-sept plusse neuf égale trente-six.
+plusse/audio/fr-sub/amara/59891f91.mp3 | 1 | True | 1.0 | sept fois quatre, ce sont sept paquets de quatre. six fois quatre égale vingt-quatre, et un paquet de plusse : vingt-quatre plusse quatre égale vingt-huit.
+plusse/audio/fr-sub/amara/93633dc8.mp3 | 1 | True | 1.0 | Même dénominateur : on additionne les numérateurs. quatre plusse deux égale six, donc six sur dix.
